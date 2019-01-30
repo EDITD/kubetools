@@ -1,0 +1,264 @@
+import re
+
+from collections import OrderedDict
+from hashlib import md5
+from os import makedirs, path
+
+import click
+import six
+import yaml
+
+from pydash import memoize
+
+from kubetools_client.config import load_kubetools_config
+from kubetools_client.exceptions import KubeDevError
+from kubetools_client.settings import get_settings
+
+NON_COMPOSE_KEYS = (
+    # Kubetools specific
+    'minKubetoolsVersion',
+
+    # Kubetools dev specific
+    'devScripts',
+    'containerContext',
+
+    # Kubetools -> Kubernetes specific
+    'servicePorts',
+    'probes',
+    'resources',
+
+    # Kubernetes specific
+    'livenessProbe',
+    'readinessProbe',
+
+    # Internal flags for `ktd status`
+    'is_deployment',
+    'is_dependency',
+)
+
+CONTAINER_KEYS = ('dependencies', 'deployments')
+CONTAINER_KEY_TO_FLAG = {
+    'dependencies': 'is_dependency',
+    'deployments': 'is_deployment',
+}
+
+
+def dockerise_label(value):
+    # Unfortunate egg from Docker engine pre label support, see:
+    # https://github.com/docker/compose/issues/2119
+    return re.sub(r'[^a-z0-9]', '', value.lower())
+
+
+@memoize
+def get_kubetools_config(env=None):
+    return load_kubetools_config(env=env, dev=True)
+
+
+@memoize
+def get_project_name(kubetools_config):
+    name = kubetools_config['name']
+    env = kubetools_config['env']
+
+    # Compose name is APP-ENV
+    return '-'.join((name, env))
+
+
+@memoize
+def get_compose_name(kubetools_config):
+    name_env = get_project_name(kubetools_config)
+    return dockerise_label(name_env)
+
+
+@memoize
+def get_compose_filename(kubetools_config):
+    env = kubetools_config['env']
+    compose_filename = '{0}-compose.yml'.format(env)
+
+    settings = get_settings()
+    return path.join(settings.DEV_CONFIG_DIRNAME, compose_filename)
+
+
+@memoize
+def get_all_containers(kubetools_config, container_keys=CONTAINER_KEYS):
+    containers = []
+
+    for key_name in container_keys:
+        deployments = kubetools_config.get(key_name, {})
+
+        for deployment_name, deployment_config in six.iteritems(deployments):
+            if 'containers' not in deployment_config:
+                raise KubeDevError('Deployment {0} is missing containers'.format(
+                    deployment_name,
+                ))
+
+            deployment_containers = deployment_config['containers']
+
+            for container_name, config in six.iteritems(deployment_containers):
+                config[CONTAINER_KEY_TO_FLAG[key_name]] = True
+                containers.append((container_name, config))
+
+    return containers
+
+
+@memoize
+def get_all_containers_by_name(kubetools_config, container_keys=CONTAINER_KEYS):
+    return OrderedDict(get_all_containers(
+        kubetools_config,
+        container_keys=container_keys,
+    ))
+
+
+def find_container_for_config(kubetools_config, config):
+    dockerfile = config['build']['dockerfile']
+    all_containers = get_all_containers(kubetools_config)
+
+    for name, container in all_containers:
+        if container.get('build', {}).get('dockerfile') == dockerfile:
+            return name
+    else:
+        raise KubeDevError((
+            'No container found using Dockerfile: {0}'
+        ).format(dockerfile))
+
+
+def _create_compose_service(kubetools_config, name, config, envars=None):
+    if 'preBuildCommands' in config.get('build', {}):
+        config['build'].pop('preBuildCommands')
+
+    # Because this is one of our containers (buildContexts are relevant to
+    # the project) - setup a TTY and STDIN so we can attach and be interactive
+    # when attached (eg ipdb).
+    service = {
+        'tty': True,
+        'stdin_open': True,
+        'labels': {
+            'kubetools.project.name': kubetools_config['name'],
+            'kubetools.project.env': kubetools_config['env'],
+        },
+    }
+
+    service.update(config)
+
+    if 'build' in service and 'context' not in service['build']:
+        service['build']['context'] = '.'
+
+    if 'ports' in config:
+        # Generate a consistent base port for this project/container combo
+        hash_string = '{0}-{1}'.format(get_project_name(kubetools_config), name)
+
+        # MD5 the string, integer that and then modulus 10k to shorten it down
+        port_base = int(md5(hash_string.encode('utf-8')).hexdigest(), 16) % 10000
+        # And bump by 10k so we don't stray into the privileged port range (<1025)
+        port_base += 10000
+
+        # Reassign ports with explicit host port numbers
+        ports = []
+
+        for port in config['ports']:
+            if isinstance(port, dict):
+                port = port['port']
+
+            ports.append(
+                '{0}:{1}'.format(int(port_base) + int(port), port),
+            )
+
+        service['ports'] = ports
+
+    # Make our service - drop anything kubernetes or kubetools specific
+    service = {
+        key: value
+        for key, value in six.iteritems(service)
+        if key not in NON_COMPOSE_KEYS
+    }
+
+    # Provide project-specific aliases for all containers. This means we can up
+    # the same containers (eg mariadb x2) under the same dev network, but have
+    # each app speak to it's own mariadb instance (eg app-mariadb).
+    compose_name = kubetools_config['name']
+
+    service['networks'] = {
+        'default': {
+            'aliases': [
+                '{0}-{1}'.format(compose_name, name),
+            ],
+        },
+    }
+
+    # Add any *missing* extra envars
+    if envars:
+        environment = service.setdefault('environment', [])
+        for envar in envars:
+            if envar not in environment:
+                environment.append(envar)
+
+    return service
+
+
+@memoize
+def get_dev_network_environment_variables():
+    # This "fixes" a horrible circular dependency between config/docker_util
+    from .docker_util import get_all_docker_dev_network_containers
+    containers = get_all_docker_dev_network_containers()
+
+    envars = set()
+
+    for container in containers:
+        networks = container.attrs['NetworkSettings']['Networks']
+        if 'dev' not in networks:
+            continue
+
+        aliases = networks['dev']['Aliases']
+        for alias in aliases:
+            if '-' in alias:
+                break
+        else:  # no alias with "-"
+            continue
+
+        envar = alias.upper().replace('-', '_')
+        envars.add('DEV_{0}={1}'.format(envar, alias))
+    return list(envars)
+
+
+@memoize  # prevent us writing the file over and over
+def create_compose_config(kubetools_config):
+    # If we're not in a custom env, everything sits on the "dev" network. Envs
+    # remain encapsulated inside their own network.
+    DEV_DEFAULT_ENV = get_settings().DEV_DEFAULT_ENV
+    dev_network = kubetools_config.get('env', DEV_DEFAULT_ENV) == DEV_DEFAULT_ENV
+
+    settings = get_settings()
+    all_containers = get_all_containers(kubetools_config)
+
+    dev_network_envars = None
+    if dev_network:
+        dev_network_envars = get_dev_network_environment_variables()
+
+    services = {
+        name: _create_compose_service(
+            kubetools_config, name, config,
+            envars=dev_network_envars,
+        )
+        for name, config in all_containers
+    }
+
+    compose_config = {
+        'version': '3',
+        'services': services,
+    }
+
+    if dev_network:
+        compose_config['networks'] = {
+            'default': {
+                'external': {
+                    'name': 'dev',
+                },
+            },
+        }
+
+    yaml_data = yaml.safe_dump(compose_config)
+
+    if not path.exists(settings.DEV_CONFIG_DIRNAME):
+        makedirs(settings.DEV_CONFIG_DIRNAME)
+
+    with click.open_file(get_compose_filename(kubetools_config), 'w') as f:
+        f.write(yaml_data)
