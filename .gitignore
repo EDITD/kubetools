@@ -2,6 +2,7 @@
 *.egg-info
 *.pyc
 dist/
+build/
 
 docs/_html
 docs/build
