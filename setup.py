@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 
 
 # Regex matching pattern followed by 3 numerical values separated by '.'
-pattern = re.compile('[0-9]+\.[0-9]+\.?[0-9]*\.?[a-z0-9]*')
+pattern = re.compile(r'[0-9]+\.[0-9]+\.?[0-9]*\.?[a-z0-9]*')
 
 
 def get_version():
