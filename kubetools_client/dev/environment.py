@@ -19,17 +19,18 @@ from .container_util import (
 
 @dev.command()
 @click.option(
-    '--active',
+    '--active-only', '--active',
     is_flag=True,
+    help='Only show containers from the active environment (--env).',
 )
 @click.pass_obj
-def status(kubetools_config, active):
+def status(kubetools_config, active_only):
     '''
     Display info on the local dev environment.
     '''
 
     click.echo('--> Loading environments...')
-    print_containers(kubetools_config, all_environments=not active)
+    print_containers(kubetools_config, all_environments=not active_only)
 
 
 @dev.command()
