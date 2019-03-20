@@ -37,7 +37,7 @@ if __name__ == '__main__':
             ),
         },
         install_requires=(
-            'click>=2',
+            'click>=7',
             'docker>=2',
             'docker-compose',
             'pyyaml',
