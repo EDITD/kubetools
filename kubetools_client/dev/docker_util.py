@@ -127,8 +127,14 @@ def get_containers_status(
 
     for container in docker_containers:
         compose_project = container.labels['com.docker.compose.project']
-        if all_environments and not compose_project.startswith(docker_name):
-            continue
+        if all_environments:
+            if not compose_project.startswith(docker_name):
+                continue
+
+            # For old Kubetools versions (<8) this label won't exist
+            kubetools_name = container.labels.get('kubetools.project.name')
+            if kubetools_name and kubetools_config['name'] != kubetools_name:
+                continue
 
         env = container.labels.get('kubetools.project.env')
         # Compatability for existing containers created with kubetools <8
