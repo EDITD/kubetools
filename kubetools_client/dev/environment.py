@@ -82,6 +82,18 @@ def stop(kubetools_config, containers=None):
 
 @dev.command()
 @click.argument('containers', nargs=-1)
+@click.pass_context
+def restart(ctx, containers):
+    '''
+    Restart containers.
+    '''
+
+    ctx.invoke(stop, containers=containers)
+    ctx.invoke(start, containers=containers)
+
+
+@dev.command()
+@click.argument('containers', nargs=-1)
 @click.option('destroy_containers', '--destroy', is_flag=True)
 @click.option('--no-upgrade', is_flag=True)
 @click.pass_obj
@@ -202,7 +214,7 @@ def up(
 @click.option(
     '--keep-containers',
     is_flag=True,
-    help='Don\'t remove any test environment containers after completion',
+    help="Don't remove any test environment containers after completion",
 )
 @click.pass_obj
 @click.pass_context
