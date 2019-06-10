@@ -65,29 +65,23 @@ def load_kubetools_config(
     else:
         # Look in this directory
         directory = getcwd()
-        possible_files = [
-            path.join(directory, filename)
-            for filename in possible_filenames
-        ]
+        possible_files = []
 
         # Attempt parent directories back up to root
         while True:
-            directory, splitdir = path.split(directory)
-            if not splitdir:
-                break
-
             possible_files.extend([
                 path.join(directory, filename)
                 for filename in possible_filenames
             ])
 
+            directory, splitdir = path.split(directory)
+            if not splitdir:
+                break
+
     config = None
 
     for filename in possible_files:
         try:
-            if directory:
-                filename = path.join(directory, filename)
-
             with open(filename, 'r') as f:
                 config = f.read()
 
