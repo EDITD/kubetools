@@ -3,7 +3,7 @@ Shared Python module for handling Kubetools (kubetools.yml) config. Used by both
 the dev client (ktd) and the server (lists KubetoolsClient as a requirement).
 '''
 
-from os import path
+from os import getcwd, path
 
 import six
 import yaml
@@ -52,18 +52,35 @@ def load_kubetools_config(
         dev (bool): filter config items by dev mode
     '''
 
-    possible_files = (
+    possible_filenames = (
         'kubetools.yml',
         'kubetools.yaml',
     )
+
+    if directory:
+        possible_files = [
+            path.join(directory, filename)
+            for filename in possible_filenames
+        ]
+    else:
+        directory = getcwd()
+        possible_files = []
+
+        # Attempt parent directories back up to root
+        while True:
+            possible_files.extend([
+                path.join(directory, filename)
+                for filename in possible_filenames
+            ])
+
+            directory, splitdir = path.split(directory)
+            if not splitdir:
+                break
 
     config = None
 
     for filename in possible_files:
         try:
-            if directory:
-                filename = path.join(directory, filename)
-
             with open(filename, 'r') as f:
                 config = f.read()
 
