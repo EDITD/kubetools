@@ -63,7 +63,6 @@ def load_kubetools_config(
             for filename in possible_filenames
         ]
     else:
-        # Look in this directory
         directory = getcwd()
         possible_files = []
 
