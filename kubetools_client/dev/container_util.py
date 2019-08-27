@@ -119,7 +119,7 @@ def _probe_container(kubetools_config, name):
     probe = config.get('readinessProbe', config.get('probes'))
     if probe:
         timeout = probe.get('timeoutSeconds', 5)
-        retries = probe.get('numRetries', 5)
+        retries = probe.get('failureThreshold', 5)
 
         # Execute a command to check for container up?
         if 'exec' in probe:
