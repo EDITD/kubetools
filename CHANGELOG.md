@@ -1,5 +1,8 @@
 # WIP/Unreleased
 
+# v9.1.1
+- Add ability to define number of retries on readinessProbe
+
 # v9.1
 - Add `ktd restart` command
 - Search for `kubetools.yml` "up" the directory tree, similar to `.git`

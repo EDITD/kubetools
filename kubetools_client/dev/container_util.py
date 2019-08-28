@@ -119,6 +119,7 @@ def _probe_container(kubetools_config, name):
     probe = config.get('readinessProbe', config.get('probes'))
     if probe:
         timeout = probe.get('timeoutSeconds', 5)
+        retries = probe.get('failureThreshold', 5)
 
         # Execute a command to check for container up?
         if 'exec' in probe:
@@ -133,6 +134,7 @@ def _probe_container(kubetools_config, name):
 
             run_with_retry = retry(
                 KubeDevError,
+                num_retries=retries,
                 timeout=timeout,
             )(run_compose_process)
 
@@ -162,6 +164,7 @@ def _probe_container(kubetools_config, name):
 
             get_with_retry = retry(
                 KubeDevError,
+                num_retries=retries,
                 timeout=timeout,
             )(http_get)
 
