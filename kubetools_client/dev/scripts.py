@@ -6,12 +6,12 @@ from kubetools_client.exceptions import KubeDevError
 from kubetools_client.settings import get_settings, get_settings_directory
 
 from . import dev
-from .container_util import (
+from .backend import (
     get_all_containers,
     get_all_containers_by_name,
     get_container_status,
 )
-from .docker_util import run_process
+from .process_util import run_process
 
 
 def _list_scripts(kubetools_config):

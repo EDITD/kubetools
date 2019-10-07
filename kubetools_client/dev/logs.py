@@ -1,10 +1,10 @@
-import os
-
 import click
 
 from . import dev
-from .container_util import get_all_containers_by_name
-from .docker_util import run_compose_process
+from .backend import (
+    follow_logs,
+    get_all_containers_by_name,
+)
 
 DEFAULT_LOG_LINES = 5
 
@@ -58,13 +58,4 @@ def logs(
                 'yellow',
             ))
 
-    # Set this so we don't error and exit after 60s inactivity - which is the
-    # ridiclous default value set by the docker-compose team.
-    os.environ['COMPOSE_HTTP_TIMEOUT'] = '86400'
-
-    args = ['logs', '--follow', '--tail={0}'.format(tail)]
-
-    if containers:
-        args.extend(containers)
-
-    run_compose_process(kubetools_config, args, capture_output=False)
+    follow_logs(kubetools_config, containers, tail=tail)

@@ -10,7 +10,6 @@ import yaml
 
 from pydash import memoize
 
-from kubetools_client.config import load_kubetools_config
 from kubetools_client.exceptions import KubeDevError
 from kubetools_client.settings import get_settings
 
@@ -47,11 +46,6 @@ def dockerise_label(value):
     # Unfortunate egg from Docker engine pre label support, see:
     # https://github.com/docker/compose/issues/2119
     return re.sub(r'[^a-z0-9]', '', value.lower())
-
-
-@memoize
-def get_kubetools_config(env=None):
-    return load_kubetools_config(env=env, dev=True)
 
 
 @memoize

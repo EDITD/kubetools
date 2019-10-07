@@ -4,10 +4,10 @@ from kubetools_client.exceptions import KubeDevError
 from kubetools_client.settings import get_settings
 
 from . import dev
-from .config import find_container_for_config
-from .container_util import (
+from .backend import (
     build_containers,
     destroy_containers,
+    find_container_for_config,
     get_containers_status,
     print_containers,
     run_container,
