@@ -13,22 +13,6 @@ def run_cli(func):
     try:
         func()
 
-    except KubeError as e:
-        if e.type == 'auth':
-            settings = get_settings()
-
-            logger.warning((
-                'You are not logged into Kubetools!\n'
-                'You need to login to your server, download the config '
-                'from the top right and save it to:\n{0}\n'
-            ).format(settings.filename))
-
-        click.echo('--> {0} {1}'.format(
-            click.style('Kubetools {0} exception:'.format(e.type), 'red', bold=True),
-            e,
-        ))
-        sys.exit(1)
-
     except KubeDevCommandError as e:
         message, stdout = e.args
 
@@ -42,6 +26,22 @@ def run_cli(func):
     except KubeDevError as e:
         click.echo('--> {0} {1}'.format(
             click.style('Kubetools dev exception:', 'red', bold=True),
+            e,
+        ))
+        sys.exit(1)
+
+    except KubeError as e:
+        if e.type == 'auth':
+            settings = get_settings()
+
+            logger.warning((
+                'You are not logged into Kubetools!\n'
+                'You need to login to your server, download the config '
+                'from the top right and save it to:\n{0}\n'
+            ).format(settings.filename))
+
+        click.echo('--> {0} {1}'.format(
+            click.style('Kubetools {0} exception:'.format(e.type), 'red', bold=True),
             e,
         ))
         sys.exit(1)
