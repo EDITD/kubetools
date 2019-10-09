@@ -11,11 +11,13 @@ def get_hash(name):
     return sha1(name).hexdigest()[:6]
 
 
-def copy_and_update(base, extra):
+def copy_and_update(base, *extras):
     if base:
         new_base = base.copy()
     else:
         new_base = {}
 
-    new_base.update(extra)
+    for extra in extras:
+        if extra:
+            new_base.update(extra)
     return new_base
