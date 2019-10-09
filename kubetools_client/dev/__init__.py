@@ -1,11 +1,11 @@
 import click
 
 from kubetools_client import __version__
+from kubetools_client.config import load_kubetools_config
 from kubetools_client.log import setup_logging
 from kubetools_client.settings import get_settings
 
-from .config import get_kubetools_config
-from .docker_util import ensure_docker_dev_network
+from . import backends  # noqa
 
 
 @click.group()
@@ -31,8 +31,5 @@ def dev(ctx, env, debug=False):
     if not env:
         env = settings.DEV_DEFAULT_ENV
 
-    # Always ensure this before running any dev command
-    ensure_docker_dev_network()
-
     # Get the config and attach it to the context
-    ctx.obj = get_kubetools_config(env=env)
+    ctx.obj = load_kubetools_config(env=env, dev=True)

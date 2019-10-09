@@ -1,3 +1,5 @@
+import os
+
 from time import sleep
 
 import click
@@ -10,15 +12,21 @@ from kubetools_client.exceptions import KubeDevError
 from kubetools_client.log import logger
 from kubetools_client.settings import get_settings
 
-from .config import (
+from .config import (  # noqa: F401
+    find_container_for_config,
     get_all_containers,
     get_all_containers_by_name,
 )
 from .docker_util import (
+    ensure_docker_dev_network,
     get_container_status,
     get_containers_status,
     run_compose_process,
 )
+
+
+def init_backend():
+    ensure_docker_dev_network()
 
 
 def http_get(url, timeout):
@@ -323,6 +331,19 @@ def exec_container(kubetools_config, container, command):
     )
 
 
+def follow_logs(kubetools_config, containers, tail='all'):
+    # Set this so we don't error and exit after 60s inactivity - which is the
+    # ridiclous default value set by the docker-compose team.
+    os.environ['COMPOSE_HTTP_TIMEOUT'] = '86400'
+
+    args = ['logs', '--follow', '--tail={0}'.format(tail)]
+
+    if containers:
+        args.extend(containers)
+
+    run_compose_process(kubetools_config, args, capture_output=False)
+
+
 def _print_containers(containers):
     container_infos = []
     settings = get_settings()
@@ -409,7 +430,7 @@ def print_containers(kubetools_config, all_environments=False):
 
     if None in up_statuses:
         click.echo(click.style(
-            'Some containers don\'t exist, create them with: {0}'.format(
+            "Some containers don't exist, create them with: {0}".format(
                 click.style('ktd up <container>', bold=True),
             ),
             'yellow',
