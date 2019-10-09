@@ -9,11 +9,8 @@ DEPLOYMENT_REVISION_LIMIT = 5
 def make_deployment_config(
     name, containers,
     replicas=1,
-    kube_env=None,
-    namespace=None,
     labels=None,
     annotations=None,
-    version=None,
     envars=None,
 ):
     '''
@@ -26,19 +23,12 @@ def make_deployment_config(
     # Build our container list
     kubernetes_containers = []
     for container_name, container in six.iteritems(containers):
-        if (
-            # No env specified or env matching config envs
-            not kube_env or kube_env in container.get('envs', [kube_env])
-        ) and (
-            # No namespace specified or namespace matching namespace envs
-            not namespace or namespace in container.get('namespaces', [namespace])
-        ):
-            kubernetes_containers.append(make_container_config(
-                container_name, container,
-                kube_env=kube_env, namespace=namespace,
-                version=version, envars=envars,
-                labels=labels, annotations=annotations,
-            ))
+        kubernetes_containers.append(make_container_config(
+            container_name, container,
+            envars=envars,
+            labels=labels,
+            annotations=annotations,
+        ))
 
     # The actual controller Kubernetes config
     controller = {
