@@ -8,7 +8,7 @@ import click
 from kubetools_client.cli import cli_bootstrap
 
 
-@cli_bootstrap.group()
+@cli_bootstrap.group(help_priority=2)
 def job():
     '''
     Manage Kubernetes jobs.
