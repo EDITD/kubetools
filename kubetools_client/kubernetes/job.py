@@ -10,8 +10,6 @@ from .util import copy_and_update
 def make_job_config(
     config,
     app_name=None,
-    kube_env=None,
-    namespace=None,
     labels=None,
     annotations=None,
     envars=None,
@@ -60,9 +58,7 @@ def make_job_config(
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
         },
-        kube_env=kube_env,
         envars=envars,
-        namespace=namespace,
         labels=labels,
         annotations=annotations,
     )
