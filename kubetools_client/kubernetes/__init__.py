@@ -1,67 +1,35 @@
 import six
 
 from kubetools_client.exceptions import KubeConfigError
-from kubetools_client.log import logger
 
 from .deployment import make_deployment_config
 from .job import make_job_config
 from .service import make_service_config
 from .util import copy_and_update
 
-DEFAULT_VERSION = 'develop'
-DEFAULT_KUBE_ENV = 'staging'
 
-
-def get_commit_hash_tag(context_name, commit_hash):
-    '''
-    Turn a commit hash into a Docker registry tag.
-    '''
-
-    return '-'.join((context_name, 'commit', commit_hash))
-
-
-def _get_docker_tag(registry, app_name, context_name, commit_hash):
-    # Tag the image like registry/app:commit-hash
-    docker_version = '{0}:{1}'.format(
-        app_name,
-        get_commit_hash_tag(context_name, commit_hash),
-    )
-
-    # The full docker tag
-    return '{0}/{1}'.format(registry, docker_version)
-
-
-def _make_context_name(app_name, container_name):
+def make_context_name(app_name, container_name):
     return f'{app_name}-{container_name}'
 
 
 def _ensure_image(
-    obj, registry, project_name, commit_hash,
-    app_name=None, container_name=None,
+    container, context_name_to_image,
+    deployment_name=None,
+    container_name=None,
 ):
-    if 'image' in obj:
+    if 'image' in container:
         return
 
-    if 'containerContext' in obj:
-        obj['image'] = _get_docker_tag(
-            registry,
-            project_name,
-            obj.pop('containerContext'),
-            commit_hash,
-        )
+    if 'containerContext' in container:
+        context_name = container['containerContext']
 
-    elif 'build' in obj and app_name and container_name:
+    elif 'build' in container and deployment_name and container_name:
         # Because no shared context was provided we use the deployment + container name
-        context_name = _make_context_name(app_name, container_name)
-        obj['image'] = _get_docker_tag(
-            registry,
-            project_name,
-            context_name,
-            commit_hash,
-        )
-
+        context_name = make_context_name(deployment_name, container_name)
     else:
-        raise KubeConfigError('No image for container: {0}'.format(obj))
+        raise KubeConfigError('No image for container: {0}'.format(container))
+
+    container['image'] = context_name_to_image[context_name]
 
 
 def _should_expose_ports(ports):
@@ -81,10 +49,7 @@ def _should_expose_ports(ports):
     return False
 
 
-def _get_container_data(
-    containers, registry, project_name, app_name, commit_hash, kube_env, namespace,
-    get_app_host_for_env=None,
-):
+def _get_containers_data(containers, context_name_to_image, deployment_name):
     # Setup top level app service mapping all ports from all top level containers
     all_container_ports = []
     all_containers = {}
@@ -92,30 +57,32 @@ def _get_container_data(
     for container_name, data in six.iteritems(containers):
         all_container_ports.extend(data.get('ports', []))
         _ensure_image(
-            data, registry, project_name, commit_hash,
-            app_name=app_name, container_name=container_name,
+            data, context_name_to_image,
+            deployment_name, container_name,
         )
         all_containers[container_name] = data
 
-    extra_annotations = {}
-
-    # Create the special `kubetools/dns_name` annotation where we are planning
-    # to expose this service. This is used by external routers/similar to route
-    # the domain -> the nodePort.
-    if get_app_host_for_env and _should_expose_ports(all_container_ports):
-        extra_annotations['kubetools/dns_name'] = get_app_host_for_env(
-            kube_env, namespace, app_name,
-        )
-
-    return all_containers, all_container_ports, extra_annotations
+    return all_containers, all_container_ports
 
 
-def generate_kubernetes_configs(
-    source_name, config,
-    version=DEFAULT_VERSION, replicas=1, commit_hash=None,
-    kube_env=DEFAULT_KUBE_ENV, namespace=None, job_specs=None,
-    envars=None, annotations=None, include_upgrades=True,
-    is_manifest=False, registry=None, get_app_host_for_env=None,
+def generate_kubernetes_configs_for_project(
+    config,  # a kubetools config object
+    replicas=1,  # number of replicas for each deployment
+    envars=None,  # global environment variables to inject to all containers
+
+    # Upgrades/jobs
+    include_upgrade_jobs=True,  # whether to generate jobs for config.upgrades
+    job_specs=None,  # additional job configs to execute
+
+    # Labels/annotations
+    base_labels=None,
+    deployment_labels=None,  # deployment-only extra labels
+    base_annotations=None,
+    per_deployment_annotations=None,  # per-deployment extra annotations
+
+    # Map of context name -> docker image - images are expected to be built by
+    # something else (normally the kubetools server or ktd client).
+    context_name_to_image=None,
 ):
     '''
     Builds service & deployment definitions based on the app config provided. We have
@@ -127,71 +94,35 @@ def generate_kubernetes_configs(
     the main apps, so they lookup the correct settings.
     '''
 
-    logger.debug((
-        'Building Kubernetes objects for {0} '
-        '(version={version}, replicas={replicas}, commit={commit_hash})'
-    ).format(
-        source_name,
-        version=version,
-        replicas=replicas,
-        commit_hash=commit_hash,
-    ))
-
-    base_annotations = annotations or {}
-    job_specs = job_specs or []
-
-    base_annotations.update({
-        'kube_env': kube_env,
-        # Version is the branch name, which may contain chars that don't work on
-        # Kubernetes labels, so it's an annotation.
-        'version': version,
-    })
-
     project_name = config['name']
 
-    # All Kubernetes services/deployments/jobs will use this base selectors
-    base_labels = {
-        'project_name': project_name,
-        'project_source_name': source_name,  # this is the name used to create these apps
-        'project_source_type': 'manifest' if is_manifest else 'git',
-    }
+    base_annotations = base_annotations or {}
+    per_deployment_annotations = per_deployment_annotations or {}
 
-    if is_manifest:
-        base_labels['manifest_name'] = source_name
-    else:
-        base_labels['git_name'] = source_name
-
-    container_kwargs = {
-        'kube_env': kube_env,
-        'namespace': namespace,
-        'envars': envars,
-    }
+    job_specs = job_specs or []
 
     main_services = []
     main_deployments = []
 
     for name, deployment in six.iteritems(config.get('deployments', {})):
-        app_labels = copy_and_update(base_labels, {
-            'role': 'app',
-            'name': name,
-        })
-
-        # Sometimes (manifests) we don't have a commit available - note we also
-        # only apply this to app deployments, not dependencies.
-        if commit_hash:
-            app_labels['git_commit'] = commit_hash
-
-        containers, container_ports, extra_annotations = _get_container_data(
-            deployment['containers'],
-            registry=registry,
-            project_name=project_name,
-            app_name=name,
-            commit_hash=commit_hash,
-            kube_env=kube_env,
-            namespace=namespace,
-            get_app_host_for_env=get_app_host_for_env,
+        app_labels = copy_and_update(
+            base_labels,
+            deployment_labels,
+            {
+                'role': 'app',
+                'name': name,
+            },
         )
-        app_annotations = copy_and_update(base_annotations, extra_annotations)
+
+        containers, container_ports = _get_containers_data(
+            deployment['containers'],
+            context_name_to_image=context_name_to_image,
+            deployment_name=name,
+        )
+        app_annotations = copy_and_update(
+            base_annotations,
+            per_deployment_annotations.get(name),
+        )
 
         if container_ports:
             main_services.append(make_service_config(
@@ -212,9 +143,8 @@ def generate_kubernetes_configs(
             containers,
             replicas=deployment_replicas,
             labels=app_labels,
-            version=version,
             annotations=app_annotations,
-            **container_kwargs
+            envars=envars,
         ))
 
     # Handle dependencies
@@ -228,16 +158,12 @@ def generate_kubernetes_configs(
             'name': dependency_name,
         })
 
-        containers, container_ports, extra_annotations = _get_container_data(
+        containers, container_ports = _get_containers_data(
             dependency['containers'],
-            registry=registry,
-            project_name=project_name,
-            app_name=dependency_name,
-            commit_hash=commit_hash,
-            kube_env=kube_env,
-            namespace=namespace,
+            context_name_to_image=context_name_to_image,
+            deployment_name=name,
         )
-        app_annotations = copy_and_update(base_annotations, extra_annotations)
+        app_annotations = copy_and_update(base_annotations)
 
         if container_ports:
             depend_services.append(make_service_config(
@@ -253,7 +179,7 @@ def generate_kubernetes_configs(
             containers,
             labels=dependency_labels,
             annotations=app_annotations,
-            **container_kwargs
+            envars=envars,
         ))
 
     # Correctly order the configs, such that dependencies build first:
@@ -273,50 +199,26 @@ def generate_kubernetes_configs(
     })
 
     # Add any upgrade jobs
-    if include_upgrades:
-        for job_spec in config.get('upgrades', {}):
-            _ensure_image(job_spec, registry, project_name, commit_hash)
-
-            jobs.append(make_job_config(
-                job_spec,
-                app_name=project_name,
-                labels=job_labels,
-                annotations=base_annotations,
-                **container_kwargs
-            ))
-
-    # Jobs can provide their own envars
-    job_base_envars = container_kwargs.pop('envars', {})
+    if include_upgrade_jobs:
+        job_specs = config.get('upgrades', []) + job_specs
 
     for job_spec in job_specs:
-        # We already have a containerContext? Let's make that an image
-        if 'containerContext' in job_spec:
-            job_spec['image'] = _get_docker_tag(
-                registry,
-                project_name,
-                job_spec.pop('containerContext'),
-                commit_hash,
-            )
+        _ensure_image(job_spec, context_name_to_image)
 
         # Stil no image? Let's pull the first container we have available - this
         # maintains backwards compatability where one can ask for a job without
         # specifying any container (back when every app was one container).
         if 'image' not in job_spec:
             for name, data in six.iteritems(config.get('deployments')):
-                found_context = False
+                found_image = False
 
                 for _, container in six.iteritems(data['containers']):
-                    if 'containerContext' in container:
-                        job_spec['image'] = _get_docker_tag(
-                            registry,
-                            project_name,
-                            container['containerContext'],
-                            commit_hash,
-                        )
-                        found_context = True
+                    if 'image' in container:
+                        job_spec['image'] = container['image']
+                        found_image = True
                         break
 
-                if found_context:
+                if found_image:
                     break
 
             # We did not break - no context found!
@@ -325,7 +227,7 @@ def generate_kubernetes_configs(
                     'Could not find a containerContext to use for job: {0}'
                 ).format(job_spec))
 
-        job_envars = copy_and_update(job_base_envars, job_spec.get('envars', {}))
+        job_envars = copy_and_update(envars, job_spec.get('envars', {}))
 
         jobs.append(make_job_config(
             job_spec,
@@ -333,7 +235,6 @@ def generate_kubernetes_configs(
             labels=job_labels,
             annotations=base_annotations,
             envars=job_envars,
-            **container_kwargs
         ))
 
     return services, deployments, jobs
