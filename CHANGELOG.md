@@ -1,5 +1,6 @@
 # WIP/Unreleased
 
+# v10.0.dev0
 - Fix issue where stdout from a kubetools dev exception would not be formatted properly
 - Add "dev backends" support for future work (alternatives to `docker-compose`)
 - Add kubernetes config generation from the kubetools server
