@@ -29,7 +29,7 @@ def _make_probe_config(config):
 
 
 def make_container_config(
-    name, container, kube_env, namespace, version=None,
+    name, container,
     envars=None, labels=None, annotations=None,
 ):
     '''
@@ -42,14 +42,6 @@ def make_container_config(
 
     image = container['image']
 
-    if ':' in image:
-        # this has a version in it, nothing to do!
-        pass
-    elif version:
-        image = '{0}:{1}'.format(image, version)
-    else:
-        image = '{0}:latest'.format(image)
-
     container_data = {
         'name': name,
 
@@ -58,16 +50,7 @@ def make_container_config(
         'image': image,
 
         # Environment flag we use to determine if app is in Kube
-        'env': [{
-            'name': 'KUBE',
-            'value': 'true',
-        }, {
-            'name': 'KUBE_NAMESPACE',
-            'value': namespace,
-        }, {
-            'name': 'KUBE_ENV',
-            'value': kube_env,
-        }],
+        'env': [],
     }
 
     # Command is optional!
