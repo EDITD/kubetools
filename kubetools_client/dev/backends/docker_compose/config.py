@@ -226,6 +226,10 @@ def create_compose_config(kubetools_config):
     dev_network_envars = None
     if dev_network:
         dev_network_envars = get_dev_network_environment_variables()
+        if dev_network_envars:
+            click.echo('--> Injecting dev network environment variables:')
+            for envar in dev_network_envars:
+                click.echo('    {0}'.format(envar))
 
     services = {
         name: _create_compose_service(
