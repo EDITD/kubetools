@@ -12,7 +12,7 @@ from kubetools_client.exceptions import KubeDevError
 from kubetools_client.log import logger
 from kubetools_client.settings import get_settings
 
-from .config import (  # noqa: F401
+from .config import (
     find_container_for_config,
     get_all_containers,
     get_all_containers_by_name,
