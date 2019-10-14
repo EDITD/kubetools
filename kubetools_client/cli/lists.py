@@ -10,7 +10,7 @@ from six.moves import xrange
 from kubetools_client.cli import cli_bootstrap
 
 
-@cli_bootstrap.group()
+@cli_bootstrap.group(help_priority=2)
 def list():
     '''
     List Kubetools things.

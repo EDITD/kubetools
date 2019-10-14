@@ -102,19 +102,6 @@ def get_all_containers_by_name(kubetools_config, container_keys=CONTAINER_KEYS):
     ))
 
 
-def find_container_for_config(kubetools_config, config):
-    dockerfile = config['build']['dockerfile']
-    all_containers = get_all_containers(kubetools_config)
-
-    for name, container in all_containers:
-        if container.get('build', {}).get('dockerfile') == dockerfile:
-            return name
-    else:
-        raise KubeDevError((
-            'No container found using Dockerfile: {0}'
-        ).format(dockerfile))
-
-
 def _create_compose_service(kubetools_config, name, config, envars=None):
     if 'preBuildCommands' in config.get('build', {}):
         config['build'].pop('preBuildCommands')
@@ -226,6 +213,10 @@ def create_compose_config(kubetools_config):
     dev_network_envars = None
     if dev_network:
         dev_network_envars = get_dev_network_environment_variables()
+        if dev_network_envars:
+            click.echo('--> Injecting dev network environment variables:')
+            for envar in dev_network_envars:
+                click.echo('    {0}'.format(envar))
 
     services = {
         name: _create_compose_service(

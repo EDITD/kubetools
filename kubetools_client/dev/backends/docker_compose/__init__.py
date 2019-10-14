@@ -12,8 +12,7 @@ from kubetools_client.exceptions import KubeDevError
 from kubetools_client.log import logger
 from kubetools_client.settings import get_settings
 
-from .config import (  # noqa: F401
-    find_container_for_config,
+from .config import (
     get_all_containers,
     get_all_containers_by_name,
 )
@@ -36,6 +35,19 @@ def http_get(url, timeout):
 
     except requests.RequestException as e:
         raise KubeDevError('Container start failed HTTP check: {0}'.format(e))
+
+
+def find_container_for_config(kubetools_config, config):
+    dockerfile = config['build']['dockerfile']
+    all_containers = get_all_containers(kubetools_config)
+
+    for name, container in all_containers:
+        if container.get('build', {}).get('dockerfile') == dockerfile:
+            return name
+    else:
+        raise KubeDevError((
+            'No container found using Dockerfile: {0}'
+        ).format(dockerfile))
 
 
 def _build_container(kubetools_config, name, dockerfile):
@@ -133,8 +145,8 @@ def _probe_container(kubetools_config, name):
         if 'exec' in probe:
             ready_command = probe['exec']['command']
 
-            click.echo('--> Waiting for {0} to be ready with {1}'.format(
-                name, click.style(' '.join(ready_command), bold=True),
+            click.echo('--> Waiting for {0} to be ready with {1} (timeout={2}, retries={3})'.format(
+                name, click.style(' '.join(ready_command), bold=True), timeout, retries,
             ))
 
             command = ['exec', '-T', name]
@@ -152,8 +164,8 @@ def _probe_container(kubetools_config, name):
         if 'httpGet' in probe:
             http_path = probe['httpGet'].get('path', '/')
 
-            click.echo('--> Waiting for {0} to be ready with HTTP GET {1}'.format(
-                name, click.style(http_path, bold=True),
+            click.echo('--> Waiting for {0} to be ready with HTTP GET {1} (timeout={2}, retries={3})'.format(
+                name, click.style(http_path, bold=True), timeout, retries,
             ))
 
             http_port = probe['httpGet'].get('port', 80)

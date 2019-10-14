@@ -1,7 +1,10 @@
 # WIP/Unreleased
 
+# v10.0.dev0
 - Fix issue where stdout from a kubetools dev exception would not be formatted properly
 - Add "dev backends" support for future work (alternatives to `docker-compose`)
+- Add kubernetes config generation from the kubetools server
+  * adds `kubetools configs` command to generate/view them by hand
 
 # v9.1.1
 - Add ability to define number of retries on readinessProbe
