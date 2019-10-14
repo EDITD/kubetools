@@ -13,7 +13,6 @@ from kubetools_client.log import logger
 from kubetools_client.settings import get_settings
 
 from .config import (
-    find_container_for_config,
     get_all_containers,
     get_all_containers_by_name,
 )
@@ -36,6 +35,19 @@ def http_get(url, timeout):
 
     except requests.RequestException as e:
         raise KubeDevError('Container start failed HTTP check: {0}'.format(e))
+
+
+def find_container_for_config(kubetools_config, config):
+    dockerfile = config['build']['dockerfile']
+    all_containers = get_all_containers(kubetools_config)
+
+    for name, container in all_containers:
+        if container.get('build', {}).get('dockerfile') == dockerfile:
+            return name
+    else:
+        raise KubeDevError((
+            'No container found using Dockerfile: {0}'
+        ).format(dockerfile))
 
 
 def _build_container(kubetools_config, name, dockerfile):
