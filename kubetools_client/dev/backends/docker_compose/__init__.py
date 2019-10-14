@@ -145,8 +145,8 @@ def _probe_container(kubetools_config, name):
         if 'exec' in probe:
             ready_command = probe['exec']['command']
 
-            click.echo('--> Waiting for {0} to be ready with {1}'.format(
-                name, click.style(' '.join(ready_command), bold=True),
+            click.echo('--> Waiting for {0} to be ready with {1} (timeout={2}, retries={3})'.format(
+                name, click.style(' '.join(ready_command), bold=True), timeout, retries,
             ))
 
             command = ['exec', '-T', name]
@@ -164,8 +164,8 @@ def _probe_container(kubetools_config, name):
         if 'httpGet' in probe:
             http_path = probe['httpGet'].get('path', '/')
 
-            click.echo('--> Waiting for {0} to be ready with HTTP GET {1}'.format(
-                name, click.style(http_path, bold=True),
+            click.echo('--> Waiting for {0} to be ready with HTTP GET {1} (timeout={2}, retries={3})'.format(
+                name, click.style(http_path, bold=True), timeout, retries,
             ))
 
             http_port = probe['httpGet'].get('port', 80)
