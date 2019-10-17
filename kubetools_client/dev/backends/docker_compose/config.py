@@ -205,23 +205,30 @@ def create_compose_config(kubetools_config):
     # If we're not in a custom env, everything sits on the "dev" network. Envs
     # remain encapsulated inside their own network.
     DEV_DEFAULT_ENV = get_settings().DEV_DEFAULT_ENV
-    dev_network = kubetools_config.get('env', DEV_DEFAULT_ENV) == DEV_DEFAULT_ENV
+    ktd_env = kubetools_config.get('env', DEV_DEFAULT_ENV)
+    dev_network = ktd_env == DEV_DEFAULT_ENV
 
     settings = get_settings()
     all_containers = get_all_containers(kubetools_config)
+
+    envars = [
+        'KTD_ENV={0}'.format(ktd_env),
+    ]
 
     dev_network_envars = None
     if dev_network:
         dev_network_envars = get_dev_network_environment_variables()
         if dev_network_envars:
-            click.echo('--> Injecting dev network environment variables:')
-            for envar in dev_network_envars:
-                click.echo('    {0}'.format(envar))
+            envars.extend(dev_network_envars)
+
+    click.echo('--> Injecting environment variables:')
+    for envar in envars:
+        click.echo('    {0}'.format(envar))
 
     services = {
         name: _create_compose_service(
             kubetools_config, name, config,
-            envars=dev_network_envars,
+            envars=envars,
         )
         for name, config in all_containers
     }
