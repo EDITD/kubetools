@@ -9,7 +9,7 @@ from .util import copy_and_update
 
 
 def make_context_name(app_name, container_name):
-    return f'{app_name}-{container_name}'
+    return '{0}-{1}'.format(app_name, container_name)
 
 
 def _ensure_image(
