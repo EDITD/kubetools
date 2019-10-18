@@ -1,5 +1,8 @@
 # WIP/Unreleased
 
+# v10.1.1
+- Fix Python 2 compatability (broken in v10)
+
 # v10.1
 - Add `KTD_ENV` environment variable in `docker-compose` dev backend
 - Print out all injected environment variables in `docker-compose` dev backend
