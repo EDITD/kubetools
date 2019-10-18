@@ -229,6 +229,7 @@ def generate_kubernetes_configs_for_project(
 
         job_envvars = copy_and_update(
             envvars,
+            job_spec.get('envars'),  # legacy support TODO: remove!
             job_spec.get('envvars'),
         )
 

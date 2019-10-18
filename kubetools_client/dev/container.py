@@ -71,6 +71,7 @@ def exec_(kubetools_config, container, command):
 )
 @click.option(
     'envvars', '-e', '--envvar',
+    '--envar',  # legacy support TODO: remove!
     multiple=True,
     help='Environment variables to pass into the container.',
 )

@@ -48,6 +48,7 @@ def make_job_config(
     # Update global envvars with job specific ones
     copy_and_update(
         envvars,
+        config.get('envars'),  # legacy support TODO: remove!
         config.get('envvars'),
     )
 
