@@ -12,7 +12,7 @@ def make_job_config(
     app_name=None,
     labels=None,
     annotations=None,
-    envars=None,
+    envvars=None,
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -20,7 +20,7 @@ def make_job_config(
 
     # We want a copy of these because we'll modify them below
     labels = labels or {}
-    envars = envars or {}
+    envvars = envvars or {}
     annotations = annotations or {}
 
     # Generate name
@@ -45,9 +45,11 @@ def make_job_config(
         'description': description,
     })
 
-    # Update global envars with job specific ones
-    if 'envars' in config:
-        copy_and_update(envars, config['envars'])
+    # Update global envvars with job specific ones
+    copy_and_update(
+        envvars,
+        config.get('envvars'),
+    )
 
     # Make our container
     container = make_container_config(
@@ -58,7 +60,7 @@ def make_job_config(
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
         },
-        envars=envars,
+        envvars=envvars,
         labels=labels,
         annotations=annotations,
     )

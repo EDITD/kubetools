@@ -266,7 +266,7 @@ def test(ctx, kubetools_config, keep_containers=False, arguments=None):
                 kubetools_config,
                 container_name,
                 command,
-                envars=test.get('environment', []),
+                envvars=test.get('environment', []),
             )
             click.echo()
 

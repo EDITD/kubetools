@@ -11,7 +11,7 @@ def make_deployment_config(
     replicas=1,
     labels=None,
     annotations=None,
-    envars=None,
+    envvars=None,
 ):
     '''
     Builds a Kubernetes deployment configuration dict.
@@ -25,7 +25,7 @@ def make_deployment_config(
     for container_name, container in six.iteritems(containers):
         kubernetes_containers.append(make_container_config(
             container_name, container,
-            envars=envars,
+            envvars=envvars,
             labels=labels,
             annotations=annotations,
         ))

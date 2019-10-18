@@ -15,14 +15,14 @@ def _get_apps_in_namespace(client, namespace):
     return client.list_apps_by_namespace().get(namespace, {})
 
 
-def _parse_envars(envars):
+def _parse_envvars(envvars):
     return dict(
         envar.split('=', 1)
-        for envar in envars
+        for envar in envvars
     )
 
 
-def _parse_build_options(apps, envars=None):
+def _parse_build_options(apps, envvars=None):
     apps_to_build = []
 
     for app in apps:
@@ -45,8 +45,8 @@ def _parse_build_options(apps, envars=None):
         if version:
             app_to_build['version'] = version
 
-        if envars:
-            app_to_build['envars'] = _parse_envars(envars)
+        if envvars:
+            app_to_build['envvars'] = _parse_envvars(envvars)
 
         apps_to_build.append(app_to_build)
 
@@ -60,7 +60,7 @@ def _parse_build_options(apps, envars=None):
 def _generate_build_deploy(
     action, client, func,
     build_options=None,
-    envars=None,
+    envvars=None,
     **kwargs
 ):
     '''
@@ -82,7 +82,7 @@ def _generate_build_deploy(
     ))
     click.echo()
 
-    apps = _parse_build_options(build_options, envars=envars)
+    apps = _parse_build_options(build_options, envvars=envvars)
 
     # Cleanup only provides namespace
     if func == client.create_cleanup:
@@ -142,7 +142,7 @@ def deploy(client, deploy_options, namespace=None, envar=None):
         'Deploying', client, client.create_deploy,
         build_options=deploy_options,
         namespace=namespace,
-        envars=envar,
+        envvars=envar,
     )
 
 
@@ -252,9 +252,9 @@ def run(
     if chdir:
         job_spec['chdir'] = chdir
 
-    # Parse/inject any envars
+    # Parse/inject any envvars
     if envar:
-        job_spec['envars'] = _parse_envars(envar)
+        job_spec['envvars'] = _parse_envvars(envar)
 
     # Splice in our command for each app as a job
     for app in apps:

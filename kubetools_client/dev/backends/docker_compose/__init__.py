@@ -316,11 +316,11 @@ def stop_containers(kubetools_config, names=None):
             )
 
 
-def run_container(kubetools_config, container, command, envars=None):
+def run_container(kubetools_config, container, command, envvars=None):
     compose_command = ['run']
 
-    if envars:
-        compose_command.extend(['-e{0}'.format(e) for e in envars])
+    if envvars:
+        compose_command.extend(['-e{0}'.format(e) for e in envvars])
 
     compose_command.append(container)
     compose_command.extend(command)

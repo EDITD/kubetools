@@ -68,7 +68,7 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
 def generate_kubernetes_configs_for_project(
     config,  # a kubetools config object
     replicas=1,  # number of replicas for each deployment
-    envars=None,  # global environment variables to inject to all containers
+    envvars=None,  # global environment variables to inject to all containers
 
     # Upgrades/jobs
     include_upgrade_jobs=True,  # whether to generate jobs for config.upgrades
@@ -144,7 +144,7 @@ def generate_kubernetes_configs_for_project(
             replicas=deployment_replicas,
             labels=app_labels,
             annotations=app_annotations,
-            envars=envars,
+            envvars=envvars,
         ))
 
     # Handle dependencies
@@ -179,7 +179,7 @@ def generate_kubernetes_configs_for_project(
             containers,
             labels=dependency_labels,
             annotations=app_annotations,
-            envars=envars,
+            envvars=envvars,
         ))
 
     # Correctly order the configs, such that dependencies build first:
@@ -227,14 +227,17 @@ def generate_kubernetes_configs_for_project(
                     'Could not find a containerContext to use for job: {0}'
                 ).format(job_spec))
 
-        job_envars = copy_and_update(envars, job_spec.get('envars', {}))
+        job_envvars = copy_and_update(
+            envvars,
+            job_spec.get('envvars'),
+        )
 
         jobs.append(make_job_config(
             job_spec,
             app_name=project_name,
             labels=job_labels,
             annotations=base_annotations,
-            envars=job_envars,
+            envvars=job_envvars,
         ))
 
     return services, deployments, jobs

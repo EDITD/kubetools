@@ -76,12 +76,12 @@ def script(kubetools_config, container=None, script=None):
     script_env = environ.copy()
     script_env['APP_NAME'] = kubetools_config['name']
 
-    # Add the envars defined in kubetools.yml
+    # Add the envvars defined in kubetools.yml
     for env in config.get('environment', []):
         key, value = env.split('=', 1)
         script_env[key] = value
 
-    # Add PORT_N envars mapping the container -> host ports
+    # Add PORT_N envvars mapping the container -> host ports
     for port in status['ports']:
         # Remove the /tcp, /udp bit
         local_port = port['local'].replace('/', '')

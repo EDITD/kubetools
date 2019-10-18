@@ -102,7 +102,7 @@ def get_all_containers_by_name(kubetools_config, container_keys=CONTAINER_KEYS):
     ))
 
 
-def _create_compose_service(kubetools_config, name, config, envars=None):
+def _create_compose_service(kubetools_config, name, config, envvars=None):
     if 'preBuildCommands' in config.get('build', {}):
         config['build'].pop('preBuildCommands')
 
@@ -165,10 +165,10 @@ def _create_compose_service(kubetools_config, name, config, envars=None):
         },
     }
 
-    # Add any *missing* extra envars
-    if envars:
+    # Add any *missing* extra envvars
+    if envvars:
         environment = service.setdefault('environment', [])
-        for envar in envars:
+        for envar in envvars:
             if envar not in environment:
                 environment.append(envar)
 
@@ -181,7 +181,7 @@ def get_dev_network_environment_variables():
     from .docker_util import get_all_docker_dev_network_containers
     containers = get_all_docker_dev_network_containers()
 
-    envars = set()
+    envvars = set()
 
     for container in containers:
         networks = container.attrs['NetworkSettings']['Networks']
@@ -196,8 +196,8 @@ def get_dev_network_environment_variables():
             continue
 
         envar = alias.upper().replace('-', '_')
-        envars.add('DEV_{0}={1}'.format(envar, alias))
-    return list(envars)
+        envvars.add('DEV_{0}={1}'.format(envar, alias))
+    return list(envvars)
 
 
 @memoize  # prevent us writing the file over and over
@@ -211,24 +211,24 @@ def create_compose_config(kubetools_config):
     settings = get_settings()
     all_containers = get_all_containers(kubetools_config)
 
-    envars = [
+    envvars = [
         'KTD_ENV={0}'.format(ktd_env),
     ]
 
-    dev_network_envars = None
+    dev_network_envvars = None
     if dev_network:
-        dev_network_envars = get_dev_network_environment_variables()
-        if dev_network_envars:
-            envars.extend(dev_network_envars)
+        dev_network_envvars = get_dev_network_environment_variables()
+        if dev_network_envvars:
+            envvars.extend(dev_network_envvars)
 
     click.echo('--> Injecting environment variables:')
-    for envar in envars:
+    for envar in envvars:
         click.echo('    {0}'.format(envar))
 
     services = {
         name: _create_compose_service(
             kubetools_config, name, config,
-            envars=envars,
+            envvars=envvars,
         )
         for name, config in all_containers
     }
