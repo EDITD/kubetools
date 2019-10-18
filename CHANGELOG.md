@@ -1,5 +1,10 @@
 # WIP/Unreleased
 
+# v10.1
+- Add `KTD_ENV` environment variable in `docker-compose` dev backend
+- Print out all injected environment variables in `docker-compose` dev backend
+- Replace `envars` with `envvars` everywhere (w/backwards compatability)
+
 # v10.0
 - Fix issue where stdout from a kubetools dev exception would not be formatted properly
 - Add "dev backends" support for future work (alternatives to `docker-compose`)
