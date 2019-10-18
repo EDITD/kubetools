@@ -70,12 +70,13 @@ def exec_(kubetools_config, container, command):
     required=True,
 )
 @click.option(
-    'envars', '-e', '--envar',
+    'envvars', '-e', '--envvar',
+    '--envar',  # legacy support TODO: remove!
     multiple=True,
     help='Environment variables to pass into the container.',
 )
 @click.pass_obj
-def run(kubetools_config, container, command, envars=None):
+def run(kubetools_config, container, command, envvars=None):
     '''
     Run a command in a new container.
     '''
@@ -85,4 +86,4 @@ def run(kubetools_config, container, command, envars=None):
     click.echo()
 
     click.echo('--> Running in {0}: {1}'.format(container, command))
-    return run_container(kubetools_config, container, command, envars=envars)
+    return run_container(kubetools_config, container, command, envvars=envvars)

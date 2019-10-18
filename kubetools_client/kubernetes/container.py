@@ -30,13 +30,13 @@ def _make_probe_config(config):
 
 def make_container_config(
     name, container,
-    envars=None, labels=None, annotations=None,
+    envvars=None, labels=None, annotations=None,
 ):
     '''
     Builds the common Kubernetes container config.
     '''
 
-    envars = envars or {}
+    envvars = envvars or {}
     labels = labels or {}
     annotations = annotations or {}
 
@@ -75,7 +75,7 @@ def make_container_config(
         container_data['livenessProbe'] = _make_probe_config(container['probes'])
         container_data['readinessProbe'] = _make_probe_config(container['probes'])
 
-    # Attach any of these labels as envars
+    # Attach any of these labels as envvars
     for key in LABEL_ENVAR_KEYS:
         if key in labels:
             env_key = 'KUBETOOLS_{0}'.format(key.upper())
@@ -84,7 +84,7 @@ def make_container_config(
                 'value': labels[key],
             })
 
-    # Attach any of these annotations as envars
+    # Attach any of these annotations as envvars
     for key in ANNOTATION_ENVAR_KEYS:
         if key in annotations:
             env_key = 'KUBETOOLS_{0}'.format(key.upper())
@@ -103,14 +103,14 @@ def make_container_config(
                 'value': v,
             })
 
-    # Attach extra envars
-    if envars:
+    # Attach extra envvars
+    if envvars:
         container_data['env'].extend([
             {
                 'name': key,
                 'value': six.text_type(value),
             }
-            for key, value in six.iteritems(envars)
+            for key, value in six.iteritems(envvars)
         ])
 
     # Apply any container-config level ENVars
