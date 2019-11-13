@@ -1,3 +1,5 @@
+import json
+
 import click
 
 from kubetools_client.cli import cli_bootstrap
@@ -6,7 +8,8 @@ from kubetools_client.kubernetes import generate_kubernetes_configs_for_project
 
 
 @cli_bootstrap.command(help_priority=2)
-def configs():
+@click.option('--pretty', is_flag=True, help='Pretty print the generated configs')
+def configs(pretty):
     '''
     Generate & dump kubernetes configs.
     '''
@@ -27,13 +30,21 @@ def configs():
     ))
     click.echo()
 
+    def print_json(obj):
+        if pretty:
+            data = json.dumps(obj, indent=4)
+        else:
+            data = json.dumps(obj)
+
+        click.echo(data)
+
     click.echo('--> Services')
-    click.echo(services)
+    click.echo(print_json(services))
 
     click.echo()
     click.echo('--> Deployments')
-    click.echo(deployments)
+    click.echo(print_json(deployments))
 
     click.echo()
     click.echo('--> Jobs')
-    click.echo(jobs)
+    click.echo(print_json(jobs))
