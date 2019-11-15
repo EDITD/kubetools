@@ -105,12 +105,21 @@ def generate_kubernetes_configs_for_project(
     main_deployments = []
 
     for name, deployment in six.iteritems(config.get('deployments', {})):
+        # This is expected - kubetools.yml deployments need not prefix names
+        # with the project name.
+        if not name.startswith(project_name):
+            deployment_name = '-'.join((project_name, name))
+        # Originally the deployment name was used as-is, ie <app>-<deployment>,
+        # so we want to avoid breaking those.
+        else:
+            deployment_name = name
+
         app_labels = copy_and_update(
             base_labels,
             deployment_labels,
             {
                 'role': 'app',
-                'name': name,
+                'name': deployment_name,
             },
         )
 
@@ -126,7 +135,7 @@ def generate_kubernetes_configs_for_project(
 
         if container_ports:
             main_services.append(make_service_config(
-                name,
+                deployment_name,
                 container_ports,
                 labels=app_labels,
                 annotations=app_annotations,
@@ -139,7 +148,7 @@ def generate_kubernetes_configs_for_project(
             deployment_replicas = min(deployment_replicas, deployment['maxReplicas'])
 
         main_deployments.append(make_deployment_config(
-            name,
+            deployment_name,
             containers,
             replicas=deployment_replicas,
             labels=app_labels,
