@@ -1,5 +1,8 @@
 # WIP/Unreleased
 
+# v10.2
+- Always ensure deployment names start with the project name
+
 # v10.1.1
 - Fix Python 2 compatability (broken in v10)
 
