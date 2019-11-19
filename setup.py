@@ -39,7 +39,6 @@ if __name__ == '__main__':
         install_requires=(
             'click>=7',
             'docker>=3.7,<4.0',
-            'docker-compose',
             'pyyaml>=3,<4.3',
             'pydash',
             'pyretry',
