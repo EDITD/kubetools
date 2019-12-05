@@ -1,7 +1,3 @@
-# Kubetools Client
-# File: setup.py
-# Desc: python wants
-
 import re
 
 from setuptools import find_packages, setup
@@ -26,7 +22,7 @@ if __name__ == '__main__':
         description='Client library for Kubetools',
         author='Devs @ EDITED',
         author_email='nick@edited.com',
-        url='http://github.com/EDITD/kubetools-client',
+        url='http://github.com/EDITD/kubetools',
         packages=find_packages(),
         entry_points={
             'console_scripts': (
