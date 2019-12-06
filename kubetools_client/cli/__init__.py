@@ -94,13 +94,6 @@ def ensure_context(ctx, param, value):
 
 @click.group(cls=SpecialHelpOrder)
 @click.option(
-    '--contexts',
-    is_flag=True,
-    is_eager=True,
-    callback=print_contexts,
-    expose_value=False,
-)
-@click.option(
     '--context',
     callback=ensure_context,
     help='The name of the Kubernetes context to use.',
@@ -110,6 +103,14 @@ def ensure_context(ctx, param, value):
     help='Default registry for apps that do not specify.',
 )
 @click.option('--debug', is_flag=True, help='Show debug logs.')
+@click.option(
+    '--contexts',
+    is_flag=True,
+    is_eager=True,
+    callback=print_contexts,
+    expose_value=False,
+    help='List available Kubernetes contexts and exit.',
+)
 @click.version_option(version=__version__, message='%(prog)s: v%(version)s')
 @click.pass_context
 def cli_bootstrap(ctx, context, registry, debug):
