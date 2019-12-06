@@ -11,7 +11,6 @@ import yaml
 from pkg_resources import parse_version
 
 from kubetools_client import __version__
-from kubetools_client.config_legacy import convert_legacy_kubetools_config
 from kubetools_client.exceptions import KubeConfigError
 
 
@@ -96,10 +95,6 @@ def load_kubetools_config(
         ).format(' ({0})'.format(app_name) if app_name else ''))
 
     config = yaml.load(config)
-
-    # If we have a top-level containers key we're an old style config file
-    if 'containers' in config:
-        convert_legacy_kubetools_config(config, dev=dev)
 
     # Check Kubetools version?
     if 'minKubetoolsVersion' in config:
