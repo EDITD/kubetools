@@ -24,7 +24,8 @@ name: my-app
 containerContexts:
   django_app:
     build:
-      dockerfile: docker/Dockerfile
+      registry: my-registry.net
+      dockerfile: Dockerfile
     dev:
       volumes:
         - ./:/opt/django_app
@@ -64,7 +65,7 @@ With this in your current directory, you can now:
 ktd up
 
 # Deploy the project to a Kubernetes namespace
-kubetools deploy my-namespace .
+kubetools deploy my-namespace
 ```
 
 ## Installing
