@@ -66,6 +66,7 @@ def _get_container_contexts_from_config(app_config):
 
 def ensure_docker_images(
     app_dir, kubetools_config, build,
+    default_registry=None,
     check_build_control=lambda build: None,
 ):
     '''
@@ -84,7 +85,7 @@ def ensure_docker_images(
 
     context_name_to_build = _get_container_contexts_from_config(kubetools_config)
     context_name_to_registry = {
-        context_name: build_context['registry']
+        context_name: build_context.get('registry', default_registry)
         for context_name, build_context in context_name_to_build.items()
     }
     build_context_keys = list(context_name_to_build.keys())

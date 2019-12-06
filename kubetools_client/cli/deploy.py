@@ -55,7 +55,10 @@ def deploy(ctx, namespace, app_dirs):
             'KUBE_ENV': build.env,
         }
 
-        context_to_image = ensure_docker_images(app_dir, kubetools_config, build)
+        context_to_image = ensure_docker_images(
+            app_dir, kubetools_config, build,
+            default_registry=ctx.meta['default_registry'],
+        )
 
         (
             (depend_services, main_services),
