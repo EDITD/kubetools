@@ -1,8 +1,8 @@
 import requests
 
 from kubetools_client.exceptions import KubeBuildError
-from kubetools_client.kubernetes import make_context_name
 
+from .kubernetes.config import make_context_name
 from .util import run_shell_command
 
 
@@ -64,24 +64,25 @@ def _get_container_contexts_from_config(app_config):
     return context_name_to_build
 
 
-def ensure_docker_images(
-    app_dir, kubetools_config, build,
-    default_registry=None,
-    check_build_control=lambda build: None,
-):
+def ensure_docker_images(kubetools_config, build, *args, **kwargs):
     '''
     Ensures that our Docker registry has the specified image. If not we build
     and upload to the registry.
     '''
 
     project_name = kubetools_config['name']
+    commit_hash = kwargs.get('commit_hash')
 
-    commit_hash = run_shell_command(
-        'git', 'rev-parse', '--short=7', 'HEAD',
-        cwd=app_dir,
-    ).strip().decode()
+    with build.stage(f'Ensuring Docker images built for {project_name}={commit_hash}'):
+        return _ensure_docker_images(kubetools_config, build, *args, **kwargs)
 
-    build.log_info(f'Ensuring Docker images built for {project_name}={commit_hash}')
+
+def _ensure_docker_images(
+    kubetools_config, build, app_dir, commit_hash,
+    default_registry=None,
+    check_build_control=lambda build: None,
+):
+    project_name = kubetools_config['name']
 
     context_name_to_build = _get_container_contexts_from_config(kubetools_config)
     context_name_to_registry = {
@@ -151,9 +152,7 @@ def ensure_docker_images(
     # Check/abort as requested
     check_build_control(build)
 
-    build.log_info('Building {0}={1} @ commit {2}'.format(
-        project_name, commit_hash,
-    ))
+    build.log_info(f'Building {project_name} @ commit {commit_hash}')
 
     # Now actually build the images
     context_images = {}
@@ -171,9 +170,7 @@ def ensure_docker_images(
             # Check/abort as requested
             check_build_control(build)
 
-            build.log_info(
-                'Executing pre-build command: {0}'.format(command),
-            )
+            build.log_info(f'Executing pre-build command: {command}')
 
             # Run it, passing in the commit hashes as ENVars
             env = {
@@ -189,11 +186,9 @@ def ensure_docker_images(
         docker_tag = get_docker_tag(registry, project_name, context_name, commit_hash)
 
         # Build the image
-        build.log_info('Building {0}/{1} (file: {2}, commit: {3})'.format(
-            project_name,
-            context_name,
-            build_context['dockerfile'],
-            commit_hash,
+        build.log_info((
+            f'Building {project_name}/{context_name} '
+            f'(file: {build_context["dockerfile"]}, commit: {commit_hash})'
         ))
 
         run_shell_command(
@@ -205,7 +200,7 @@ def ensure_docker_images(
         )
 
         # Push the image
-        build.log_info('Pushing docker image: {0}'.format(docker_tag))
+        build.log_info(f'Pushing docker image: {docker_tag}')
         run_shell_command('docker', 'push', docker_tag)
 
         context_images[context_name] = docker_tag
