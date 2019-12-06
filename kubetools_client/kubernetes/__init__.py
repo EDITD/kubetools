@@ -191,16 +191,6 @@ def generate_kubernetes_configs_for_project(
             envvars=envvars,
         ))
 
-    # Correctly order the configs, such that dependencies build first:
-    # dependencies -> main apps -> singletons
-    services = depend_services
-
-    # This might not exist if we're a port-less app
-    if main_services:
-        services.extend(main_services)
-
-    deployments = depend_deployments + main_deployments
-
     # Jobs can be upgrades and/or passed in as part of the build spec
     jobs = []
     job_labels = copy_and_update(base_labels, {
@@ -250,4 +240,8 @@ def generate_kubernetes_configs_for_project(
             envvars=job_envvars,
         ))
 
-    return services, deployments, jobs
+    return (
+        (depend_services, main_services),
+        (depend_deployments, main_deployments),
+        jobs,
+    )
