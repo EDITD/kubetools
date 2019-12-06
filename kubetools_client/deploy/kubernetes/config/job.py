@@ -72,11 +72,6 @@ def make_job_config(
     parallelism = config.get('parallelism', completions)
 
     return {
-        # Special fields the Kubebuilder pops before pushing - used for updating build
-        # status with the job info.
-        '_description': description,
-        '_app_name': app_name,
-
         # Normal Kubernetes job config
         'apiVersion': 'batch/v1',
         'kind': 'Job',
