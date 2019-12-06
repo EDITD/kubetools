@@ -4,7 +4,7 @@ import click
 
 from kubetools_client.cli import cli_bootstrap
 from kubetools_client.config import load_kubetools_config
-from kubetools_client.kubernetes import generate_kubernetes_configs_for_project
+from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
 
 
 @cli_bootstrap.command(help_priority=2)
