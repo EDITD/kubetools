@@ -28,6 +28,13 @@ class KubeAuthError(KubeError):
     type = 'auth'
 
 
+# Build errors
+#
+
+class KubeBuildError(KubeError):
+    type = 'build'
+
+
 # Local/dev errors
 #
 
