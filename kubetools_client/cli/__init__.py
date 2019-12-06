@@ -1,7 +1,8 @@
 import click
 
+from kubernetes import config
+
 from kubetools_client import __version__
-from kubetools_client import KubeClient
 from kubetools_client.log import setup_logging
 from kubetools_client.settings import get_settings
 
@@ -56,18 +57,59 @@ class SpecialHelpOrder(click.Group):
         return decorator
 
 
+def _get_context_names():
+    contexts, active_context = config.list_kube_config_contexts()
+    if not contexts:
+        print('Cannot find any context in kube-config file.')
+        return
+    return [context['name'] for context in contexts]
+
+
+def print_contexts(ctx, param, value):
+    if not value:
+        return
+
+    click.echo('### Available Kubernetes contexts:')
+    context_names = _get_context_names()
+    for name in context_names:
+        click.echo(f'    {click.style(name, bold=True)}')
+
+    ctx.exit()
+
+
+def ensure_context(ctx, param, value):
+    context_names = _get_context_names()
+
+    if value:
+        if value not in context_names:
+            raise click.BadParameter(f'{value}; available contexts: {context_names}')
+    else:
+        value = click.prompt(
+            'Choose a Kubernetes context: ',
+            type=click.Choice(context_names),
+        )
+
+    return value
+
+
 @click.group(cls=SpecialHelpOrder)
 @click.option(
+    '--contexts',
+    is_flag=True,
+    is_eager=True,
+    callback=print_contexts,
+    expose_value=False,
 )
-@click.option('--debug', is_flag=True)
+@click.option('--context', callback=ensure_context)
+@click.option('--debug', is_flag=True, help='Show debug logs.')
 @click.version_option(version=__version__, message='%(prog)s: v%(version)s')
 @click.pass_context
-def cli_bootstrap(ctx, server=None, port=None, kube_env=None, debug=False):
+def cli_bootstrap(ctx, context, debug):
     '''
     Kubetools client.
     '''
 
-
+    ctx.meta['kube_context'] = context
 
     setup_logging(debug)
     get_settings(debug)  # trigger settings load
