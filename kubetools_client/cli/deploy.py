@@ -12,10 +12,11 @@ from kubetools_client.deploy.util import run_shell_command
 
 
 @cli_bootstrap.command(help_priority=0)
+@click.option('--replicas', type=int, help='Number of replicas', default=1)
 @click.argument('namespace')
 @click.argument('app_dirs', nargs=-1, type=click.Path(exists=True, file_okay=False))
 @click.pass_context
-def deploy(ctx, namespace, app_dirs):
+def deploy(ctx, replicas, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -90,6 +91,7 @@ def deploy(ctx, namespace, app_dirs):
             base_annotations=annotations,
             base_labels=labels,
             deployment_labels=deployment_labels,
+            replicas=replicas,
         )
 
         all_depend_services.extend(depend_services)
