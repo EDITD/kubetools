@@ -60,12 +60,12 @@ def deploy_or_upgrade(
             for job in jobs:
                 create_job(build, job)
 
-    if exist_main_services:
-        with build.stage('Update existing app services'):
-            for service in exist_main_services:
-                update_service(build, service)
-
     if exist_main_deployments:
         with build.stage('Update existing app deployments'):
             for deployment in exist_main_deployments:
                 update_deployment(build, deployment)
+
+    if exist_main_services:
+        with build.stage('Update existing app services'):
+            for service in exist_main_services:
+                update_service(build, service)
