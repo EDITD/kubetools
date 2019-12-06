@@ -7,7 +7,8 @@ from kubetools_client.config import load_kubetools_config
 from kubetools_client.deploy import deploy_or_upgrade
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
-from kubetools_client.kubernetes import generate_kubernetes_configs_for_project
+from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
+from kubetools_client.deploy.util import run_shell_command
 
 
 @cli_bootstrap.command(help_priority=0)
@@ -40,13 +41,30 @@ def deploy(ctx, namespace, app_dirs):
             namespace=build.namespace,
         )
 
+        commit_hash = run_shell_command(
+            'git', 'rev-parse', '--short=7', 'HEAD',
+            cwd=app_dir,
+        ).strip().decode()
+
+        branch_name = run_shell_command(
+            'git', 'rev-parse', '--abbrev-ref', 'HEAD',
+            cwd=app_dir,
+        ).strip().decode()
+
         annotations = {
             'kube_env': build.env,
             'kube_namespace': build.namespace,
+            'version': branch_name,
         }
 
         labels = {
             'project_name': kubetools_config['name'],
+        }
+
+        # TODO: is this needed anymore? Deployment lifecycle means selecting via
+        # git commit no longer needed. This pre-dates deployments.
+        deployment_labels = {
+            'git_commit': commit_hash,
         }
 
         envvars = {
@@ -56,7 +74,8 @@ def deploy(ctx, namespace, app_dirs):
         }
 
         context_to_image = ensure_docker_images(
-            app_dir, kubetools_config, build,
+            kubetools_config, build, app_dir,
+            commit_hash=commit_hash,
             default_registry=ctx.meta['default_registry'],
         )
 
@@ -70,6 +89,7 @@ def deploy(ctx, namespace, app_dirs):
             context_name_to_image=context_to_image,
             base_annotations=annotations,
             base_labels=labels,
+            deployment_labels=deployment_labels,
         )
 
         all_depend_services.extend(depend_services)
