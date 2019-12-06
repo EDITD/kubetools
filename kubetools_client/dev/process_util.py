@@ -3,7 +3,7 @@ import re
 from subprocess import CalledProcessError, PIPE, Popen, STDOUT
 from threading import Thread
 
-from kubetools_client.cli.wait_util import UPDATE_DIVISOR, wait_with_spinner
+from kubetools_client.cli.server_util import UPDATE_DIVISOR, wait_with_spinner
 from kubetools_client.exceptions import KubeDevCommandError
 from kubetools_client.log import logger
 from kubetools_client.settings import get_settings
