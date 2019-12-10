@@ -8,6 +8,15 @@ from kubetools_client.config import load_kubetools_config
 from kubetools_client.deploy import deploy_or_upgrade
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
+from kubetools_client.deploy.kubernetes.api import (
+    delete_deployment,
+    delete_job,
+    delete_service,
+    get_object_name,
+    list_deployments,
+    list_jobs,
+    list_services,
+)
 from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
 from kubetools_client.deploy.util import run_shell_command
 from kubetools_client.exceptions import KubeBuildError
@@ -129,7 +138,7 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
 
 def _dry_deploy_object_loop(object_type, objects):
     name_to_object = {
-        obj['metadata']['name']: obj
+        get_object_name(obj): obj
         for obj in objects
     }
 
@@ -154,13 +163,106 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     ):
         if objects:
             _dry_deploy_object_loop(object_type, objects)
-# @click.argument('app_names', nargs=-1)
 
-# def remove(namespace, app_names):
 
-#     '''
-#     Removes one or more apps from a given namespace.
-#     '''
+def _get_objects_to_delete(
+    object_type, list_objects_function,
+    build, remove_all, app_names,
+    check_leftovers=True,
+):
+    objects = list_objects_function(build)
+    objects_to_delete = objects.items
+
+    if not remove_all:
+        objects_to_delete = list(filter(
+            lambda obj: obj.metadata.labels.get('kubetools/name') in app_names,
+            objects_to_delete,
+        ))
+
+        if check_leftovers:
+            object_names_to_delete = set([
+                obj.metadata.labels['kubetools/name']
+                for obj in objects_to_delete
+            ])
+
+            leftover_app_names = set(app_names) - object_names_to_delete
+            if leftover_app_names:
+                raise click.BadParameter(f'{object_type} not found {leftover_app_names}')
+
+    if objects_to_delete:
+        click.echo(f'--> {object_type} to delete:')
+        for service in objects_to_delete:
+            click.echo(f'    {service.metadata.name}')
+        click.echo()
+
+    return objects_to_delete
+
+
+def _delete_objects(object_type, delete_object_function, objects_to_delete, build):
+    for obj in objects_to_delete:
+        delete_object_function(build, obj)
+        click.echo(f'    {obj.metadata.name} deleted')
+
+
+@cli_bootstrap.command()
+@click.option(
+    '-a', '--all', 'remove_all',
+    is_flag=True,
+    default=False,
+    help='Flag to enable removal of all apps within the namespace.',
+)
+@click.option(
+    '-y', '--yes',
+    is_flag=True,
+    default=False,
+    help='Flag to auto-yes remove confirmation step.',
+)
+@click.argument('namespace')
+@click.argument('app_names', nargs=-1)
+@click.pass_context
+def remove(ctx, remove_all, yes, namespace, app_names):
+    '''
+    Removes one or more apps from a given namespace.
+    '''
+
+    if not app_names and not remove_all:
+        raise click.BadParameter('Must either provide app names or --all flag!')
+    elif app_names and remove_all:
+        raise click.BadParameter('Cannot provide both app naems and --all flag!')
+
+    build = Build(
+        env=ctx.meta['kube_context'],
+        namespace=namespace,
+    )
+
+    services_to_delete = _get_objects_to_delete(
+        'Services', list_services,
+        build, remove_all, app_names,
+    )
+
+    deployments_to_delete = _get_objects_to_delete(
+        'Deployments', list_deployments,
+        build, remove_all, app_names,
+    )
+
+    jobs_to_delete = _get_objects_to_delete(
+        'Jobs', list_jobs,
+        build, remove_all, app_names,
+        check_leftovers=False,
+    )
+
+    if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
+        click.echo('Nothing to do!')
+        return
+
+    if not yes:
+        click.confirm(click.style(
+            'Are you sure you wish to DELETE the above resources? This cannot be undone.',
+        ))
+
+    _delete_objects('Services', delete_service, services_to_delete, build)
+    _delete_objects('Deployments', delete_deployment, deployments_to_delete, build)
+    _delete_objects('Jobs', delete_job, jobs_to_delete, build)
 
 
 # @cli_bootstrap.command()
