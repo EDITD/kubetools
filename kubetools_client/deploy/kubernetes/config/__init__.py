@@ -118,8 +118,8 @@ def generate_kubernetes_configs_for_project(
             base_labels,
             deployment_labels,
             {
-                'role': 'app',
-                'name': deployment_name,
+                'kubetools/role': 'app',
+                'kubetools/name': deployment_name,
             },
         )
 
@@ -163,8 +163,8 @@ def generate_kubernetes_configs_for_project(
     for name, dependency in six.iteritems(config.get('dependencies', {})):
         dependency_name = '-'.join((project_name, name))
         dependency_labels = copy_and_update(base_labels, {
-            'role': 'dependency',
-            'name': dependency_name,
+            'kubetools/role': 'dependency',
+            'kubetools/name': dependency_name,
         })
 
         containers, container_ports = _get_containers_data(
