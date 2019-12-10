@@ -103,6 +103,37 @@ def generate_kubernetes_configs_for_project(
     services = []
     deployments = []
 
+    for name, dependency in six.iteritems(config.get('dependencies', {})):
+        dependency_name = '-'.join((project_name, name))
+        dependency_labels = copy_and_update(base_labels, {
+            'kubetools/role': 'dependency',
+            'kubetools/name': dependency_name,
+        })
+
+        containers, container_ports = _get_containers_data(
+            dependency['containers'],
+            context_name_to_image=context_name_to_image,
+            deployment_name=name,
+        )
+        app_annotations = copy_and_update(base_annotations)
+
+        if container_ports:
+            services.append(make_service_config(
+                dependency_name,
+                container_ports,
+                labels=dependency_labels,
+                annotations=app_annotations,
+            ))
+
+        # For now, all dependencies use one replica
+        deployments.append(make_deployment_config(
+            dependency_name,
+            containers,
+            labels=dependency_labels,
+            annotations=app_annotations,
+            envvars=envvars,
+        ))
+
     for name, deployment in six.iteritems(config.get('deployments', {})):
         # This is expected - kubetools.yml deployments need not prefix names
         # with the project name.
@@ -150,37 +181,6 @@ def generate_kubernetes_configs_for_project(
             containers,
             replicas=deployment_replicas,
             labels=app_labels,
-            annotations=app_annotations,
-            envvars=envvars,
-        ))
-
-    for name, dependency in six.iteritems(config.get('dependencies', {})):
-        dependency_name = '-'.join((project_name, name))
-        dependency_labels = copy_and_update(base_labels, {
-            'kubetools/role': 'dependency',
-            'kubetools/name': dependency_name,
-        })
-
-        containers, container_ports = _get_containers_data(
-            dependency['containers'],
-            context_name_to_image=context_name_to_image,
-            deployment_name=name,
-        )
-        app_annotations = copy_and_update(base_annotations)
-
-        if container_ports:
-            services.append(make_service_config(
-                dependency_name,
-                container_ports,
-                labels=dependency_labels,
-                annotations=app_annotations,
-            ))
-
-        # For now, all dependencies use one replica
-        deployments.append(make_deployment_config(
-            dependency_name,
-            containers,
-            labels=dependency_labels,
             annotations=app_annotations,
             envvars=envvars,
         ))
