@@ -39,6 +39,19 @@ def object_exists(api, method, build, obj):
     return True
 
 
+def list_services(build):
+    k8s_core_api = _get_k8s_core_api(build)
+    return k8s_core_api.list_namespaced_service(namespace=build.namespace)
+
+
+def delete_service(build, service):
+    k8s_core_api = _get_k8s_core_api(build)
+    return k8s_core_api.delete_namespaced_service(
+        name=get_object_name(service),
+        namespace=build.namespace,
+    )
+
+
 def service_exists(build, service):
     k8s_core_api = get_k8s_core_api(build)
     return object_exists(k8s_core_api, 'read_namespaced_service', build, service)
@@ -84,6 +97,19 @@ def create_or_update_service(build, service):
     if service_exists(build, service):
         return update_service(build, service)
     return create_service(build, service)
+
+
+def list_deployments(build):
+    k8s_apps_api = _get_k8s_apps_api(build)
+    return k8s_apps_api.list_namespaced_deployment(namespace=build.namespace)
+
+
+def delete_deployment(build, deployment):
+    k8s_apps_api = _get_k8s_apps_api(build)
+    return k8s_apps_api.delete_namespaced_deployment(
+        name=get_object_name(deployment),
+        namespace=build.namespace,
+    )
 
 
 def deployment_exists(build, deployment):
@@ -142,6 +168,19 @@ def create_or_update_deployment(build, deployment):
     if deployment_exists(build, deployment):
         return update_deployment(build, deployment)
     return create_deployment(build, deployment)
+
+
+def list_jobs(build):
+    k8s_batch_api = _get_k8s_batch_api(build)
+    return k8s_batch_api.list_namespaced_job(namespace=build.namespace)
+
+
+def delete_job(build, job):
+    k8s_batch_api = _get_k8s_batch_api(build)
+    return k8s_batch_api.delete_namespaced_job(
+        name=get_object_name(job),
+        namespace=build.namespace,
+    )
 
 
 def create_job(build, job):
