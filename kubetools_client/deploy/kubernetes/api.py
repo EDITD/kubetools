@@ -58,25 +58,25 @@ def update_service(build, service):
     service_name = service['metadata']['name']
     build.log_info(f'Update service: {service_name}')
 
-    # TODO: use this after https://github.com/kubernetes-client/python/pull/959
-    # k8s_core_api.patch_namespaced_service(
-    #     name=service_name,
-    #     body=service,
-    #     namespace=build.namespace,
-    #     content_type='application/strategic-merge-patch+json',
-    # )
     k8s_core_api = get_k8s_core_api(build)
-    k8s_core_api.api_client.call_api(
-        '/api/v1/namespaces/{namespace}/services/{service_name}',
-        'PATCH',
+
+    # Here we are forced to replace the entire service object - unlike deployments
+    # this requires specifying the clusterIP and resourceVersion that already exist.
+    # We also include the existing port spec so any nodePorts don't change.
+    # The alternative is one of the various "patch" methods - however none of them
+    # seem to be able to *remove* labels.
+    existing_service = k8s_core_api.read_namespaced_service(
+        name=service_name,
+        namespace=build.namespace,
+    )
+    service['spec']['ports'] = existing_service.spec.ports
+    service['spec']['clusterIP'] = existing_service.spec.cluster_ip
+    service['metadata']['resourceVersion'] = existing_service.metadata.resource_version
+
+    k8s_core_api.replace_namespaced_service(
+        name=service_name,
         body=service,
-        path_params={
-            'namespace': build.namespace,
-            'service_name': service_name,
-        },
-        header_params={
-            'Content-Type': 'application/strategic-merge-patch+json',
-        },
+        namespace=build.namespace,
     )
 
 
