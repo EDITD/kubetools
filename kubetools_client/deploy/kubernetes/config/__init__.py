@@ -76,7 +76,6 @@ def generate_kubernetes_configs_for_project(
 
     # Labels/annotations
     base_labels=None,
-    deployment_labels=None,  # deployment-only extra labels
     base_annotations=None,
     per_deployment_annotations=None,  # per-deployment extra annotations
 
@@ -116,7 +115,6 @@ def generate_kubernetes_configs_for_project(
 
         app_labels = copy_and_update(
             base_labels,
-            deployment_labels,
             {
                 'kubetools/role': 'app',
                 'kubetools/name': deployment_name,
