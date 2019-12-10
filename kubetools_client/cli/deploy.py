@@ -51,19 +51,25 @@ def deploy(ctx, replicas, namespace, app_dirs):
         ).strip().decode()
 
         annotations = {
-            'kube_env': build.env,
-            'kube_namespace': build.namespace,
-            'version': branch_name,
+            'kubetools/env': build.env,
+            'kubetools/namespace': build.namespace,
+            'kubetools/git_commit': commit_hash,
+            'app.kubernetes.io/managed-by': 'kubetools',
         }
+
+        if branch_name != 'HEAD':
+            annotations['kubetools/git_branch'] = branch_name
+
+        try:
+            annotations['kubetools/git_tag'] = run_shell_command(
+                'git', 'tag', '--points-at', commit_hash,
+                cwd=app_dir,
+            ).strip().decode()
+        except KubeBuildError:
+            pass
 
         labels = {
-            'project_name': kubetools_config['name'],
-        }
-
-        # TODO: is this needed anymore? Deployment lifecycle means selecting via
-        # git commit no longer needed. This pre-dates deployments.
-        deployment_labels = {
-            'git_commit': commit_hash,
+            'kubetools/project_name': kubetools_config['name'],
         }
 
         envvars = {
