@@ -1,3 +1,4 @@
+import json
 import os
 
 import click
@@ -9,10 +10,16 @@ from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
 from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
 from kubetools_client.deploy.util import run_shell_command
+from kubetools_client.exceptions import KubeBuildError
 
 
 @cli_bootstrap.command(help_priority=0)
 @click.option(
+    '--dry',
+    is_flag=True,
+    default=False,
+    help='Instead of writing objects to Kubernetes, just print them and exit.',
+)
 @click.option(
     '--replicas',
     type=int,
@@ -111,7 +118,8 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
         all_deployments.extend(deployments)
         all_jobs.extend(jobs)
 
-    deploy_or_upgrade(
+    deploy_function = _dry_deploy_loop if dry else deploy_or_upgrade
+    deploy_function(
         build,
         all_services,
         all_deployments,
@@ -119,9 +127,37 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
     )
 
 
-# @cli_bootstrap.command()
+def _dry_deploy_object_loop(object_type, objects):
+    name_to_object = {
+        obj['metadata']['name']: obj
+        for obj in objects
+    }
+
+    while True:
+        object_name = click.prompt(
+            f'Print {object_type}?',
+            type=click.Choice(name_to_object),
+            default='exit',
+        )
+
+        if object_name == 'exit':
+            break
+
+        click.echo(json.dumps(name_to_object[object_name], indent=4))
+
+
+def _dry_deploy_loop(build, services, deployments, jobs):
+    for object_type, objects in (
+        ('service', services),
+        ('deployment', deployments),
+        ('job', jobs),
+    ):
+        if objects:
+            _dry_deploy_object_loop(object_type, objects)
 # @click.argument('app_names', nargs=-1)
+
 # def remove(namespace, app_names):
+
 #     '''
 #     Removes one or more apps from a given namespace.
 #     '''
