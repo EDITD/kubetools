@@ -12,11 +12,25 @@ from kubetools_client.deploy.util import run_shell_command
 
 
 @cli_bootstrap.command(help_priority=0)
-@click.option('--replicas', type=int, help='Number of replicas', default=1)
+@click.option(
+@click.option(
+    '--replicas',
+    type=int,
+    default=1,
+    help='Default number of replicas for each app.',
+)
+@click.option(
+    '--registry',
+    help='Default registry for apps that do not specify.',
+)
 @click.argument('namespace')
-@click.argument('app_dirs', nargs=-1, type=click.Path(exists=True, file_okay=False))
+@click.argument(
+    'app_dirs',
+    nargs=-1,
+    type=click.Path(exists=True, file_okay=False),
+)
 @click.pass_context
-def deploy(ctx, replicas, namespace, app_dirs):
+def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -81,7 +95,7 @@ def deploy(ctx, replicas, namespace, app_dirs):
         context_to_image = ensure_docker_images(
             kubetools_config, build, app_dir,
             commit_hash=commit_hash,
-            default_registry=ctx.meta['default_registry'],
+            default_registry=registry,
         )
 
         services, deployments, jobs = generate_kubernetes_configs_for_project(
@@ -90,7 +104,6 @@ def deploy(ctx, replicas, namespace, app_dirs):
             context_name_to_image=context_to_image,
             base_annotations=annotations,
             base_labels=labels,
-            deployment_labels=deployment_labels,
             replicas=replicas,
         )
 
