@@ -11,14 +11,26 @@ from .kubernetes.api import (
 )
 
 
-def deploy_or_upgrade(
-    build,
-    depend_services,
-    depend_deployments,
-    main_services,
-    main_deployments,
-    jobs,
-):
+def deploy_or_upgrade(build, services, deployments, jobs):
+    # Split services + deployments into app (main) and dependencies
+    depend_services = []
+    main_services = []
+
+    for service in services:
+        if service['metadata']['labels']['kubetools/role'] == 'app':
+            main_services.append(service)
+        else:
+            depend_services.append(service)
+
+    depend_deployments = []
+    main_deployments = []
+    for deployment in deployments:
+        if deployment['metadata']['labels']['kubetools/role'] == 'app':
+            main_deployments.append(deployment)
+        else:
+            depend_deployments.append(deployment)
+
+    # Now execute the deploy process
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:

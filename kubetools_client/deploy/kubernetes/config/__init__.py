@@ -100,8 +100,8 @@ def generate_kubernetes_configs_for_project(
 
     job_specs = job_specs or []
 
-    main_services = []
-    main_deployments = []
+    services = []
+    deployments = []
 
     for name, deployment in six.iteritems(config.get('deployments', {})):
         # This is expected - kubetools.yml deployments need not prefix names
@@ -132,7 +132,7 @@ def generate_kubernetes_configs_for_project(
         )
 
         if container_ports:
-            main_services.append(make_service_config(
+            services.append(make_service_config(
                 deployment_name,
                 container_ports,
                 labels=app_labels,
@@ -145,7 +145,7 @@ def generate_kubernetes_configs_for_project(
         if 'maxReplicas' in deployment:
             deployment_replicas = min(deployment_replicas, deployment['maxReplicas'])
 
-        main_deployments.append(make_deployment_config(
+        deployments.append(make_deployment_config(
             deployment_name,
             containers,
             replicas=deployment_replicas,
@@ -153,10 +153,6 @@ def generate_kubernetes_configs_for_project(
             annotations=app_annotations,
             envvars=envvars,
         ))
-
-    # Handle dependencies
-    depend_services = []
-    depend_deployments = []
 
     for name, dependency in six.iteritems(config.get('dependencies', {})):
         dependency_name = '-'.join((project_name, name))
@@ -173,7 +169,7 @@ def generate_kubernetes_configs_for_project(
         app_annotations = copy_and_update(base_annotations)
 
         if container_ports:
-            depend_services.append(make_service_config(
+            services.append(make_service_config(
                 dependency_name,
                 container_ports,
                 labels=dependency_labels,
@@ -181,7 +177,7 @@ def generate_kubernetes_configs_for_project(
             ))
 
         # For now, all dependencies use one replica
-        depend_deployments.append(make_deployment_config(
+        deployments.append(make_deployment_config(
             dependency_name,
             containers,
             labels=dependency_labels,
@@ -238,8 +234,4 @@ def generate_kubernetes_configs_for_project(
             envvars=job_envvars,
         ))
 
-    return (
-        (depend_services, main_services),
-        (depend_deployments, main_deployments),
-        jobs,
-    )
+    return services, deployments, jobs

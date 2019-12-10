@@ -29,10 +29,8 @@ def deploy(ctx, replicas, namespace, app_dirs):
         namespace=namespace,
     )
 
-    all_depend_services = []
-    all_main_services = []
-    all_depend_deployments = []
-    all_main_deployments = []
+    all_services = []
+    all_deployments = []
     all_jobs = []
 
     for app_dir in app_dirs:
@@ -80,11 +78,7 @@ def deploy(ctx, replicas, namespace, app_dirs):
             default_registry=ctx.meta['default_registry'],
         )
 
-        (
-            (depend_services, main_services),
-            (depend_deployments, main_deployments),
-            jobs,
-        ) = generate_kubernetes_configs_for_project(
+        services, deployments, jobs = generate_kubernetes_configs_for_project(
             kubetools_config,
             envvars=envvars,
             context_name_to_image=context_to_image,
@@ -94,18 +88,14 @@ def deploy(ctx, replicas, namespace, app_dirs):
             replicas=replicas,
         )
 
-        all_depend_services.extend(depend_services)
-        all_depend_deployments.extend(depend_deployments)
-        all_main_services.extend(main_services)
-        all_main_deployments.extend(main_deployments)
+        all_services.extend(services)
+        all_deployments.extend(deployments)
         all_jobs.extend(jobs)
 
     deploy_or_upgrade(
         build,
-        all_depend_services,
-        all_depend_deployments,
-        all_main_services,
-        all_main_deployments,
+        all_services,
+        all_deployments,
         all_jobs,
     )
 
