@@ -12,9 +12,11 @@ from kubetools_client.deploy import (
     execute_restart,
     get_cleanup_objects,
     get_remove_objects,
+    get_restart_objects,
     log_cleanup_changes,
     log_deploy_changes,
     log_remove_changes,
+    log_restart_changes,
 )
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
@@ -296,9 +298,45 @@ def cleanup(ctx, yes, namespace):
     )
 
 
-# @cli_bootstrap.command()
-# @click.argument('app_names', nargs=-1)
-# def restart(namespace, app_names):
-#     '''
-#     Restarts one or more apps in a given namespace.
-#     '''
+@cli_bootstrap.command()
+@click.option(
+    '-y', '--yes',
+    is_flag=True,
+    default=False,
+    help='Flag to auto-yes remove confirmation step.',
+)
+@click.argument('namespace')
+@click.argument('app_names', nargs=-1)
+@click.pass_context
+def restart(ctx, yes, namespace, app_names):
+    '''
+    Restarts one or more apps in a given namespace.
+    '''
+
+    build = Build(
+        env=ctx.meta['kube_context'],
+        namespace=namespace,
+    )
+
+    deployments_and_pods_to_delete = get_restart_objects(build, app_names)
+
+    if not deployments_and_pods_to_delete:
+        click.echo('Nothing to do!')
+        return
+
+    log_restart_changes(
+        build, deployments_and_pods_to_delete,
+        message='Executing changes:' if yes else 'Proposed changes:',
+        name_formatter=lambda name: click.style(name, bold=True),
+    )
+
+    if not yes:
+        click.confirm(click.style(
+            'Are you sure you wish to DELETE the above resources? This cannot be undone.',
+        ), abort=True)
+        click.echo()
+
+    execute_restart(
+        build,
+        deployments_and_pods_to_delete,
+    )

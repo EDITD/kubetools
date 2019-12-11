@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from kubetools_client.exceptions import KubeBuildError
 
 from .kubernetes.api import (
@@ -21,6 +23,7 @@ from .kubernetes.api import (
     service_exists,
     update_deployment,
     update_service,
+    wait_for_deployment,
 )
 
 
@@ -200,17 +203,86 @@ def execute_remove(build, services, deployments, jobs):
         _delete_objects(build, jobs, delete_job)
 
 
-# Cleanup
-# Handles removal of orphaned replicasets and pods as well as any complete jobs
+# Restart
+# Handles restarting a deployment by deleting each pod and waiting for recovery
 
-def get_cleanup_objects(build, app_names=None):
+def get_restart_objects(build, app_names=None):
+    deployments = _get_app_objects(build, app_names, list_deployments)
+    name_to_deployment = {
+        get_object_name(deployment): deployment
+        for deployment in deployments
+    }
+
+    replica_sets = list_replica_sets(build)
+    replica_set_names_to_deployment = {}
+
+    for replica_set in replica_sets:
+        if not replica_set.metadata.owner_references:
+            build.log_warning((
+                'Found replicaSet with no owner (needs cleanup): '
+                f'{replica_set.metadata.name}'
+            ))
+            continue
+
+        if len(replica_set.metadata.owner_references) > 1:
+            build.log_error((
+                'Found replicaSet with more than one owner: '
+                f'{replica_set.metadata.name}'
+            ))
+            continue
+
+        owner_name = replica_set.metadata.owner_references[0].name
+        if owner_name in name_to_deployment:
+            replica_set_names_to_deployment[get_object_name(replica_set)] = (
+                name_to_deployment[owner_name]
+            )
+
+    pods = list_pods(build)
+    deployment_name_to_pods = defaultdict(list)
+
+    for pod in pods:
+        if len(pod.metadata.owner_references) == 1:
+            owner = pod.metadata.owner_references[0]
+            deployment = replica_set_names_to_deployment.get(owner.name)
+            if deployment:
+                deployment_name_to_pods[get_object_name(deployment)].append(pod)
+
+    return [
+        (name_to_deployment[name], pods)
+        for name, pods in deployment_name_to_pods.items()
+    ]
+
+
+def log_restart_changes(
+    build, deployments_and_pods,
+    message='Executing changes:',
+    name_formatter=lambda name: name,
+):
+    deployments = [deployment for deployment, _ in deployments_and_pods]
+    with build.stage(message):
+        _log_actions(build, 'RESTART', 'deployment', deployments, name_formatter)
+
+
+def execute_restart(build, deployments_and_pods):
+    for deployment, pods in deployments_and_pods:
+        with build.stage(f'Restart pods for {get_object_name(deployment)}'):
+            for pod in pods:
+                delete_pod(build, pod)
+                wait_for_deployment(build, deployment)
+
+
+# Cleanup
+# Handles removal of orphaned replicasets and pods as well as any complete jobs,
+# working on the namespace level only (no apps).
+
+def get_cleanup_objects(build):
     replica_sets = list_replica_sets(build)
     replica_sets_to_delete = []
     replica_set_names_to_delete = set()
 
     for replica_set in replica_sets:
         if not replica_set.metadata.owner_references:
-            replica_set_names_to_delete.add(replica_set.metadata.name)
+            replica_set_names_to_delete.add(get_object_name(replica_set))
             replica_sets_to_delete.append(replica_set)
 
     pods = list_pods(build)
