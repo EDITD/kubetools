@@ -32,8 +32,12 @@ def _delete_objects(build, objects, delete_function):
     for obj in objects:
         delete_function(build, obj)
 
+
+# Deploy/upgrade
+# Handles deploying new services and upgrading existing ones
+
 def log_deploy_changes(
-    build, services, deployments,
+    build, services, deployments, jobs,
     message='Executing changes:',
     name_formatter=lambda name: name,
 ):
@@ -58,18 +62,13 @@ def log_deploy_changes(
     update_deployments = deploy_deployment_names - new_deployments
 
     with build.stage(message):
-        for service in new_services:
-            build.log_info(f'CREATE service {name_formatter(service)}')
-        for deployment in new_deployments:
-            build.log_info(f'CREATE deployment {name_formatter(deployment)}')
-
-        for service in update_services:
-            build.log_info(f'UPDATE service {name_formatter(service)}')
-        for deployment in update_deployments:
-            build.log_info(f'UPDATE deployment {name_formatter(deployment)}')
+        _log_actions(build, 'CREATE', 'service', new_services, name_formatter)
+        _log_actions(build, 'CREATE', 'deployment', new_deployments, name_formatter)
+        _log_actions(build, 'UPDATE', 'service', update_services, name_formatter)
+        _log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
 
 
-def deploy_or_upgrade(build, services, deployments, jobs):
+def deploy(build, services, deployments, jobs):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -139,6 +138,33 @@ def deploy_or_upgrade(build, services, deployments, jobs):
         with build.stage('Update existing app services'):
             for service in exist_main_services:
                 update_service(build, service)
+
+
+# Remove
+# Handles removal of deployments, services and jobs in a namespace
+
+def log_remove_changes(
+    build, services, deployments, jobs,
+    message='Executing changes:',
+    name_formatter=lambda name: name,
+):
+    with build.stage(message):
+        _log_actions(build, 'DELETE', 'service', services, name_formatter)
+        _log_actions(build, 'DELETE', 'deployment', deployments, name_formatter)
+        _log_actions(build, 'DELETE', 'job', jobs, name_formatter)
+
+
+def remove(build, services, deployments, jobs):
+    with build.stage('Delete services'):
+        _delete_objects(build, services, delete_service)
+
+    with build.stage('Delete deployments'):
+        _delete_objects(build, deployments, delete_deployment)
+
+    with build.stage('Delete jobs'):
+        _delete_objects(build, jobs, delete_job)
+
+
 # Cleanup
 # Handles removal of orphaned replicasets and pods as well as any complete jobs
 

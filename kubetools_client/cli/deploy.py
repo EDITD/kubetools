@@ -11,20 +11,15 @@ from kubetools_client.deploy import (
     get_cleanup_objects,
     log_cleanup_changes,
     log_deploy_changes,
+    log_remove_changes,
+    remove,
 )
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
 from kubetools_client.deploy.kubernetes.api import (
-    delete_deployment,
-    delete_job,
-    delete_pod,
-    delete_replica_set,
-    delete_service,
     get_object_name,
     list_deployments,
     list_jobs,
-    list_pods,
-    list_replica_sets,
     list_services,
 )
 from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
@@ -60,7 +55,7 @@ def _get_git_info(app_dir):
     return commit_hash, git_annotations
 
 
-@cli_bootstrap.command(help_priority=0)
+@cli_bootstrap.command('deploy', help_priority=0)
 @click.option(
     '--dry',
     is_flag=True,
@@ -90,7 +85,7 @@ def _get_git_info(app_dir):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
+def deploy_cli(ctx, dry, replicas, registry, yes, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -152,7 +147,7 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         return _dry_deploy_loop(build, all_services, all_deployments, all_jobs)
 
     log_deploy_changes(
-        build, all_services, all_deployments,
+        build, all_services, all_deployments, all_jobs,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -161,7 +156,7 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         click.confirm(click.style((
             'Are you sure you wish to CREATE and UPDATE the above resources? '
             'This cannot be undone.'
-        )))
+        )), abort=True)
         click.echo()
 
     deploy(
@@ -224,32 +219,26 @@ def _get_objects_to_delete(
             if leftover_app_names:
                 raise click.BadParameter(f'{object_type} not found {leftover_app_names}')
 
-    if objects_to_delete:
-        click.echo(f'--> {object_type} to delete:')
-        for service in objects_to_delete:
-            click.echo(f'    {service.metadata.name}')
-        click.echo()
-
     return objects_to_delete
 
 
-def _delete_objects(object_type, delete_object_function, objects_to_delete, build):
-    for obj in objects_to_delete:
-        delete_object_function(build, obj)
-        click.echo(f'    {obj.metadata.name} deleted')
-
-
-@cli_bootstrap.command()
+@cli_bootstrap.command('remove', help_priority=1)
 @click.option(
     '-y', '--yes',
     is_flag=True,
     default=False,
     help='Flag to auto-yes remove confirmation step.',
 )
+@click.option(
+    '--cleanup', 'do_cleanup',
+    is_flag=True,
+    default=False,
+    help='Run a cleanup immediately after removal.',
+)
 @click.argument('namespace')
 @click.argument('app_names', nargs=-1)
 @click.pass_context
-def remove(ctx, yes, namespace, app_names):
+def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
     '''
     Removes one or more apps from a given namespace.
     '''
@@ -276,15 +265,27 @@ def remove(ctx, yes, namespace, app_names):
         click.echo('Nothing to do!')
         return
 
+    log_remove_changes(
+        build, services_to_delete, deployments_to_delete, jobs_to_delete,
+        message='Executing changes:' if yes else 'Proposed changes:',
+        name_formatter=lambda name: click.style(name, bold=True),
+    )
+
     if not yes:
         click.confirm(click.style(
             'Are you sure you wish to DELETE the above resources? This cannot be undone.',
-        ))
+        ), abort=True)
         click.echo()
 
-    _delete_objects('Services', delete_service, services_to_delete, build)
-    _delete_objects('Deployments', delete_deployment, deployments_to_delete, build)
-    _delete_objects('Jobs', delete_job, jobs_to_delete, build)
+    remove(
+        build,
+        services_to_delete,
+        deployments_to_delete,
+        jobs_to_delete,
+    )
+
+    if do_cleanup():
+        ctx.invoke(cleanup)
 
 
 @cli_bootstrap.command('cleanup', help_priority=2)
