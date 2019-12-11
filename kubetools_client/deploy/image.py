@@ -164,7 +164,7 @@ def _ensure_docker_images(
         # Check/abort as requested
         check_build_control(build)
 
-        registry = build_context['registry']
+        registry = build_context.get('registry', default_registry)
 
         # Run pre docker commands?
         pre_build_commands = build_context.get('preBuildCommands', [])
