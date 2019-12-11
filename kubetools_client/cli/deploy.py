@@ -285,7 +285,7 @@ def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
     )
 
     if do_cleanup:
-        ctx.invoke(cleanup)
+        ctx.invoke(cleanup_cli, yes=yes, namespace=namespace)
 
 
 @cli_bootstrap.command('cleanup', help_priority=2)
