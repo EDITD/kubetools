@@ -68,7 +68,7 @@ def log_deploy_changes(
         _log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
 
 
-def deploy(build, services, deployments, jobs):
+def execute_deploy(build, services, deployments, jobs):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -154,7 +154,7 @@ def log_remove_changes(
         _log_actions(build, 'DELETE', 'job', jobs, name_formatter)
 
 
-def remove(build, services, deployments, jobs):
+def execute_remove(build, services, deployments, jobs):
     with build.stage('Delete services'):
         _delete_objects(build, services, delete_service)
 
@@ -202,7 +202,7 @@ def log_cleanup_changes(
         _log_actions(build, 'DELETE', 'pod', pods, name_formatter)
 
 
-def cleanup(build, replica_sets, pods):
+def execute_cleanup(build, replica_sets, pods):
     with build.stage('Delete replica sets'):
         _delete_objects(build, replica_sets, delete_replica_set)
 

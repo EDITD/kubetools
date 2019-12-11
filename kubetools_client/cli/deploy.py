@@ -6,13 +6,14 @@ import click
 from kubetools_client.cli import cli_bootstrap
 from kubetools_client.config import load_kubetools_config
 from kubetools_client.deploy import (
-    cleanup,
-    deploy,
+    execute_cleanup,
+    execute_deploy,
+    execute_remove,
+    execute_restart,
     get_cleanup_objects,
     log_cleanup_changes,
     log_deploy_changes,
     log_remove_changes,
-    remove,
 )
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
@@ -84,7 +85,7 @@ def _get_git_info(app_dir):
     return commit_hash, git_annotations
 
 
-@cli_bootstrap.command('deploy', help_priority=0)
+@cli_bootstrap.command(help_priority=0)
 @click.option(
     '--dry',
     is_flag=True,
@@ -114,7 +115,7 @@ def _get_git_info(app_dir):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy_cli(ctx, dry, replicas, registry, yes, namespace, app_dirs):
+def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -188,7 +189,7 @@ def deploy_cli(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         )), abort=True)
         click.echo()
 
-    deploy(
+    execute_deploy(
         build,
         all_services,
         all_deployments,
@@ -197,6 +198,7 @@ def deploy_cli(ctx, dry, replicas, registry, yes, namespace, app_dirs):
 
 
 def _get_objects_to_delete(
+@cli_bootstrap.command(help_priority=1)
     object_type, list_objects_function,
     build, app_names,
     check_leftovers=True,
@@ -222,7 +224,6 @@ def _get_objects_to_delete(
     return objects_to_delete
 
 
-@cli_bootstrap.command('remove', help_priority=1)
 @click.option(
     '-y', '--yes',
     is_flag=True,
@@ -238,7 +239,7 @@ def _get_objects_to_delete(
 @click.argument('namespace')
 @click.argument('app_names', nargs=-1)
 @click.pass_context
-def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
+def remove(ctx, yes, do_cleanup, namespace, app_names):
     '''
     Removes one or more apps from a given namespace.
     '''
@@ -277,7 +278,7 @@ def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
         ), abort=True)
         click.echo()
 
-    remove(
+    execute_remove(
         build,
         services_to_delete,
         deployments_to_delete,
@@ -285,10 +286,10 @@ def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
     )
 
     if do_cleanup:
-        ctx.invoke(cleanup_cli, yes=yes, namespace=namespace)
+        ctx.invoke(cleanup, yes=yes, namespace=namespace)
 
 
-@cli_bootstrap.command('cleanup', help_priority=2)
+@cli_bootstrap.command(help_priority=2)
 @click.option(
     '-y', '--yes',
     is_flag=True,
@@ -297,7 +298,7 @@ def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
 )
 @click.argument('namespace')
 @click.pass_context
-def cleanup_cli(ctx, yes, namespace):
+def cleanup(ctx, yes, namespace):
     '''
     Cleans up a namespace by removing any orphaned objects and stale jobs.
     '''
@@ -325,7 +326,7 @@ def cleanup_cli(ctx, yes, namespace):
         ), abort=True)
         click.echo()
 
-    cleanup(
+    execute_cleanup(
         build,
         replica_sets_to_delete,
         pods_to_delete,
