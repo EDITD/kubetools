@@ -24,7 +24,7 @@ def _get_k8s_core_api(build):
 
 def _get_k8s_apps_api(build):
     api_client = _get_api_client(build)
-    return client.AppsV1beta1Api(api_client=api_client)
+    return client.AppsV1Api(api_client=api_client)
 
 
 def _get_k8s_batch_api(build):
@@ -43,6 +43,32 @@ def _object_exists(api, method, build, obj):
             return False
         raise
     return True
+
+
+def list_pods(build):
+    k8s_core_api = _get_k8s_core_api(build)
+    return k8s_core_api.list_namespaced_pod(namespace=build.namespace).items
+
+
+def delete_pod(build, pod):
+    k8s_core_api = _get_k8s_core_api(build)
+    return k8s_core_api.delete_namespaced_pod(
+        name=get_object_name(pod),
+        namespace=build.namespace,
+    )
+
+
+def list_replica_sets(build):
+    k8s_apps_api = _get_k8s_apps_api(build)
+    return k8s_apps_api.list_namespaced_replica_set(namespace=build.namespace).items
+
+
+def delete_replica_set(build, replica_set):
+    k8s_apps_api = _get_k8s_apps_api(build)
+    return k8s_apps_api.delete_namespaced_replica_set(
+        name=get_object_name(replica_set),
+        namespace=build.namespace,
+    )
 
 
 def list_services(build):
