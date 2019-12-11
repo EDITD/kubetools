@@ -36,8 +36,8 @@ def _delete_objects(build, objects, delete_function):
         delete_function(build, obj)
 
 
-def _get_objects(
-    list_objects_function, build, app_names,
+def _get_app_objects(
+    build, app_names, list_objects_function,
     check_leftovers=True,
 ):
     objects = list_objects_function(build)
@@ -172,9 +172,9 @@ def execute_deploy(build, services, deployments, jobs):
 # Handles removal of deployments, services and jobs in a namespace
 
 def get_remove_objects(build, app_names=None):
-    services_to_delete = _get_objects(list_services, build, app_names)
-    deployments_to_delete = _get_objects(list_deployments, build, app_names)
-    jobs_to_delete = _get_objects(list_jobs, build, app_names, check_leftovers=False)
+    services_to_delete = _get_app_objects(build, app_names, list_services)
+    deployments_to_delete = _get_app_objects(build, app_names, list_deployments)
+    jobs_to_delete = _get_app_objects(build, app_names, list_jobs, check_leftovers=False)
     return services_to_delete, deployments_to_delete, jobs_to_delete
 
 
