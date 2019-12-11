@@ -18,7 +18,7 @@ class Build(object):
         self.env = env
         self.namespace = namespace
 
-    def log_info(self, text, extra_detail=None):
+    def log_info(self, text, extra_detail=None, formatter=lambda s: s):
         '''
         Create BuildLog information.
         '''
@@ -29,7 +29,18 @@ class Build(object):
         if self.in_stage:
             text = f'    {text}'
 
+        if formatter:
+            text = formatter(text)
+
         click.echo(text)
+
+    def log_warning(self, *args, **kwargs):
+        kwargs['formatter'] = lambda s: click.style(s, 'yellow')
+        self.log_info(*args, **kwargs)
+
+    def log_error(self, *args, **kwargs):
+        kwargs['formatter'] = lambda s: click.style(s, 'red')
+        self.log_info(*args, **kwargs)
 
     @contextmanager
     def stage(self, stage_name):
