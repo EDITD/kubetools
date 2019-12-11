@@ -197,13 +197,12 @@ def _dry_deploy_loop(build, services, deployments, jobs):
 
 def _get_objects_to_delete(
     object_type, list_objects_function,
-    build, remove_all, app_names,
+    build, app_names,
     check_leftovers=True,
 ):
-    objects = list_objects_function(build)
-    objects_to_delete = objects.items
+    objects_to_delete = list_objects_function(build)
 
-    if not remove_all:
+    if app_names:
         objects_to_delete = list(filter(
             lambda obj: obj.metadata.labels.get('kubetools/name') in app_names,
             objects_to_delete,
@@ -236,12 +235,6 @@ def _delete_objects(object_type, delete_object_function, objects_to_delete, buil
 
 @cli_bootstrap.command()
 @click.option(
-    '-a', '--all', 'remove_all',
-    is_flag=True,
-    default=False,
-    help='Flag to enable removal of all apps within the namespace.',
-)
-@click.option(
     '-y', '--yes',
     is_flag=True,
     default=False,
@@ -250,15 +243,10 @@ def _delete_objects(object_type, delete_object_function, objects_to_delete, buil
 @click.argument('namespace')
 @click.argument('app_names', nargs=-1)
 @click.pass_context
-def remove(ctx, remove_all, yes, namespace, app_names):
+def remove(ctx, yes, namespace, app_names):
     '''
     Removes one or more apps from a given namespace.
     '''
-
-    if not app_names and not remove_all:
-        raise click.BadParameter('Must either provide app names or --all flag!')
-    elif app_names and remove_all:
-        raise click.BadParameter('Cannot provide both app naems and --all flag!')
 
     build = Build(
         env=ctx.meta['kube_context'],
@@ -266,18 +254,15 @@ def remove(ctx, remove_all, yes, namespace, app_names):
     )
 
     services_to_delete = _get_objects_to_delete(
-        'Services', list_services,
-        build, remove_all, app_names,
+        'Services', list_services, build, app_names,
     )
 
     deployments_to_delete = _get_objects_to_delete(
-        'Deployments', list_deployments,
-        build, remove_all, app_names,
+        'Deployments', list_deployments, build, app_names,
     )
 
     jobs_to_delete = _get_objects_to_delete(
-        'Jobs', list_jobs,
-        build, remove_all, app_names,
+        'Jobs', list_jobs, build, app_names,
         check_leftovers=False,
     )
 
@@ -289,6 +274,7 @@ def remove(ctx, remove_all, yes, namespace, app_names):
         click.confirm(click.style(
             'Are you sure you wish to DELETE the above resources? This cannot be undone.',
         ))
+        click.echo()
 
     _delete_objects('Services', delete_service, services_to_delete, build)
     _delete_objects('Deployments', delete_deployment, deployments_to_delete, build)
@@ -357,7 +343,7 @@ def cleanup(ctx, yes, namespace):
 
 # @cli_bootstrap.command()
 # @click.argument('app_names', nargs=-1)
-# def cleanup(namespace, app_names):
+# def restart(namespace, app_names):
 #     '''
-#     Cleans up a namespace by removing any orphaned objects and stale jobs.
+#     Restarts one or more apps in a given namespace.
 #     '''
