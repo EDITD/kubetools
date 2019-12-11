@@ -95,6 +95,18 @@ def generate_kubernetes_configs_for_project(
 
     project_name = config['name']
 
+    base_labels = copy_and_update(base_labels, {
+        'kubetools/project_name': project_name,
+    })
+
+    base_annotations = copy_and_update(base_annotations, {
+        'app.kubernetes.io/managed-by': 'kubetools',
+    })
+
+    envvars = copy_and_update(envvars, {
+        'KUBE': 'true',
+    })
+
     base_annotations = base_annotations or {}
     per_deployment_annotations = per_deployment_annotations or {}
 
@@ -144,13 +156,10 @@ def generate_kubernetes_configs_for_project(
         else:
             deployment_name = name
 
-        app_labels = copy_and_update(
-            base_labels,
-            {
-                'kubetools/role': 'app',
-                'kubetools/name': deployment_name,
-            },
-        )
+        app_labels = copy_and_update(base_labels, {
+            'kubetools/role': 'app',
+            'kubetools/name': deployment_name,
+        })
 
         containers, container_ports = _get_containers_data(
             deployment['containers'],
