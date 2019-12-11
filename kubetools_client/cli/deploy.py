@@ -75,12 +75,14 @@ def _get_git_info(app_dir):
         git_annotations['kubetools/git_branch'] = branch_name
 
     try:
-        git_annotations['kubetools/git_tag'] = run_shell_command(
+        git_tag = run_shell_command(
             'git', 'tag', '--points-at', commit_hash,
             cwd=app_dir,
         ).strip().decode()
     except KubeBuildError:
         pass
+    else:
+        git_annotations['kubetools/git_tag'] = git_tag
 
     return commit_hash, git_annotations
 
@@ -265,7 +267,7 @@ def remove(ctx, yes, do_cleanup, namespace, app_names):
 @click.pass_context
 def cleanup(ctx, yes, namespace):
     '''
-    Cleans up a namespace by removing any orphaned objects and stale jobs.
+    Cleans up a namespace by removing orphaned objects.
     '''
 
     build = Build(
