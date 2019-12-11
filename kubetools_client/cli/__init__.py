@@ -96,6 +96,7 @@ def ensure_context(ctx, param, value):
 @click.option(
     '--context',
     callback=ensure_context,
+    envvar='KUBETOOLS_CONTEXT',
     help='The name of the Kubernetes context to use.',
 )
 @click.option('--debug', is_flag=True, help='Show debug logs.')
