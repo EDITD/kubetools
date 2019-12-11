@@ -82,7 +82,8 @@ def _get_git_info(app_dir):
     except KubeBuildError:
         pass
     else:
-        git_annotations['kubetools/git_tag'] = git_tag
+        if git_tag:
+            git_annotations['kubetools/git_tag'] = git_tag
 
     return commit_hash, git_annotations
 
