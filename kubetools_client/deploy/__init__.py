@@ -4,15 +4,33 @@ from .kubernetes.api import (
     create_or_update_deployment,
     create_or_update_service,
     create_service,
+    delete_deployment,
+    delete_job,
+    delete_pod,
+    delete_replica_set,
+    delete_service,
     deployment_exists,
     get_object_name,
     list_deployments,
+    list_pods,
+    list_replica_sets,
     list_services,
     service_exists,
     update_deployment,
     update_service,
 )
 
+
+def _log_actions(build, action, object_type, names, name_formatter):
+    for name in names:
+        if not isinstance(name, str):
+            name = get_object_name(name)
+        build.log_info(f'{action} {object_type} {name_formatter(name)}')
+
+
+def _delete_objects(build, objects, delete_function):
+    for obj in objects:
+        delete_function(build, obj)
 
 def log_deploy_changes(
     build, services, deployments,
@@ -121,3 +139,46 @@ def deploy_or_upgrade(build, services, deployments, jobs):
         with build.stage('Update existing app services'):
             for service in exist_main_services:
                 update_service(build, service)
+# Cleanup
+# Handles removal of orphaned replicasets and pods as well as any complete jobs
+
+def get_cleanup_objects(build):
+    replica_sets = list_replica_sets(build)
+    replica_sets_to_delete = []
+    replica_set_names_to_delete = set()
+
+    for replica_set in replica_sets:
+        if not replica_set.metadata.owner_references:
+            replica_set_names_to_delete.add(replica_set.metadata.name)
+            replica_sets_to_delete.append(replica_set)
+
+    pods = list_pods(build)
+    pods_to_delete = []
+
+    for pod in pods:
+        if not pod.metadata.owner_references:
+            pods_to_delete.append(pod)
+        elif len(pod.metadata.owner_references) == 1:
+            owner = pod.metadata.owner_references[0]
+            if owner.name in replica_set_names_to_delete:
+                pods_to_delete.append(pod)
+
+    return replica_sets_to_delete, pods_to_delete
+
+
+def log_cleanup_changes(
+    build, replica_sets, pods,
+    message='Executing changes:',
+    name_formatter=lambda name: name,
+):
+    with build.stage(message):
+        _log_actions(build, 'DELETE', 'replica_set', replica_sets, name_formatter)
+        _log_actions(build, 'DELETE', 'pod', pods, name_formatter)
+
+
+def cleanup(build, replica_sets, pods):
+    with build.stage('Delete replica sets'):
+        _delete_objects(build, replica_sets, delete_replica_set)
+
+    with build.stage('Delete pods'):
+        _delete_objects(build, pods, delete_pod)

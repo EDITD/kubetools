@@ -5,7 +5,13 @@ import click
 
 from kubetools_client.cli import cli_bootstrap
 from kubetools_client.config import load_kubetools_config
-from kubetools_client.deploy import deploy_or_upgrade, log_deploy_changes
+from kubetools_client.deploy import (
+    cleanup,
+    deploy,
+    get_cleanup_objects,
+    log_cleanup_changes,
+    log_deploy_changes,
+)
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
 from kubetools_client.deploy.kubernetes.api import (
@@ -158,7 +164,7 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         )))
         click.echo()
 
-    deploy_or_upgrade(
+    deploy(
         build,
         all_services,
         all_deployments,
@@ -281,7 +287,7 @@ def remove(ctx, yes, namespace, app_names):
     _delete_objects('Jobs', delete_job, jobs_to_delete, build)
 
 
-@cli_bootstrap.command()
+@cli_bootstrap.command('cleanup', help_priority=2)
 @click.option(
     '-y', '--yes',
     is_flag=True,
@@ -290,7 +296,7 @@ def remove(ctx, yes, namespace, app_names):
 )
 @click.argument('namespace')
 @click.pass_context
-def cleanup(ctx, yes, namespace):
+def cleanup_cli(ctx, yes, namespace):
     '''
     Cleans up a namespace by removing any orphaned objects and stale jobs.
     '''
@@ -300,45 +306,29 @@ def cleanup(ctx, yes, namespace):
         namespace=namespace,
     )
 
-    replica_sets = list_replica_sets(build)
-    replica_sets_to_delete = []
-    replica_set_names_to_delete = set()
-
-    for replica_set in replica_sets:
-        if not replica_set.metadata.owner_references:
-            replica_set_names_to_delete.add(replica_set.metadata.name)
-            replica_sets_to_delete.append(replica_set)
-
-    pods = list_pods(build)
-    pods_to_delete = []
-
-    for pod in pods:
-        if not pod.metadata.owner_references:
-            pods_to_delete.append(pod)
-        elif len(pod.metadata.owner_references) == 1:
-            owner = pod.metadata.owner_references[0]
-            if owner.name in replica_set_names_to_delete:
-                pods_to_delete.append(pod)
+    replica_sets_to_delete, pods_to_delete = get_cleanup_objects(build)
 
     if not any((replica_sets_to_delete, pods_to_delete)):
         click.echo('Nothing to do!')
         return
 
-    with build.stage('Proposed changes'):
-        for replica_set in replica_sets_to_delete:
-            build.log_info(f'DELETE replica_set {replica_set.metadata.name}')
-
-        for pod in pods_to_delete:
-            build.log_info(f'DELETE pod {pod.metadata.name}')
+    log_cleanup_changes(
+        build, replica_sets_to_delete, pods_to_delete,
+        message='Executing changes:' if yes else 'Proposed changes:',
+        name_formatter=lambda name: click.style(name, bold=True),
+    )
 
     if not yes:
         click.confirm(click.style(
             'Are you sure you wish to DELETE the above resources? This cannot be undone.',
-        ))
+        ), abort=True)
         click.echo()
 
-    _delete_objects('Replicasets', delete_replica_set, replica_sets_to_delete, build)
-    _delete_objects('Pods', delete_pod, pods_to_delete, build)
+    cleanup(
+        build,
+        replica_sets_to_delete,
+        pods_to_delete,
+    )
 
 
 # @cli_bootstrap.command()
