@@ -5,10 +5,50 @@ from .kubernetes.api import (
     create_or_update_service,
     create_service,
     deployment_exists,
+    get_object_name,
+    list_deployments,
+    list_services,
     service_exists,
     update_deployment,
     update_service,
 )
+
+
+def log_deploy_changes(
+    build, services, deployments,
+    message='Executing changes:',
+    name_formatter=lambda name: name,
+):
+    existing_service_names = set(
+        get_object_name(service) for service in list_services(build)
+    )
+    existing_deployment_names = set(
+        get_object_name(deployment) for deployment in list_deployments(build)
+    )
+
+    deploy_service_names = set(
+        get_object_name(service) for service in services
+    )
+    deploy_deployment_names = set(
+        get_object_name(deployment) for deployment in deployments
+    )
+
+    new_services = deploy_service_names - existing_service_names
+    update_services = deploy_service_names - new_services
+
+    new_deployments = deploy_deployment_names - existing_deployment_names
+    update_deployments = deploy_deployment_names - new_deployments
+
+    with build.stage(message):
+        for service in new_services:
+            build.log_info(f'CREATE service {name_formatter(service)}')
+        for deployment in new_deployments:
+            build.log_info(f'CREATE deployment {name_formatter(deployment)}')
+
+        for service in update_services:
+            build.log_info(f'UPDATE service {name_formatter(service)}')
+        for deployment in update_deployments:
+            build.log_info(f'UPDATE deployment {name_formatter(deployment)}')
 
 
 def deploy_or_upgrade(build, services, deployments, jobs):
