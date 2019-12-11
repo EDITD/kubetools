@@ -30,6 +30,9 @@ def has_app_commit_image(registry, app_name, context_name, commit_hash):
     Check the registry has an app image for a certain commit hash.
     '''
 
+    if registry is None:
+        raise KubeBuildError(f'Invalid registry to build {context_name}: {registry}')
+
     commit_version = get_commit_hash_tag(context_name, commit_hash)
     url = 'http://{0}/v2/{1}/manifests/{2}'.format(registry, app_name, commit_version)
 
