@@ -47,7 +47,7 @@ def _object_exists(api, method, build, obj):
 
 def list_services(build):
     k8s_core_api = _get_k8s_core_api(build)
-    return k8s_core_api.list_namespaced_service(namespace=build.namespace)
+    return k8s_core_api.list_namespaced_service(namespace=build.namespace).items
 
 
 def delete_service(build, service):
@@ -111,7 +111,7 @@ def create_or_update_service(build, service):
 
 def list_deployments(build):
     k8s_apps_api = _get_k8s_apps_api(build)
-    return k8s_apps_api.list_namespaced_deployment(namespace=build.namespace)
+    return k8s_apps_api.list_namespaced_deployment(namespace=build.namespace).items
 
 
 def delete_deployment(build, deployment):
@@ -184,7 +184,7 @@ def create_or_update_deployment(build, deployment):
 
 def list_jobs(build):
     k8s_batch_api = _get_k8s_batch_api(build)
-    return k8s_batch_api.list_namespaced_job(namespace=build.namespace)
+    return k8s_batch_api.list_namespaced_job(namespace=build.namespace).items
 
 
 def delete_job(build, job):
