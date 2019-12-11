@@ -284,7 +284,7 @@ def remove_cli(ctx, yes, do_cleanup, namespace, app_names):
         jobs_to_delete,
     )
 
-    if do_cleanup():
+    if do_cleanup:
         ctx.invoke(cleanup)
 
 
