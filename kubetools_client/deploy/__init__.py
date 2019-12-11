@@ -1,3 +1,5 @@
+from kubetools_client.exceptions import KubeBuildError
+
 from .kubernetes.api import (
     create_deployment,
     create_job,
@@ -12,6 +14,7 @@ from .kubernetes.api import (
     deployment_exists,
     get_object_name,
     list_deployments,
+    list_jobs,
     list_pods,
     list_replica_sets,
     list_services,
@@ -31,6 +34,31 @@ def _log_actions(build, action, object_type, names, name_formatter):
 def _delete_objects(build, objects, delete_function):
     for obj in objects:
         delete_function(build, obj)
+
+
+def _get_objects(
+    list_objects_function, build, app_names,
+    check_leftovers=True,
+):
+    objects = list_objects_function(build)
+
+    if app_names:
+        objects = list(filter(
+            lambda obj: obj.metadata.labels.get('kubetools/name') in app_names,
+            objects,
+        ))
+
+        if check_leftovers:
+            object_names_to_delete = set([
+                obj.metadata.labels['kubetools/name']
+                for obj in objects
+            ])
+
+            leftover_app_names = set(app_names) - object_names_to_delete
+            if leftover_app_names:
+                raise KubeBuildError(f'{leftover_app_names} not found')
+
+    return objects
 
 
 # Deploy/upgrade
@@ -143,6 +171,13 @@ def execute_deploy(build, services, deployments, jobs):
 # Remove
 # Handles removal of deployments, services and jobs in a namespace
 
+def get_remove_objects(build, app_names=None):
+    services_to_delete = _get_objects(list_services, build, app_names)
+    deployments_to_delete = _get_objects(list_deployments, build, app_names)
+    jobs_to_delete = _get_objects(list_jobs, build, app_names, check_leftovers=False)
+    return services_to_delete, deployments_to_delete, jobs_to_delete
+
+
 def log_remove_changes(
     build, services, deployments, jobs,
     message='Executing changes:',
@@ -168,7 +203,7 @@ def execute_remove(build, services, deployments, jobs):
 # Cleanup
 # Handles removal of orphaned replicasets and pods as well as any complete jobs
 
-def get_cleanup_objects(build):
+def get_cleanup_objects(build, app_names=None):
     replica_sets = list_replica_sets(build)
     replica_sets_to_delete = []
     replica_set_names_to_delete = set()

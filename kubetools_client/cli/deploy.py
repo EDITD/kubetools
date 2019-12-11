@@ -11,19 +11,17 @@ from kubetools_client.deploy import (
     execute_remove,
     execute_restart,
     get_cleanup_objects,
+    get_remove_objects,
     log_cleanup_changes,
     log_deploy_changes,
     log_remove_changes,
 )
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
-from kubetools_client.deploy.kubernetes.api import (
-    get_object_name,
-    list_deployments,
-    list_jobs,
-    list_services,
+from kubetools_client.deploy.kubernetes.api import get_object_name
+from kubetools_client.deploy.kubernetes.config import (
+    generate_kubernetes_configs_for_project,
 )
-from kubetools_client.deploy.kubernetes.config import generate_kubernetes_configs_for_project
 from kubetools_client.deploy.util import run_shell_command
 from kubetools_client.exceptions import KubeBuildError
 
@@ -197,33 +195,7 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
     )
 
 
-def _get_objects_to_delete(
 @cli_bootstrap.command(help_priority=1)
-    object_type, list_objects_function,
-    build, app_names,
-    check_leftovers=True,
-):
-    objects_to_delete = list_objects_function(build)
-
-    if app_names:
-        objects_to_delete = list(filter(
-            lambda obj: obj.metadata.labels.get('kubetools/name') in app_names,
-            objects_to_delete,
-        ))
-
-        if check_leftovers:
-            object_names_to_delete = set([
-                obj.metadata.labels['kubetools/name']
-                for obj in objects_to_delete
-            ])
-
-            leftover_app_names = set(app_names) - object_names_to_delete
-            if leftover_app_names:
-                raise click.BadParameter(f'{object_type} not found {leftover_app_names}')
-
-    return objects_to_delete
-
-
 @click.option(
     '-y', '--yes',
     is_flag=True,
@@ -249,17 +221,8 @@ def remove(ctx, yes, do_cleanup, namespace, app_names):
         namespace=namespace,
     )
 
-    services_to_delete = _get_objects_to_delete(
-        'Services', list_services, build, app_names,
-    )
-
-    deployments_to_delete = _get_objects_to_delete(
-        'Deployments', list_deployments, build, app_names,
-    )
-
-    jobs_to_delete = _get_objects_to_delete(
-        'Jobs', list_jobs, build, app_names,
-        check_leftovers=False,
+    services_to_delete, deployments_to_delete, jobs_to_delete = (
+        get_remove_objects(build, app_names)
     )
 
     if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
