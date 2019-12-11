@@ -41,6 +41,7 @@ if __name__ == '__main__':
             'requests>2.18,<2.21',
             'six',
             'setuptools',
+            'kubernetes',
         ),
         extras_require={
             'dev': (
