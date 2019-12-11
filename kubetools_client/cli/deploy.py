@@ -5,7 +5,7 @@ import click
 
 from kubetools_client.cli import cli_bootstrap
 from kubetools_client.config import load_kubetools_config
-from kubetools_client.deploy import deploy_or_upgrade
+from kubetools_client.deploy import deploy_or_upgrade, log_deploy_changes
 from kubetools_client.deploy.build import Build
 from kubetools_client.deploy.image import ensure_docker_images
 from kubetools_client.deploy.kubernetes.api import (
@@ -71,6 +71,12 @@ def _get_git_info(app_dir):
     '--registry',
     help='Default registry for apps that do not specify.',
 )
+@click.option(
+    '-y', '--yes',
+    is_flag=True,
+    default=False,
+    help='Flag to auto-yes remove confirmation step.',
+)
 @click.argument('namespace')
 @click.argument(
     'app_dirs',
@@ -78,7 +84,7 @@ def _get_git_info(app_dir):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
+def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -136,8 +142,23 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
         all_deployments.extend(deployments)
         all_jobs.extend(jobs)
 
-    deploy_function = _dry_deploy_loop if dry else deploy_or_upgrade
-    deploy_function(
+    if dry:
+        return _dry_deploy_loop(build, all_services, all_deployments, all_jobs)
+
+    log_deploy_changes(
+        build, all_services, all_deployments,
+        message='Executing changes:' if yes else 'Proposed changes:',
+        name_formatter=lambda name: click.style(name, bold=True),
+    )
+
+    if not yes:
+        click.confirm(click.style((
+            'Are you sure you wish to CREATE and UPDATE the above resources? '
+            'This cannot be undone.'
+        )))
+        click.echo()
+
+    deploy_or_upgrade(
         build,
         all_services,
         all_deployments,
