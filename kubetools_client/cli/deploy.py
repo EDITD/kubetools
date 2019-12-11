@@ -22,6 +22,34 @@ from kubetools_client.deploy.util import run_shell_command
 from kubetools_client.exceptions import KubeBuildError
 
 
+def _get_git_info(app_dir):
+    git_annotations = {}
+
+    commit_hash = run_shell_command(
+        'git', 'rev-parse', '--short=7', 'HEAD',
+        cwd=app_dir,
+    ).strip().decode()
+    git_annotations['kubetools/git_commit'] = commit_hash
+
+    branch_name = run_shell_command(
+        'git', 'rev-parse', '--abbrev-ref', 'HEAD',
+        cwd=app_dir,
+    ).strip().decode()
+
+    if branch_name != 'HEAD':
+        git_annotations['kubetools/git_branch'] = branch_name
+
+    try:
+        git_annotations['kubetools/git_tag'] = run_shell_command(
+            'git', 'tag', '--points-at', commit_hash,
+            cwd=app_dir,
+        ).strip().decode()
+    except KubeBuildError:
+        pass
+
+    return commit_hash, git_annotations
+
+
 @cli_bootstrap.command(help_priority=0)
 @click.option(
     '--dry',
@@ -64,49 +92,27 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
     all_jobs = []
 
     for app_dir in app_dirs:
+        envvars = {
+            'KUBE_ENV': build.env,
+            'KUBE_NAMESPACE': build.namespace,
+        }
+
+        annotations = {
+            'kubetools/env': build.env,
+            'kubetools/namespace': build.namespace,
+        }
+
+        if os.path.exists(os.path.join(app_dir, '.git')):
+            commit_hash, git_annotations = _get_git_info(app_dir)
+            annotations.update(git_annotations)
+        else:
+            raise click.BadParameter(f'{app_dir} is not a valid git repository!')
+
         kubetools_config = load_kubetools_config(
             app_dir,
             env=build.env,
             namespace=build.namespace,
         )
-
-        commit_hash = run_shell_command(
-            'git', 'rev-parse', '--short=7', 'HEAD',
-            cwd=app_dir,
-        ).strip().decode()
-
-        branch_name = run_shell_command(
-            'git', 'rev-parse', '--abbrev-ref', 'HEAD',
-            cwd=app_dir,
-        ).strip().decode()
-
-        annotations = {
-            'kubetools/env': build.env,
-            'kubetools/namespace': build.namespace,
-            'kubetools/git_commit': commit_hash,
-            'app.kubernetes.io/managed-by': 'kubetools',
-        }
-
-        if branch_name != 'HEAD':
-            annotations['kubetools/git_branch'] = branch_name
-
-        try:
-            annotations['kubetools/git_tag'] = run_shell_command(
-                'git', 'tag', '--points-at', commit_hash,
-                cwd=app_dir,
-            ).strip().decode()
-        except KubeBuildError:
-            pass
-
-        labels = {
-            'kubetools/project_name': kubetools_config['name'],
-        }
-
-        envvars = {
-            'KUBE': 'true',
-            'KUBE_NAMESPACE': build.namespace,
-            'KUBE_ENV': build.env,
-        }
 
         context_to_image = ensure_docker_images(
             kubetools_config, build, app_dir,
@@ -119,7 +125,6 @@ def deploy(ctx, dry, replicas, registry, namespace, app_dirs):
             envvars=envvars,
             context_name_to_image=context_to_image,
             base_annotations=annotations,
-            base_labels=labels,
             replicas=replicas,
         )
 
