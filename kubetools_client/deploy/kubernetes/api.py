@@ -51,6 +51,7 @@ def list_pods(build):
 
 
 def delete_pod(build, pod):
+    build.log_info(f'Delete pod: {get_object_name(pod)}')
     k8s_core_api = _get_k8s_core_api(build)
     return k8s_core_api.delete_namespaced_pod(
         name=get_object_name(pod),
@@ -77,6 +78,7 @@ def list_services(build):
 
 
 def delete_service(build, service):
+    build.log_info(f'Delete service: {get_object_name(service)}')
     k8s_core_api = _get_k8s_core_api(build)
     return k8s_core_api.delete_namespaced_service(
         name=get_object_name(service),
@@ -141,6 +143,7 @@ def list_deployments(build):
 
 
 def delete_deployment(build, deployment):
+    build.log_info(f'Delete deployment: {get_object_name(deployment)}')
     k8s_apps_api = _get_k8s_apps_api(build)
     return k8s_apps_api.delete_namespaced_deployment(
         name=get_object_name(deployment),
@@ -214,6 +217,7 @@ def list_jobs(build):
 
 
 def delete_job(build, job):
+    build.log_info(f'Delete job: {get_object_name(job)}')
     k8s_batch_api = _get_k8s_batch_api(build)
     return k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
