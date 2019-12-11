@@ -45,6 +45,29 @@ def _object_exists(api, method, build, obj):
     return True
 
 
+def _wait_for(function):
+    settings = get_settings()
+
+    sleeps = 0
+    while True:
+        if function():
+            return
+
+        sleep(settings.WAIT_SLEEP_TIME)
+        sleeps += 1
+
+        if sleeps > settings.WAIT_MAX_SLEEPS:
+            raise KubeBuildError('Timeout waiting for deployment to be ready')
+
+
+def _wait_for_object(*args):
+    return _wait_for(lambda: _object_exists(*args) is True)
+
+
+def _wait_for_no_object(*args):
+    return _wait_for(lambda: _object_exists(*args) is False)
+
+
 def list_pods(build):
     k8s_core_api = _get_k8s_core_api(build)
     return k8s_core_api.list_namespaced_pod(namespace=build.namespace).items
@@ -52,11 +75,14 @@ def list_pods(build):
 
 def delete_pod(build, pod):
     build.log_info(f'Delete pod: {get_object_name(pod)}')
+
     k8s_core_api = _get_k8s_core_api(build)
-    return k8s_core_api.delete_namespaced_pod(
+    k8s_core_api.delete_namespaced_pod(
         name=get_object_name(pod),
         namespace=build.namespace,
     )
+
+    _wait_for_no_object(k8s_core_api, 'read_namespaced_pod', build, pod)
 
 
 def list_replica_sets(build):
@@ -65,11 +91,15 @@ def list_replica_sets(build):
 
 
 def delete_replica_set(build, replica_set):
+    build.log_info(f'Delete replica set: {get_object_name(replica_set)}')
+
     k8s_apps_api = _get_k8s_apps_api(build)
-    return k8s_apps_api.delete_namespaced_replica_set(
+    k8s_apps_api.delete_namespaced_replica_set(
         name=get_object_name(replica_set),
         namespace=build.namespace,
     )
+
+    _wait_for_no_object(k8s_apps_api, 'read_namespaced_replica_set', build, replica_set)
 
 
 def list_services(build):
@@ -79,11 +109,14 @@ def list_services(build):
 
 def delete_service(build, service):
     build.log_info(f'Delete service: {get_object_name(service)}')
+
     k8s_core_api = _get_k8s_core_api(build)
-    return k8s_core_api.delete_namespaced_service(
+    k8s_core_api.delete_namespaced_service(
         name=get_object_name(service),
         namespace=build.namespace,
     )
+
+    _wait_for_no_object(k8s_core_api, 'read_namespaced_service', build, service)
 
 
 def service_exists(build, service):
@@ -100,6 +133,7 @@ def create_service(build, service):
         namespace=build.namespace,
     )
 
+    _wait_for_object(k8s_core_api, 'read_namespaced_service', build, service)
     return k8s_service
 
 
@@ -144,11 +178,14 @@ def list_deployments(build):
 
 def delete_deployment(build, deployment):
     build.log_info(f'Delete deployment: {get_object_name(deployment)}')
+
     k8s_apps_api = _get_k8s_apps_api(build)
-    return k8s_apps_api.delete_namespaced_deployment(
+    k8s_apps_api.delete_namespaced_deployment(
         name=get_object_name(deployment),
         namespace=build.namespace,
     )
+
+    _wait_for_no_object(k8s_apps_api, 'read_namespaced_deployment', build, deployment)
 
 
 def deployment_exists(build, deployment):
@@ -184,25 +221,18 @@ def update_deployment(build, deployment):
 
 
 def wait_for_deployment(build, deployment):
-    settings = get_settings()
     k8s_apps_api = _get_k8s_apps_api(build)
 
-    sleeps = 0
-
-    while True:
-        deployment = k8s_apps_api.read_namespaced_deployment(
+    def check_deployment():
+        d = k8s_apps_api.read_namespaced_deployment(
             name=get_object_name(deployment),
             namespace=build.namespace,
         )
 
-        if deployment.status.ready_replicas == deployment.status.replicas:
-            break
+        if d.status.ready_replicas == d.status.replicas:
+            return True
 
-        sleep(settings.WAIT_SLEEP_TIME)
-        sleeps += 1
-
-        if sleeps > settings.WAIT_MAX_SLEEPS:
-            raise KubeBuildError('Timeout waiting for deployment to be ready')
+    _wait_for(check_deployment)
 
 
 def create_or_update_deployment(build, deployment):
@@ -218,11 +248,14 @@ def list_jobs(build):
 
 def delete_job(build, job):
     build.log_info(f'Delete job: {get_object_name(job)}')
+
     k8s_batch_api = _get_k8s_batch_api(build)
-    return k8s_batch_api.delete_namespaced_job(
+    k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
         namespace=build.namespace,
     )
+
+    _wait_for_no_object(k8s_batch_api, 'read_namespaced_job', build, job)
 
 
 def create_job(build, job):
@@ -240,22 +273,15 @@ def create_job(build, job):
 
 
 def wait_for_job(build, job):
-    settings = get_settings()
     k8s_batch_api = _get_k8s_batch_api(build)
 
-    sleeps = 0
-
-    while True:
-        job = k8s_batch_api.read_namespaced_job(
+    def check_job():
+        j = k8s_batch_api.read_namespaced_job(
             name=get_object_name(job),
             namespace=build.namespace,
         )
 
-        if job.status.succeeded == job.spec.completions:
-            break
+        if j.status.succeeded == j.spec.completions:
+            return True
 
-        sleep(settings.WAIT_SLEEP_TIME)
-        sleeps += 1
-
-        if sleeps > settings.WAIT_MAX_SLEEPS:
-            raise KubeBuildError('Timeout waiting for job to complete')
+    _wait_for(check_job)
