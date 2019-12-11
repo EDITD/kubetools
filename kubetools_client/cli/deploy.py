@@ -27,6 +27,35 @@ from kubetools_client.deploy.util import run_shell_command
 from kubetools_client.exceptions import KubeBuildError
 
 
+def _dry_deploy_object_loop(object_type, objects):
+    name_to_object = {
+        get_object_name(obj): obj
+        for obj in objects
+    }
+
+    while True:
+        object_name = click.prompt(
+            f'Print {object_type}?',
+            type=click.Choice(name_to_object),
+            default='exit',
+        )
+
+        if object_name == 'exit':
+            break
+
+        click.echo(json.dumps(name_to_object[object_name], indent=4))
+
+
+def _dry_deploy_loop(build, services, deployments, jobs):
+    for object_type, objects in (
+        ('service', services),
+        ('deployment', deployments),
+        ('job', jobs),
+    ):
+        if objects:
+            _dry_deploy_object_loop(object_type, objects)
+
+
 def _get_git_info(app_dir):
     git_annotations = {}
 
@@ -165,35 +194,6 @@ def deploy_cli(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         all_deployments,
         all_jobs,
     )
-
-
-def _dry_deploy_object_loop(object_type, objects):
-    name_to_object = {
-        get_object_name(obj): obj
-        for obj in objects
-    }
-
-    while True:
-        object_name = click.prompt(
-            f'Print {object_type}?',
-            type=click.Choice(name_to_object),
-            default='exit',
-        )
-
-        if object_name == 'exit':
-            break
-
-        click.echo(json.dumps(name_to_object[object_name], indent=4))
-
-
-def _dry_deploy_loop(build, services, deployments, jobs):
-    for object_type, objects in (
-        ('service', services),
-        ('deployment', deployments),
-        ('job', jobs),
-    ):
-        if objects:
-            _dry_deploy_object_loop(object_type, objects)
 
 
 def _get_objects_to_delete(
