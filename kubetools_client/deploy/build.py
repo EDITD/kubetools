@@ -33,8 +33,9 @@ class Build(object):
 
     @contextmanager
     def stage(self, stage_name):
-        click.echo(stage_name)
+        click.echo(f'--> {stage_name}')
         old_in_stage = self.in_stage
         self.in_stage = True
         yield
         self.in_stage = old_in_stage
+        click.echo()
