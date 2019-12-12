@@ -8,6 +8,18 @@ from .service import make_service_config
 from .util import copy_and_update
 
 
+def make_deployment_name(project_name, deployment_name):
+    project_name = project_name.replace('_', '-')
+    deployment_name = deployment_name.replace('_', '-')
+
+    if deployment_name.startswith(project_name):
+        return deployment_name
+
+    # We expect to come here - but some old kubetools.yml's will prefix
+    # the project name before every deployment.
+    return '-'.join((project_name, deployment_name))
+
+
 def make_context_name(app_name, container_name):
     return '{0}-{1}'.format(app_name, container_name)
 
@@ -116,7 +128,7 @@ def generate_kubernetes_configs_for_project(
     deployments = []
 
     for name, dependency in six.iteritems(config.get('dependencies', {})):
-        dependency_name = '-'.join((project_name, name))
+        dependency_name = make_deployment_name(project_name, name)
         dependency_labels = copy_and_update(base_labels, {
             'kubetools/role': 'dependency',
             'kubetools/name': dependency_name,
@@ -147,16 +159,8 @@ def generate_kubernetes_configs_for_project(
         ))
 
     for name, deployment in six.iteritems(config.get('deployments', {})):
-        # This is expected - kubetools.yml deployments need not prefix names
-        # with the project name.
-        if not name.startswith(project_name):
-            deployment_name = '-'.join((project_name, name))
-        # Originally the deployment name was used as-is, ie <app>-<deployment>,
-        # so we want to avoid breaking those.
-        else:
-            deployment_name = name
-
-        app_labels = copy_and_update(base_labels, {
+        deployment_name = make_deployment_name(project_name, name)
+        deployment_labels = copy_and_update(base_labels, {
             'kubetools/role': 'app',
             'kubetools/name': deployment_name,
         })
@@ -175,7 +179,7 @@ def generate_kubernetes_configs_for_project(
             services.append(make_service_config(
                 deployment_name,
                 container_ports,
-                labels=app_labels,
+                labels=deployment_labels,
                 annotations=app_annotations,
             ))
 
@@ -189,7 +193,7 @@ def generate_kubernetes_configs_for_project(
             deployment_name,
             containers,
             replicas=deployment_replicas,
-            labels=app_labels,
+            labels=deployment_labels,
             annotations=app_annotations,
             envvars=envvars,
         ))
