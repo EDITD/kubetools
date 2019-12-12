@@ -278,14 +278,17 @@ def log_remove_changes(
 
 
 def execute_remove(build, services, deployments, jobs):
-    with build.stage('Delete services'):
-        _delete_objects(build, services, delete_service)
+    if services:
+        with build.stage('Delete services'):
+            _delete_objects(build, services, delete_service)
 
-    with build.stage('Delete deployments'):
-        _delete_objects(build, deployments, delete_deployment)
+    if deployments:
+        with build.stage('Delete deployments'):
+            _delete_objects(build, deployments, delete_deployment)
 
-    with build.stage('Delete jobs'):
-        _delete_objects(build, jobs, delete_job)
+    if jobs:
+        with build.stage('Delete jobs'):
+            _delete_objects(build, jobs, delete_job)
 
 
 # Restart
