@@ -1,5 +1,11 @@
 import six
 
+from kubetools_client.constants import (
+    MANAGED_BY_ANNOTATION_KEY,
+    NAME_LABEL_KEY,
+    PROJECT_NAME_ANNOTATION_KEY,
+    ROLE_LABEL_KEY,
+)
 from kubetools_client.exceptions import KubeConfigError
 
 from .deployment import make_deployment_config
@@ -108,11 +114,11 @@ def generate_kubernetes_configs_for_project(
     project_name = config['name']
 
     base_labels = copy_and_update(base_labels, {
-        'kubetools/project_name': project_name,
+        PROJECT_NAME_ANNOTATION_KEY: project_name,
     })
 
     base_annotations = copy_and_update(base_annotations, {
-        'app.kubernetes.io/managed-by': 'kubetools',
+        MANAGED_BY_ANNOTATION_KEY: 'kubetools',
     })
 
     envvars = copy_and_update(envvars, {
@@ -130,8 +136,8 @@ def generate_kubernetes_configs_for_project(
     for name, dependency in six.iteritems(config.get('dependencies', {})):
         dependency_name = make_deployment_name(project_name, name)
         dependency_labels = copy_and_update(base_labels, {
-            'kubetools/role': 'dependency',
-            'kubetools/name': dependency_name,
+            ROLE_LABEL_KEY: 'dependency',
+            NAME_LABEL_KEY: dependency_name,
         })
 
         containers, container_ports = _get_containers_data(
@@ -161,8 +167,8 @@ def generate_kubernetes_configs_for_project(
     for name, deployment in six.iteritems(config.get('deployments', {})):
         deployment_name = make_deployment_name(project_name, name)
         deployment_labels = copy_and_update(base_labels, {
-            'kubetools/role': 'app',
-            'kubetools/name': deployment_name,
+            ROLE_LABEL_KEY: 'app',
+            NAME_LABEL_KEY: deployment_name,
         })
 
         containers, container_ports = _get_containers_data(

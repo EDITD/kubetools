@@ -2,6 +2,7 @@ from collections import defaultdict
 from os import path
 
 from kubetools_client.config import load_kubetools_config
+from kubetools_client.constants import MANAGED_BY_ANNOTATION_KEY, NAME_LABEL_KEY
 from kubetools_client.exceptions import KubeBuildError
 
 from .image import ensure_docker_images
@@ -45,7 +46,7 @@ def _delete_objects(build, objects, delete_function):
 
 
 def _is_kubetools_object(build, obj):
-    if obj.metadata.annotations.get('app.kubernetes.io/managed-by') == 'kubetools':
+    if obj.metadata.annotations.get(MANAGED_BY_ANNOTATION_KEY) == 'kubetools':
         return True
 
     build.log_warning(f'Refusing to touch {get_object_name(obj)} as not managed by kubetools!')
@@ -60,13 +61,13 @@ def _get_app_objects(
 
     if app_names:
         objects = list(filter(
-            lambda obj: obj.metadata.labels.get('kubetools/name') in app_names,
+            lambda obj: obj.metadata.labels.get(NAME_LABEL_KEY) in app_names,
             objects,
         ))
 
         if check_leftovers:
             object_names_to_delete = set([
-                obj.metadata.labels['kubetools/name']
+                obj.metadata.labels[NAME_LABEL_KEY]
                 for obj in objects
             ])
 
