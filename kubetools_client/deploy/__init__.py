@@ -1,7 +1,10 @@
 from collections import defaultdict
+from os import path
 
+from kubetools_client.config import load_kubetools_config
 from kubetools_client.exceptions import KubeBuildError
 
+from .image import ensure_docker_images
 from .kubernetes.api import (
     create_deployment,
     create_job,
@@ -25,6 +28,8 @@ from .kubernetes.api import (
     update_service,
     wait_for_deployment,
 )
+from .kubernetes.config import generate_kubernetes_configs_for_project
+from .util import run_shell_command
 
 
 def _log_actions(build, action, object_type, names, name_formatter):
@@ -64,8 +69,88 @@ def _get_app_objects(
     return objects
 
 
+def _get_git_info(app_dir):
+    git_annotations = {}
+
+    commit_hash = run_shell_command(
+        'git', 'rev-parse', '--short=7', 'HEAD',
+        cwd=app_dir,
+    ).strip().decode()
+    git_annotations['kubetools/git_commit'] = commit_hash
+
+    branch_name = run_shell_command(
+        'git', 'rev-parse', '--abbrev-ref', 'HEAD',
+        cwd=app_dir,
+    ).strip().decode()
+
+    if branch_name != 'HEAD':
+        git_annotations['kubetools/git_branch'] = branch_name
+
+    try:
+        git_tag = run_shell_command(
+            'git', 'tag', '--points-at', commit_hash,
+            cwd=app_dir,
+        ).strip().decode()
+    except KubeBuildError:
+        pass
+    else:
+        if git_tag:
+            git_annotations['kubetools/git_tag'] = git_tag
+
+    return commit_hash, git_annotations
+
+
 # Deploy/upgrade
 # Handles deploying new services and upgrading existing ones
+
+def get_deploy_objects(build, app_dirs, replicas=1, default_registry=None):
+    all_services = []
+    all_deployments = []
+    all_jobs = []
+
+    for app_dir in app_dirs:
+        envvars = {
+            'KUBE_ENV': build.env,
+            'KUBE_NAMESPACE': build.namespace,
+        }
+
+        annotations = {
+            'kubetools/env': build.env,
+            'kubetools/namespace': build.namespace,
+        }
+
+        if path.exists(path.join(app_dir, '.git')):
+            commit_hash, git_annotations = _get_git_info(app_dir)
+            annotations.update(git_annotations)
+        else:
+            raise KubeBuildError(f'{app_dir} is not a valid git repository!')
+
+        kubetools_config = load_kubetools_config(
+            app_dir,
+            env=build.env,
+            namespace=build.namespace,
+        )
+
+        context_to_image = ensure_docker_images(
+            kubetools_config, build, app_dir,
+            commit_hash=commit_hash,
+            default_registry=default_registry,
+        )
+
+        services, deployments, jobs = generate_kubernetes_configs_for_project(
+            kubetools_config,
+            envvars=envvars,
+            context_name_to_image=context_to_image,
+            base_annotations=annotations,
+            replicas=replicas,
+        )
+
+        all_services.extend(services)
+        all_deployments.extend(deployments)
+        all_jobs.extend(jobs)
+
+    return all_services, all_deployments, all_jobs
+
 
 def log_deploy_changes(
     build, services, deployments, jobs,
