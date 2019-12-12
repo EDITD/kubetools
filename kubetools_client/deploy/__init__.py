@@ -44,11 +44,19 @@ def _delete_objects(build, objects, delete_function):
         delete_function(build, obj)
 
 
+def _is_kubetools_object(build, obj):
+    if obj.metadata.annotations.get('app.kubernetes.io/managed-by') == 'kubetools':
+        return True
+
+    build.log_warning(f'Refusing to touch {get_object_name(obj)} as not managed by kubetools!')
+
+
 def _get_app_objects(
     build, app_names, list_objects_function,
     check_leftovers=True,
 ):
     objects = list_objects_function(build)
+    objects = list(filter(lambda obj: _is_kubetools_object(build, obj), objects))
 
     if app_names:
         objects = list(filter(
@@ -369,6 +377,9 @@ def get_cleanup_objects(build):
     replica_set_names_to_delete = set()
 
     for replica_set in replica_sets:
+        if not _is_kubetools_object(build, replica_set):
+            continue
+
         if not replica_set.metadata.owner_references:
             replica_set_names_to_delete.add(get_object_name(replica_set))
             replica_sets_to_delete.append(replica_set)
