@@ -59,11 +59,13 @@ def _get_app_objects(
     objects = list_objects_function(build)
 
     def filter_object(obj):
-        if is_kubetools_object(obj):
+        if not is_kubetools_object(obj):
             build.log_warning((
                 f'Refusing to touch {get_object_name(obj)} '
                 'as not managed by kubetools!'
             ))
+            return False
+        return True
 
     objects = list(filter(filter_object, objects))
 
