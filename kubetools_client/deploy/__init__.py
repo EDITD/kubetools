@@ -2,7 +2,13 @@ from collections import defaultdict
 from os import path
 
 from kubetools_client.config import load_kubetools_config
-from kubetools_client.constants import MANAGED_BY_ANNOTATION_KEY, NAME_LABEL_KEY
+from kubetools_client.constants import (
+    GIT_BRANCH_ANNOTATION_KEY,
+    GIT_COMMIT_ANNOTATION_KEY,
+    GIT_TAG_ANNOTATION_KEY,
+    NAME_LABEL_KEY,
+    ROLE_LABEL_KEY,
+)
 from kubetools_client.exceptions import KubeBuildError
 
 from .image import ensure_docker_images
@@ -19,6 +25,7 @@ from .kubernetes.api import (
     delete_service,
     deployment_exists,
     get_object_name,
+    is_kubetools_object,
     list_deployments,
     list_jobs,
     list_pods,
@@ -45,19 +52,20 @@ def _delete_objects(build, objects, delete_function):
         delete_function(build, obj)
 
 
-def _is_kubetools_object(build, obj):
-    if obj.metadata.annotations.get(MANAGED_BY_ANNOTATION_KEY) == 'kubetools':
-        return True
-
-    build.log_warning(f'Refusing to touch {get_object_name(obj)} as not managed by kubetools!')
-
-
 def _get_app_objects(
     build, app_names, list_objects_function,
     check_leftovers=True,
 ):
     objects = list_objects_function(build)
-    objects = list(filter(lambda obj: _is_kubetools_object(build, obj), objects))
+
+    def filter_object(obj):
+        if is_kubetools_object(obj):
+            build.log_warning((
+                f'Refusing to touch {get_object_name(obj)} '
+                'as not managed by kubetools!'
+            ))
+
+    objects = list(filter(filter_object, objects))
 
     if app_names:
         objects = list(filter(
@@ -85,7 +93,7 @@ def _get_git_info(app_dir):
         'git', 'rev-parse', '--short=7', 'HEAD',
         cwd=app_dir,
     ).strip().decode()
-    git_annotations['kubetools/git_commit'] = commit_hash
+    git_annotations[GIT_COMMIT_ANNOTATION_KEY] = commit_hash
 
     branch_name = run_shell_command(
         'git', 'rev-parse', '--abbrev-ref', 'HEAD',
@@ -93,7 +101,7 @@ def _get_git_info(app_dir):
     ).strip().decode()
 
     if branch_name != 'HEAD':
-        git_annotations['kubetools/git_branch'] = branch_name
+        git_annotations[GIT_BRANCH_ANNOTATION_KEY] = branch_name
 
     try:
         git_tag = run_shell_command(
@@ -104,7 +112,7 @@ def _get_git_info(app_dir):
         pass
     else:
         if git_tag:
-            git_annotations['kubetools/git_tag'] = git_tag
+            git_annotations[GIT_TAG_ANNOTATION_KEY] = git_tag
 
     return commit_hash, git_annotations
 
@@ -199,7 +207,7 @@ def execute_deploy(build, services, deployments, jobs):
     main_services = []
 
     for service in services:
-        if service['metadata']['labels']['kubetools/role'] == 'app':
+        if service['metadata']['labels'][ROLE_LABEL_KEY] == 'app':
             main_services.append(service)
         else:
             depend_services.append(service)
@@ -207,7 +215,7 @@ def execute_deploy(build, services, deployments, jobs):
     depend_deployments = []
     main_deployments = []
     for deployment in deployments:
-        if deployment['metadata']['labels']['kubetools/role'] == 'app':
+        if deployment['metadata']['labels'][ROLE_LABEL_KEY] == 'app':
             main_deployments.append(deployment)
         else:
             depend_deployments.append(deployment)
@@ -378,7 +386,7 @@ def get_cleanup_objects(build):
     replica_set_names_to_delete = set()
 
     for replica_set in replica_sets:
-        if not _is_kubetools_object(build, replica_set):
+        if not is_kubetools_object(replica_set):
             continue
 
         if not replica_set.metadata.owner_references:

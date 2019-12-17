@@ -3,7 +3,7 @@ import six
 from kubetools_client.constants import (
     MANAGED_BY_ANNOTATION_KEY,
     NAME_LABEL_KEY,
-    PROJECT_NAME_ANNOTATION_KEY,
+    PROJECT_NAME_LABEL_KEY,
     ROLE_LABEL_KEY,
 )
 from kubetools_client.exceptions import KubeConfigError
@@ -114,7 +114,7 @@ def generate_kubernetes_configs_for_project(
     project_name = config['name']
 
     base_labels = copy_and_update(base_labels, {
-        PROJECT_NAME_ANNOTATION_KEY: project_name,
+        PROJECT_NAME_LABEL_KEY: project_name,
     })
 
     base_annotations = copy_and_update(base_annotations, {
