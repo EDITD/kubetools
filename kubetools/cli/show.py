@@ -30,19 +30,6 @@ def _get_service_meta(service):
     return ''.join(meta_items)
 
 
-def _print_items2(items, meta_function=None):
-    for item in items:
-        name = click.style(get_object_name(item), bold=True)
-
-        project_name = item.metadata.labels.get(PROJECT_NAME_LABEL_KEY, 'unknown')
-        meta = f'project={project_name}'
-
-        if meta_function:
-            meta = f'{meta}, {meta_function(item)}'
-
-        click.echo(f'    {name} ({meta})')
-
-
 def _print_items(items, header_to_getter=None):
     header_to_getter = header_to_getter or {}
 
