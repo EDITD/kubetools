@@ -19,7 +19,10 @@ if __name__ == '__main__':
     setup(
         version=get_version(),
         name='kubetools',
-        description='Client library for Kubetools',
+        description=(
+            'Kubetools is a tool and processes for developing and deploying '
+            'microservices to Kubernetes.'
+        ),
         author='Devs @ EDITED',
         author_email='nick@edited.com',
         url='http://github.com/EDITD/kubetools',
