@@ -42,6 +42,7 @@ if __name__ == '__main__':
             'six',
             'setuptools',
             'kubernetes',
+            'tabulate<1',
         ),
         extras_require={
             'dev': (
