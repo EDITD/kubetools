@@ -99,7 +99,6 @@ def ensure_context(ctx, param, value):
     envvar='KUBETOOLS_CONTEXT',
     help='The name of the Kubernetes context to use.',
 )
-@click.option('--debug', is_flag=True, help='Show debug logs.')
 @click.option(
     '--contexts',
     is_flag=True,
@@ -108,11 +107,12 @@ def ensure_context(ctx, param, value):
     expose_value=False,
     help='List available Kubernetes contexts and exit.',
 )
+@click.option('--debug', is_flag=True, help='Show debug logs.')
 @click.version_option(version=__version__, message='%(prog)s: v%(version)s')
 @click.pass_context
 def cli_bootstrap(ctx, context, debug):
     '''
-    Kubetools client.
+    Kubetools client - deploy apps to Kubernetes.
     '''
 
     ctx.meta['kube_context'] = context

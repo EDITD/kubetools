@@ -20,7 +20,7 @@ from . import backends  # noqa
 @click.pass_context
 def dev(ctx, env, debug=False):
     '''
-    Kubetools dev client (ktd).
+    Kubetools dev client - develop apps with Docker.
     '''
 
     setup_logging(debug)
