@@ -90,6 +90,10 @@ def _get_completion_status(item):
     return f'{item.status.succeeded}/{item.spec.completions}'
 
 
+def _get_command(item):
+    return item.metadata.annotations.get('description')
+
+
 @cli_bootstrap.command(help_priority=3)
 @click.argument('namespace')
 @click.argument('app', required=False)
@@ -152,5 +156,6 @@ def show(ctx, namespace, app):
             click.echo(f'--> {len(jobs)} Jobs')
             _print_items(jobs, {
                 'Completions': _get_completion_status,
+                'Command': _get_command,
             })
             click.echo()
