@@ -69,7 +69,7 @@ def print_contexts(ctx, param, value):
     if not value:
         return
 
-    click.echo('### Available Kubernetes contexts:')
+    click.echo('--> Available Kubernetes contexts:')
     context_names = _get_context_names()
     for name in context_names:
         click.echo(f'    {click.style(name, bold=True)}')

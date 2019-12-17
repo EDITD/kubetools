@@ -38,7 +38,7 @@ def logs(
     '''
 
     click.echo(click.style(
-        '### Following dev environment logs...', 'blue',
+        '--> Following dev environment logs...', 'blue',
     ))
 
     # Show all the top level containers
