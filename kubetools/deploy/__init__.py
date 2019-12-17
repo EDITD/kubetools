@@ -1,15 +1,15 @@
 from collections import defaultdict
 from os import path
 
-from kubetools_client.config import load_kubetools_config
-from kubetools_client.constants import (
+from kubetools.config import load_kubetools_config
+from kubetools.constants import (
     GIT_BRANCH_ANNOTATION_KEY,
     GIT_COMMIT_ANNOTATION_KEY,
     GIT_TAG_ANNOTATION_KEY,
     NAME_LABEL_KEY,
     ROLE_LABEL_KEY,
 )
-from kubetools_client.exceptions import KubeBuildError
+from kubetools.exceptions import KubeBuildError
 
 from .image import ensure_docker_images
 from .kubernetes.api import (

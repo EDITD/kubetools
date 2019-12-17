@@ -27,9 +27,9 @@ if __name__ == '__main__':
         entry_points={
             'console_scripts': (
                 # kubetools client commands
-                'kubetools=kubetools_client.cli.__main__:main',
+                'kubetools=kubetools.cli.__main__:main',
                 # ktd dev commands
-                'ktd=kubetools_client.dev.__main__:main',
+                'ktd=kubetools.dev.__main__:main',
             ),
         },
         install_requires=(

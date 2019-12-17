@@ -10,8 +10,8 @@ import yaml
 
 from pydash import memoize
 
-from kubetools_client.exceptions import KubeDevError
-from kubetools_client.settings import get_settings
+from kubetools.exceptions import KubeDevError
+from kubetools.settings import get_settings
 
 NON_COMPOSE_KEYS = (
     # Kubetools specific

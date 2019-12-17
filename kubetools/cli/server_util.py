@@ -7,8 +7,6 @@ from time import sleep
 
 import click
 
-from six.moves import xrange
-
 
 # Hacky way of getting terminal size (so can clear lines)
 # Source: http://stackoverflow.com/questions/566746
@@ -24,7 +22,7 @@ STDOUT = click.get_text_stream('stdout')
 
 
 def _clear_line(return_=True):
-    line = ''.join(' ' for _ in xrange(0, TERMINAL_WIDTH))
+    line = ''.join(' ' for _ in range(0, TERMINAL_WIDTH))
 
     if return_:
         line = '{0}\r'.format(line)

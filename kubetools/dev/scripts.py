@@ -2,8 +2,8 @@ from os import environ, path
 
 import click
 
-from kubetools_client.exceptions import KubeDevError
-from kubetools_client.settings import get_settings, get_settings_directory
+from kubetools.exceptions import KubeDevError
+from kubetools.settings import get_settings, get_settings_directory
 
 from . import dev
 from .backend import (

@@ -10,8 +10,8 @@ import yaml
 
 from pkg_resources import parse_version
 
-from kubetools_client import __version__
-from kubetools_client.exceptions import KubeConfigError
+from . import __version__
+from .exceptions import KubeConfigError
 
 
 # Config keys that can be filtered with a conditions: object

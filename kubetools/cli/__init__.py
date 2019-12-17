@@ -2,9 +2,9 @@ import click
 
 from kubernetes import config
 
-from kubetools_client import __version__
-from kubetools_client.log import setup_logging
-from kubetools_client.settings import get_settings
+from kubetools import __version__
+from kubetools.log import setup_logging
+from kubetools.settings import get_settings
 
 
 class SpecialHelpOrder(click.Group):

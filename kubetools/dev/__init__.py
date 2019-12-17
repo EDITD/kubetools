@@ -1,9 +1,9 @@
 import click
 
-from kubetools_client import __version__
-from kubetools_client.config import load_kubetools_config
-from kubetools_client.log import setup_logging
-from kubetools_client.settings import get_settings
+from kubetools import __version__
+from kubetools.config import load_kubetools_config
+from kubetools.log import setup_logging
+from kubetools.settings import get_settings
 
 from . import backends  # noqa
 

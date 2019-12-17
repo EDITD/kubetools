@@ -1,7 +1,7 @@
 import click
 
-from kubetools_client.exceptions import KubeDevError
-from kubetools_client.settings import get_settings
+from kubetools.exceptions import KubeDevError
+from kubetools.settings import get_settings
 
 from . import dev
 from .backend import (

@@ -3,9 +3,9 @@ from time import sleep
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
-from kubetools_client.constants import MANAGED_BY_ANNOTATION_KEY
-from kubetools_client.exceptions import KubeBuildError
-from kubetools_client.settings import get_settings
+from kubetools.constants import MANAGED_BY_ANNOTATION_KEY
+from kubetools.exceptions import KubeBuildError
+from kubetools.settings import get_settings
 
 
 def get_object_name(obj):

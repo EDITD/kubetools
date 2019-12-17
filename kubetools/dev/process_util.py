@@ -3,10 +3,10 @@ import re
 from subprocess import CalledProcessError, PIPE, Popen, STDOUT
 from threading import Thread
 
-from kubetools_client.cli.server_util import UPDATE_DIVISOR, wait_with_spinner
-from kubetools_client.exceptions import KubeDevCommandError
-from kubetools_client.log import logger
-from kubetools_client.settings import get_settings
+from kubetools.cli.server_util import UPDATE_DIVISOR, wait_with_spinner
+from kubetools.exceptions import KubeDevCommandError
+from kubetools.log import logger
+from kubetools.settings import get_settings
 
 
 def _read_command_output(command, output_lines):

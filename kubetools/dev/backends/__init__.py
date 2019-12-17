@@ -1,6 +1,6 @@
 import sys
 
-from kubetools_client.settings import get_settings
+from kubetools.settings import get_settings
 
 from . import docker_compose
 

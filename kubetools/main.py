@@ -4,9 +4,9 @@ import sys
 
 import click
 
-from kubetools_client.exceptions import KubeDevCommandError, KubeDevError, KubeError
-from kubetools_client.log import logger
-from kubetools_client.settings import get_settings
+from .exceptions import KubeDevCommandError, KubeDevError, KubeError
+from .log import logger
+from .settings import get_settings
 
 
 def run_cli(func):

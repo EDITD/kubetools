@@ -1,12 +1,12 @@
 import six
 
-from kubetools_client.constants import (
+from kubetools.constants import (
     MANAGED_BY_ANNOTATION_KEY,
     NAME_LABEL_KEY,
     PROJECT_NAME_LABEL_KEY,
     ROLE_LABEL_KEY,
 )
-from kubetools_client.exceptions import KubeConfigError
+from kubetools.exceptions import KubeConfigError
 
 from .deployment import make_deployment_config
 from .job import make_job_config

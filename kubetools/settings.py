@@ -5,7 +5,7 @@ import click
 from pydash import memoize
 from six.moves.configparser import ConfigParser
 
-from kubetools_client.log import logger
+from .log import logger
 
 
 class KubetoolsSettings(object):

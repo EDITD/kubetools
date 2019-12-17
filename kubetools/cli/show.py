@@ -2,7 +2,7 @@ import click
 
 from tabulate import tabulate
 
-from kubetools_client.constants import (
+from kubetools.constants import (
     GIT_BRANCH_ANNOTATION_KEY,
     GIT_COMMIT_ANNOTATION_KEY,
     GIT_TAG_ANNOTATION_KEY,
@@ -10,8 +10,8 @@ from kubetools_client.constants import (
     PROJECT_NAME_LABEL_KEY,
     ROLE_LABEL_KEY,
 )
-from kubetools_client.deploy.build import Build
-from kubetools_client.deploy.kubernetes.api import (
+from kubetools.deploy.build import Build
+from kubetools.deploy.kubernetes.api import (
     get_object_name,
     is_kubetools_object,
     list_deployments,

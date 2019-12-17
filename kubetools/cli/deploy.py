@@ -3,8 +3,8 @@ import os
 
 import click
 
-from kubetools_client.cli import cli_bootstrap
-from kubetools_client.deploy import (
+from kubetools.cli import cli_bootstrap
+from kubetools.deploy import (
     execute_cleanup,
     execute_deploy,
     execute_remove,
@@ -18,8 +18,8 @@ from kubetools_client.deploy import (
     log_remove_changes,
     log_restart_changes,
 )
-from kubetools_client.deploy.build import Build
-from kubetools_client.deploy.kubernetes.api import get_object_name
+from kubetools.deploy.build import Build
+from kubetools.deploy.kubernetes.api import get_object_name
 
 
 def _dry_deploy_object_loop(object_type, objects):

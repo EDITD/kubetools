@@ -6,9 +6,9 @@ import six
 
 from pydash import memoize
 
-from kubetools_client.dev.process_util import run_process
-from kubetools_client.exceptions import KubeDevError
-from kubetools_client.log import logger
+from kubetools.dev.process_util import run_process
+from kubetools.exceptions import KubeDevError
+from kubetools.log import logger
 
 from .config import (
     create_compose_config,

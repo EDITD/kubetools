@@ -2,8 +2,8 @@ import os
 
 from subprocess import CalledProcessError, check_output, STDOUT
 
-from kubetools_client.exceptions import KubeBuildError
-from kubetools_client.log import logger
+from kubetools.exceptions import KubeBuildError
+from kubetools.log import logger
 
 
 def run_shell_command(*command, **kwargs):

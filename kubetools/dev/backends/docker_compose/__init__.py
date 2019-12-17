@@ -8,9 +8,9 @@ import six
 
 from pyretry import retry
 
-from kubetools_client.exceptions import KubeDevError
-from kubetools_client.log import logger
-from kubetools_client.settings import get_settings
+from kubetools.exceptions import KubeDevError
+from kubetools.log import logger
+from kubetools.settings import get_settings
 
 from .config import (
     get_all_containers,
