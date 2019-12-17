@@ -3,6 +3,7 @@ from time import sleep
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
+from kubetools_client.constants import MANAGED_BY_ANNOTATION_KEY
 from kubetools_client.exceptions import KubeBuildError
 from kubetools_client.settings import get_settings
 
@@ -11,6 +12,11 @@ def get_object_name(obj):
     if isinstance(obj, dict):
         return obj['metadata']['name']
     return obj.metadata.name
+
+
+def is_kubetools_object(obj):
+    if obj.metadata.annotations.get(MANAGED_BY_ANNOTATION_KEY) == 'kubetools':
+        return True
 
 
 def _get_api_client(build):
