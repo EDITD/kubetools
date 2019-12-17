@@ -42,7 +42,6 @@ if __name__ == '__main__':
             'requests>=2,<3',
             'pydash',
             'pyretry',
-            'six',
             'setuptools',
             'kubernetes',
             'tabulate<1',

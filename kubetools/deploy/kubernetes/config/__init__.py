@@ -1,5 +1,3 @@
-import six
-
 from kubetools.constants import (
     MANAGED_BY_ANNOTATION_KEY,
     NAME_LABEL_KEY,
@@ -72,7 +70,7 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
     all_container_ports = []
     all_containers = {}
 
-    for container_name, data in six.iteritems(containers):
+    for container_name, data in containers.items():
         all_container_ports.extend(data.get('ports', []))
         _ensure_image(
             data, context_name_to_image,
@@ -133,7 +131,7 @@ def generate_kubernetes_configs_for_project(
     services = []
     deployments = []
 
-    for name, dependency in six.iteritems(config.get('dependencies', {})):
+    for name, dependency in config.get('dependencies', {}).items():
         dependency_name = make_deployment_name(project_name, name)
         dependency_labels = copy_and_update(base_labels, {
             ROLE_LABEL_KEY: 'dependency',
@@ -164,7 +162,7 @@ def generate_kubernetes_configs_for_project(
             envvars=envvars,
         ))
 
-    for name, deployment in six.iteritems(config.get('deployments', {})):
+    for name, deployment in config.get('deployments', {}).items():
         deployment_name = make_deployment_name(project_name, name)
         deployment_labels = copy_and_update(base_labels, {
             ROLE_LABEL_KEY: 'app',
@@ -207,7 +205,7 @@ def generate_kubernetes_configs_for_project(
     # Jobs can be upgrades and/or passed in as part of the build spec
     jobs = []
     job_labels = copy_and_update(base_labels, {
-        'role': 'job',
+        ROLE_LABEL_KEY: 'job',
     })
 
     # Add any upgrade jobs
@@ -221,10 +219,10 @@ def generate_kubernetes_configs_for_project(
         # maintains backwards compatability where one can ask for a job without
         # specifying any container (back when every app was one container).
         if 'image' not in job_spec:
-            for name, data in six.iteritems(config.get('deployments')):
+            for name, data in config.get('deployments').items():
                 found_image = False
 
-                for _, container in six.iteritems(data['containers']):
+                for _, container in data['containers'].items():
                     if 'image' in container:
                         job_spec['image'] = container['image']
                         found_image = True

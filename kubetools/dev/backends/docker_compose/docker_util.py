@@ -1,8 +1,5 @@
-from __future__ import print_function
-
 import docker
 import requests
-import six
 
 from pydash import memoize
 
@@ -138,9 +135,9 @@ def get_containers_status(
         ports = []
 
         if container.attrs['NetworkSettings']['Ports']:
-            for local_port, host_port in six.iteritems(
-                container.attrs['NetworkSettings']['Ports'],
-            ):
+            for (
+                local_port, host_port,
+            ) in container.attrs['NetworkSettings']['Ports'].items():
                 if not host_port:
                     continue
 

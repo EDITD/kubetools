@@ -2,7 +2,6 @@ import logging
 import sys
 
 import click
-import six
 
 STDOUT_LOG_LEVELS = (logging.DEBUG, logging.INFO)
 STDERR_LOG_LEVELS = (logging.WARNING, logging.ERROR, logging.CRITICAL)
@@ -33,7 +32,7 @@ class LogFormatter(logging.Formatter):
             message = record.msg % record.args
 
         # We only handle strings here
-        if isinstance(message, six.string_types):
+        if isinstance(message, str):
             if record.levelno in self.level_to_format:
                 message = self.level_to_format[record.levelno](message)
 

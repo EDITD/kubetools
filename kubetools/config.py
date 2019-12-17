@@ -5,7 +5,6 @@ the dev client (ktd) and the server (lists KubetoolsClient as a requirement).
 
 from os import getcwd, path
 
-import six
 import yaml
 
 from pkg_resources import parse_version
@@ -132,7 +131,7 @@ def _check_min_version(config):
     running_version = parse_version(__version__)
     needed_version = parse_version(
         # Version must be a string
-        six.text_type(config['minKubetoolsVersion']),
+        str(config['minKubetoolsVersion']),
     )
 
     if needed_version > running_version:
@@ -161,7 +160,7 @@ def _filter_config_data(key, items_or_object, env, namespace, dev):
     elif isinstance(items_or_object, dict):
         return {
             key: item
-            for key, item in six.iteritems(items_or_object)
+            for key, item in items_or_object.items()
             if is_match(item)
         }
 
@@ -224,11 +223,11 @@ def _expand_containers(key, items_or_object, contexts, dev):
     elif isinstance(items_or_object, dict):
         new_item = {}
 
-        for key, item in six.iteritems(items_or_object):
+        for key, item in items_or_object.items():
             if 'containers' in item:
                 item['containers'] = {
                     k: do_expand(v)
-                    for k, v in six.iteritems(item.pop('containers'))
+                    for k, v in item.pop('containers').items()
                 }
 
             new_item[key] = item
@@ -243,7 +242,7 @@ def _expand_containers(key, items_or_object, contexts, dev):
 
 
 def _merge_config(base_config, new_config):
-    for key, value in six.iteritems(new_config):
+    for key, value in new_config.items():
         # If this key is a dict in the old config, merge those
         if key in base_config and isinstance(value, dict):
             _merge_config(base_config[key], new_config[key])

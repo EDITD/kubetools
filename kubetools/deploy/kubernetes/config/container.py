@@ -1,5 +1,3 @@
-import six
-
 from .util import get_hash
 
 # Keys to turn into environment variables
@@ -108,9 +106,9 @@ def make_container_config(
         container_data['env'].extend([
             {
                 'name': key,
-                'value': six.text_type(value),
+                'value': str(value),
             }
-            for key, value in six.iteritems(envvars)
+            for key, value in envvars.items()
         ])
 
     # Apply any container-config level ENVars
@@ -118,9 +116,9 @@ def make_container_config(
         container_data['env'].extend([
             {
                 'name': key,
-                'value': six.text_type(value),
+                'value': str(value),
             }
-            for key, value in six.iteritems(container['env'])
+            for key, value in container['env'].items()
         ])
 
     if 'volumes' in container:

@@ -1,9 +1,9 @@
+from configparser import ConfigParser
 from os import access, listdir, path, X_OK
 
 import click
 
 from pydash import memoize
-from six.moves.configparser import ConfigParser
 
 from .log import logger
 

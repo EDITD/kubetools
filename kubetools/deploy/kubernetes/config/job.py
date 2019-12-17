@@ -1,8 +1,6 @@
 import shlex
 from uuid import uuid4
 
-from six import string_types
-
 from .container import make_container_config
 from .util import copy_and_update
 
@@ -34,7 +32,7 @@ def make_job_config(
     # Figure out the command
     command = config['command']
 
-    if isinstance(command, string_types):
+    if isinstance(command, str):
         command = shlex.split(command)
 
     # Get/create description

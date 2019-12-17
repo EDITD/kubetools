@@ -5,7 +5,6 @@ from hashlib import md5
 from os import makedirs, path
 
 import click
-import six
 import yaml
 
 from pydash import memoize
@@ -79,7 +78,7 @@ def get_all_containers(kubetools_config, container_keys=CONTAINER_KEYS):
     for key_name in container_keys:
         deployments = kubetools_config.get(key_name, {})
 
-        for deployment_name, deployment_config in six.iteritems(deployments):
+        for deployment_name, deployment_config in deployments.items():
             if 'containers' not in deployment_config:
                 raise KubeDevError('Deployment {0} is missing containers'.format(
                     deployment_name,
@@ -87,7 +86,7 @@ def get_all_containers(kubetools_config, container_keys=CONTAINER_KEYS):
 
             deployment_containers = deployment_config['containers']
 
-            for container_name, config in six.iteritems(deployment_containers):
+            for container_name, config in deployment_containers.items():
                 config[CONTAINER_KEY_TO_FLAG[key_name]] = True
                 containers.append((container_name, config))
 
@@ -148,7 +147,7 @@ def _create_compose_service(kubetools_config, name, config, envvars=None):
     # Make our service - drop anything kubernetes or kubetools specific
     service = {
         key: value
-        for key, value in six.iteritems(service)
+        for key, value in service.items()
         if key not in NON_COMPOSE_KEYS
     }
 

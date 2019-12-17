@@ -4,7 +4,6 @@ from time import sleep
 
 import click
 import requests
-import six
 
 from pyretry import retry
 
@@ -164,7 +163,10 @@ def _probe_container(kubetools_config, name):
         if 'httpGet' in probe:
             http_path = probe['httpGet'].get('path', '/')
 
-            click.echo('--> Waiting for {0} to be ready with HTTP GET {1} (timeout={2}, retries={3})'.format(
+            click.echo((
+                '--> Waiting for {0} to be ready with HTTP GET '
+                '{1} (timeout={2}, retries={3})'
+            ).format(
                 name, click.style(http_path, bold=True), timeout, retries,
             ))
 
@@ -269,7 +271,7 @@ def start_containers(kubetools_config, names=None):
     else:
         names = [
             name
-            for name, status in six.iteritems(containers_status)
+            for name, status in containers_status.items()
             # Check for both started & stopped - we only want to warn about
             # containers that don't exist (for ktd up).
             if status['up'] in (True, False)
@@ -360,7 +362,7 @@ def _print_containers(containers):
     container_infos = []
     settings = get_settings()
 
-    for name, data in six.iteritems(containers):
+    for name, data in containers.items():
         port_strings = []
 
         for port in data['ports']:

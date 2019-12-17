@@ -1,5 +1,3 @@
-import six
-
 from .container import make_container_config
 from .util import get_hash, make_dns_safe_name
 
@@ -22,7 +20,7 @@ def make_deployment_config(
 
     # Build our container list
     kubernetes_containers = []
-    for container_name, container in six.iteritems(containers):
+    for container_name, container in containers.items():
         kubernetes_containers.append(make_container_config(
             container_name, container,
             envvars=envvars,
