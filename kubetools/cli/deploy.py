@@ -99,6 +99,10 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
         default_registry=registry,
     )
 
+    if not any((services, deployments, jobs)):
+        click.echo('Nothing to do!')
+        return
+
     if dry:
         return _dry_deploy_loop(build, services, deployments, jobs)
 
