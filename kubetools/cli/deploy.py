@@ -61,7 +61,6 @@ def _dry_deploy_loop(build, services, deployments, jobs):
 @click.option(
     '--replicas',
     type=int,
-    default=1,
     help='Default number of replicas for each app.',
 )
 @click.option(

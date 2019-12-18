@@ -122,7 +122,7 @@ def _get_git_info(app_dir):
 # Deploy/upgrade
 # Handles deploying new services and upgrading existing ones
 
-def get_deploy_objects(build, app_dirs, replicas=1, default_registry=None):
+def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
     all_services = []
     all_deployments = []
     all_jobs = []
@@ -161,12 +161,25 @@ def get_deploy_objects(build, app_dirs, replicas=1, default_registry=None):
             envvars=envvars,
             context_name_to_image=context_to_image,
             base_annotations=annotations,
-            replicas=replicas,
+            replicas=replicas or 1,
         )
 
         all_services.extend(services)
         all_deployments.extend(deployments)
         all_jobs.extend(jobs)
+
+    existing_deployments = {
+        get_object_name(deployment): deployment
+        for deployment in list_deployments(build)
+    }
+
+    # If we haven't been provided an explicit number of replicas, default to using
+    # anything that exists live when available.
+    if replicas is None:
+        for deployment in all_deployments:
+            existing_deployment = existing_deployments.get(get_object_name(deployment))
+            if existing_deployment:
+                deployment['spec']['replicas'] = existing_deployment.spec.replicas
 
     return all_services, all_deployments, all_jobs
 
