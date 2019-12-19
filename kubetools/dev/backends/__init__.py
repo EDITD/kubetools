@@ -18,5 +18,5 @@ try:
 except KeyError:
     raise KeyError('Invalid dev backend: {0}'.format(settings.DEV_BACKEND))
 
-sys.modules['kubetools_client.dev.backend'] = backend
+sys.modules['kubetools.dev.backend'] = backend
 backend.init_backend()
