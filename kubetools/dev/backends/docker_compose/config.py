@@ -102,8 +102,12 @@ def get_all_containers_by_name(kubetools_config, container_keys=CONTAINER_KEYS):
 
 
 def _create_compose_service(kubetools_config, name, config, envvars=None):
-    if 'preBuildCommands' in config.get('build', {}):
-        config['build'].pop('preBuildCommands')
+    for invalid_build_key in (
+        'preBuildCommands',
+        'registry',
+    ):
+        if invalid_build_key in config.get('build', {}):
+            config['build'].pop(invalid_build_key)
 
     # Because this is one of our containers (buildContexts are relevant to
     # the project) - setup a TTY and STDIN so we can attach and be interactive
