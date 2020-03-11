@@ -64,7 +64,7 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     help='Default number of replicas for each app.',
 )
 @click.option(
-    '--registry',
+    '--default-registry',
     help='Default registry for apps that do not specify.',
 )
 @click.option(
@@ -80,7 +80,7 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
+def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -96,7 +96,7 @@ def deploy(ctx, dry, replicas, registry, yes, namespace, app_dirs):
     services, deployments, jobs = get_deploy_objects(
         build, app_dirs,
         replicas=replicas,
-        default_registry=registry,
+        default_registry=default_registry,
     )
 
     if not any((services, deployments, jobs)):
