@@ -103,6 +103,8 @@ def show(ctx, namespace, app):
     Show running apps in a given namespace.
     '''
 
+    exists = False
+
     build = Build(
         env=ctx.meta['kube_context'],
         namespace=namespace,
@@ -114,6 +116,8 @@ def show(ctx, namespace, app):
     services = list_services(build)
 
     if services:
+        exists = True
+
         if app:
             services = [s for s in services if get_object_name(s) == app]
 
@@ -126,6 +130,8 @@ def show(ctx, namespace, app):
     deployments = list_deployments(build)
 
     if deployments:
+        exists = True
+
         if app:
             deployments = [d for d in deployments if get_object_name(d) == app]
 
@@ -153,9 +159,14 @@ def show(ctx, namespace, app):
     else:
         jobs = list_jobs(build)
         if jobs:
+            exists = True
+
             click.echo(f'--> {len(jobs)} Jobs')
             _print_items(jobs, {
                 'Completions': _get_completion_status,
                 'Command': _get_command,
             })
             click.echo()
+
+    if not exists:
+        click.echo('Nothing to be found here 👀!')
