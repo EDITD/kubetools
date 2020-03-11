@@ -54,11 +54,15 @@ def _delete_objects(build, objects, delete_function):
 
 def _get_app_objects(
     build, app_names, list_objects_function,
+    force=False,
     check_leftovers=True,
 ):
     objects = list_objects_function(build)
 
     def filter_object(obj):
+        if force:
+            return True
+
         if not is_kubetools_object(obj):
             build.log_warning((
                 f'Refusing to touch {get_object_name(obj)} '
@@ -291,10 +295,27 @@ def execute_deploy(build, services, deployments, jobs):
 # Remove
 # Handles removal of deployments, services and jobs in a namespace
 
-def get_remove_objects(build, app_names=None):
-    services_to_delete = _get_app_objects(build, app_names, list_services)
-    deployments_to_delete = _get_app_objects(build, app_names, list_deployments)
-    jobs_to_delete = _get_app_objects(build, app_names, list_jobs, check_leftovers=False)
+def get_remove_objects(build, app_names=None, force=False):
+    services_to_delete = _get_app_objects(
+        build,
+        app_names,
+        list_services,
+        force=force,
+    )
+    deployments_to_delete = _get_app_objects(
+        build,
+        app_names,
+        list_deployments,
+        force=force,
+    )
+    jobs_to_delete = _get_app_objects(
+        build,
+        app_names,
+        list_jobs,
+        force=force,
+        check_leftovers=False,
+    )
+
     return services_to_delete, deployments_to_delete, jobs_to_delete
 
 

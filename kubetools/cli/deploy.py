@@ -135,6 +135,12 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
     help='Flag to auto-yes remove confirmation step.',
 )
 @click.option(
+    '-f', '--force',
+    is_flag=True,
+    default=False,
+    help='Force kubetools to remove objects it does not own.',
+)
+@click.option(
     '--cleanup', 'do_cleanup',
     is_flag=True,
     default=False,
@@ -143,7 +149,7 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
 @click.argument('namespace')
 @click.argument('app_names', nargs=-1)
 @click.pass_context
-def remove(ctx, yes, do_cleanup, namespace, app_names):
+def remove(ctx, yes, force, do_cleanup, namespace, app_names):
     '''
     Removes one or more apps from a given namespace.
     '''
@@ -154,7 +160,7 @@ def remove(ctx, yes, do_cleanup, namespace, app_names):
     )
 
     services_to_delete, deployments_to_delete, jobs_to_delete = (
-        get_remove_objects(build, app_names)
+        get_remove_objects(build, app_names, force=force)
     )
 
     if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
