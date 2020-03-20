@@ -148,21 +148,7 @@ def update_service(build, service):
     build.log_info(f'Update service: {service_name}')
 
     k8s_core_api = _get_k8s_core_api(build)
-
-    # Here we are forced to replace the entire service object - unlike deployments
-    # this requires specifying the clusterIP and resourceVersion that already exist.
-    # We also include the existing port spec so any nodePorts don't change.
-    # The alternative is one of the various "patch" methods - however none of them
-    # seem to be able to *remove* labels.
-    existing_service = k8s_core_api.read_namespaced_service(
-        name=service_name,
-        namespace=build.namespace,
-    )
-    service['spec']['ports'] = existing_service.spec.ports
-    service['spec']['clusterIP'] = existing_service.spec.cluster_ip
-    service['metadata']['resourceVersion'] = existing_service.metadata.resource_version
-
-    k8s_service = k8s_core_api.replace_namespaced_service(
+    k8s_service = k8s_core_api.patch_namespaced_service(
         name=service_name,
         body=service,
         namespace=build.namespace,
@@ -216,7 +202,7 @@ def update_deployment(build, deployment):
     build.log_info(f'Update deployment: {get_object_name(deployment)}')
 
     k8s_apps_api = _get_k8s_apps_api(build)
-    k8s_deployment = k8s_apps_api.replace_namespaced_deployment(
+    k8s_deployment = k8s_apps_api.patch_namespaced_deployment(
         name=get_object_name(deployment),
         body=deployment,
         namespace=build.namespace,
