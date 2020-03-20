@@ -51,7 +51,7 @@ def _object_exists(api, method, build, obj):
     return True
 
 
-def _wait_for(function):
+def _wait_for(function, name='object'):
     settings = get_settings()
 
     sleeps = 0
@@ -63,7 +63,7 @@ def _wait_for(function):
         sleeps += 1
 
         if sleeps > settings.WAIT_MAX_SLEEPS:
-            raise KubeBuildError('Timeout waiting for deployment to be ready')
+            raise KubeBuildError(f'Timeout waiting for {name} to be ready')
 
 
 def _wait_for_object(*args):
@@ -224,7 +224,7 @@ def wait_for_deployment(build, deployment):
         if d.status.ready_replicas == d.status.replicas:
             return True
 
-    _wait_for(check_deployment)
+    _wait_for(check_deployment, get_object_name(deployment))
 
 
 def create_or_update_deployment(build, deployment):
@@ -276,4 +276,4 @@ def wait_for_job(build, job):
         if j.status.succeeded == j.spec.completions:
             return True
 
-    _wait_for(check_job)
+    _wait_for(check_job, get_object_name(job))
