@@ -39,7 +39,6 @@ def _run_process_with_spinner(args):
         ' '.join(args),
         stdout=PIPE,
         stderr=STDOUT,
-        bufsize=1,
         close_fds=True,
         shell=True,
     )
