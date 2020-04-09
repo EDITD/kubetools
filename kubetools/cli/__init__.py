@@ -62,7 +62,7 @@ def _get_context_names():
     if not contexts:
         print('Cannot find any context in kube-config file.')
         return
-    return [context['name'] for context in contexts]
+    return [context['name'] for context in contexts], active_context['name']
 
 
 def print_contexts(ctx, param, value):
@@ -70,24 +70,22 @@ def print_contexts(ctx, param, value):
         return
 
     click.echo('--> Available Kubernetes contexts:')
-    context_names = _get_context_names()
+    context_names, active_context_name = _get_context_names()
     for name in context_names:
-        click.echo(f'    {click.style(name, bold=True)}')
+        click.echo(f'    {click.style(name, bold=name == active_context_name)}')
 
     ctx.exit()
 
 
 def ensure_context(ctx, param, value):
-    context_names = _get_context_names()
+    context_names, active_context_name = _get_context_names()
 
     if value:
         if value not in context_names:
             raise click.BadParameter(f'{value}; available contexts: {context_names}')
     else:
-        value = click.prompt(
-            'Choose a Kubernetes context: ',
-            type=click.Choice(context_names),
-        )
+        click.echo(f'Using active context: {click.style(active_context_name, bold=True)}')
+        value = active_context_name
 
     return value
 
