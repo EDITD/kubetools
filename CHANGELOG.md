@@ -1,5 +1,8 @@
 # WIP/Unreleased
 
+# v10.3.0
+- Update apiVersion to match up to date k8s API
+
 # v10.2
 - Always ensure deployment names start with the project name
 
