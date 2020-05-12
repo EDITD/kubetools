@@ -32,7 +32,7 @@ def make_deployment_config(
 
     # The actual controller Kubernetes config
     controller = {
-        'apiVersion': 'apps/v1beta1',
+        'apiVersion': 'apps/v1',
         'kind': 'Deployment',
         'metadata': {
             'name': make_dns_safe_name(name),
