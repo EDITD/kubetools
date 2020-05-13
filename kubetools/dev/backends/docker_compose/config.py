@@ -121,6 +121,9 @@ def _create_compose_service(kubetools_config, name, config, envvars=None):
         },
     }
 
+    if 'args' in config:
+        config['command'].extend(config.pop('args'))
+
     service.update(config)
 
     if 'build' in service and 'context' not in service['build']:
