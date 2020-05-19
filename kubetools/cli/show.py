@@ -12,6 +12,8 @@ from kubetools.constants import (
 )
 from kubetools.deploy.build import Build
 from kubetools.deploy.kubernetes.api import (
+    get_object_annotations_dict,
+    get_object_labels_dict,
     get_object_name,
     is_kubetools_object,
     list_deployments,
@@ -39,14 +41,17 @@ def _print_items(items, header_to_getter=None):
 
     rows = []
     for item in items:
-        row = [get_object_name(item)]
+        labels = get_object_labels_dict(item)
 
-        row.append(item.metadata.labels.get(ROLE_LABEL_KEY))
+        row = [
+            get_object_name(item),
+            labels.get(ROLE_LABEL_KEY),
+        ]
 
         if not is_kubetools_object(item):
             row.append(click.style('NOT MANAGED BY KUBETOOLS', 'yellow'))
         else:
-            row.append(item.metadata.labels.get(PROJECT_NAME_LABEL_KEY, 'unknown'))
+            row.append(labels.get(PROJECT_NAME_LABEL_KEY, 'unknown'))
 
         for getter in header_to_getter.values():
             row.append(getter(item))
@@ -72,7 +77,7 @@ def _get_ready_status(item):
 
 
 def _get_version_info(item):
-    annotations = item.metadata.annotations
+    annotations = get_object_annotations_dict(item)
     bits = []
     for name, key in (
         ('branch', GIT_BRANCH_ANNOTATION_KEY),
@@ -91,7 +96,7 @@ def _get_completion_status(item):
 
 
 def _get_command(item):
-    return item.metadata.annotations.get('description')
+    return get_object_annotations_dict(item).get('description')
 
 
 @cli_bootstrap.command(help_priority=3)
