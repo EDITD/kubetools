@@ -8,6 +8,14 @@ from kubetools.exceptions import KubeBuildError
 from kubetools.settings import get_settings
 
 
+def get_object_labels_dict(obj):
+    return obj.metadata.labels or {}
+
+
+def get_object_annotations_dict(obj):
+    return obj.metadata.annotations or {}
+
+
 def get_object_name(obj):
     if isinstance(obj, dict):
         return obj['metadata']['name']
@@ -15,7 +23,7 @@ def get_object_name(obj):
 
 
 def is_kubetools_object(obj):
-    if obj.metadata.annotations.get(MANAGED_BY_ANNOTATION_KEY) == 'kubetools':
+    if get_object_annotations_dict(obj).get(MANAGED_BY_ANNOTATION_KEY) == 'kubetools':
         return True
 
 
