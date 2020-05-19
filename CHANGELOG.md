@@ -1,4 +1,4 @@
-# v11.0.dev0
+# v11.0.dev1
 
 This release follows a major overhaul of Kubetools - most notably moving all of the server/build logic down into this library (to deprecate/remove the server). The `kubetools` command can now deploy direct to Kubernetes.
 
