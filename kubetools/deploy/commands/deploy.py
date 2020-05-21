@@ -27,6 +27,17 @@ from kubetools.kubernetes.api import (
 from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
 
 
+def _is_git_committed(app_dir):
+    git_status = run_shell_command(
+        'git', 'status', '--porcelain',
+        cwd=app_dir,
+    ).strip().decode()
+
+    if git_status:
+        return False
+    return True
+
+
 def _get_git_info(app_dir):
     git_annotations = {}
 
@@ -78,6 +89,9 @@ def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
         }
 
         if path.exists(path.join(app_dir, '.git')):
+            if not _is_git_committed(app_dir):
+                raise KubeBuildError(f'{app_dir} contains uncommitted changes, refusing to deploy!')
+
             commit_hash, git_annotations = _get_git_info(app_dir)
             annotations.update(git_annotations)
         else:
