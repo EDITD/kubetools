@@ -170,7 +170,7 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
     )
 
     if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_remove_changes(
@@ -218,7 +218,7 @@ def cleanup(ctx, yes, namespace):
     replica_sets_to_delete, pods_to_delete = get_cleanup_objects(build)
 
     if not any((replica_sets_to_delete, pods_to_delete)):
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_cleanup_changes(
@@ -263,7 +263,7 @@ def restart(ctx, yes, namespace, app_or_project_names):
     deployments_and_pods_to_delete = get_restart_objects(build, app_or_project_names)
 
     if not deployments_and_pods_to_delete:
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_restart_changes(
