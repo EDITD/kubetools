@@ -4,22 +4,28 @@ import os
 import click
 
 from kubetools.cli import cli_bootstrap
-from kubetools.deploy import (
+from kubetools.deploy.build import Build
+from kubetools.deploy.commands.cleanup import (
     execute_cleanup,
-    execute_deploy,
-    execute_remove,
-    execute_restart,
     get_cleanup_objects,
-    get_deploy_objects,
-    get_remove_objects,
-    get_restart_objects,
     log_cleanup_changes,
+)
+from kubetools.deploy.commands.deploy import (
+    execute_deploy,
+    get_deploy_objects,
     log_deploy_changes,
+)
+from kubetools.deploy.commands.remove import (
+    execute_remove,
+    get_remove_objects,
     log_remove_changes,
+)
+from kubetools.deploy.commands.restart import (
+    execute_restart,
+    get_restart_objects,
     log_restart_changes,
 )
-from kubetools.deploy.build import Build
-from kubetools.deploy.kubernetes.api import get_object_name
+from kubetools.kubernetes.api import get_object_name
 
 
 def _dry_deploy_object_loop(object_type, objects):

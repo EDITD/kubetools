@@ -11,7 +11,7 @@ from kubetools.constants import (
     ROLE_LABEL_KEY,
 )
 from kubetools.deploy.build import Build
-from kubetools.deploy.kubernetes.api import (
+from kubetools.kubernetes.api import (
     get_object_annotations_dict,
     get_object_labels_dict,
     get_object_name,
