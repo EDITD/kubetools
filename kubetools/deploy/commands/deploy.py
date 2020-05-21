@@ -87,6 +87,7 @@ def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
             app_dir,
             env=build.env,
             namespace=build.namespace,
+            app_name=app_dir,
         )
 
         context_to_image = ensure_docker_images(
@@ -109,7 +110,7 @@ def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
 
     existing_deployments = {
         get_object_name(deployment): deployment
-        for deployment in list_deployments(build)
+        for deployment in list_deployments(build.env, build.namespace)
     }
 
     # If we haven't been provided an explicit number of replicas, default to using
@@ -129,10 +130,12 @@ def log_deploy_changes(
     name_formatter=lambda name: name,
 ):
     existing_service_names = set(
-        get_object_name(service) for service in list_services(build)
+        get_object_name(service)
+        for service in list_services(build.env, build.namespace)
     )
     existing_deployment_names = set(
-        get_object_name(deployment) for deployment in list_deployments(build)
+        get_object_name(deployment)
+        for deployment in list_deployments(build.env, build.namespace)
     )
 
     deploy_service_names = set(
@@ -178,17 +181,17 @@ def execute_deploy(build, services, deployments, jobs):
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:
-                create_or_update_service(build, service)
+                create_or_update_service(build.env, build.namespace, service)
 
     if depend_deployments:
         with build.stage('Create and/or update dependency deployments'):
             for deployment in depend_deployments:
-                create_or_update_deployment(build, deployment)
+                create_or_update_deployment(build.env, build.namespace, deployment)
 
     noexist_main_services = []
     exist_main_services = []
     for service in main_services:
-        if not service_exists(build, service):
+        if not service_exists(build.env, build.namespace, service):
             noexist_main_services.append(service)
         else:
             exist_main_services.append(service)
@@ -196,12 +199,12 @@ def execute_deploy(build, services, deployments, jobs):
     if noexist_main_services:
         with build.stage('Create any app services that do not exist'):
             for service in noexist_main_services:
-                create_service(build, service)
+                create_service(build.env, build.namespace, service)
 
     noexist_main_deployments = []
     exist_main_deployments = []
     for deployment in main_deployments:
-        if not deployment_exists(build, deployment):
+        if not deployment_exists(build.env, build.namespace, deployment):
             noexist_main_deployments.append(deployment)
         else:
             exist_main_deployments.append(deployment)
@@ -209,19 +212,19 @@ def execute_deploy(build, services, deployments, jobs):
     if noexist_main_deployments:
         with build.stage('Create any app deployments that do not exist'):
             for deployment in main_deployments:
-                create_deployment(build, deployment)
+                create_deployment(build.env, build.namespace, deployment)
 
     if jobs:
         with build.stage('Execute upgrades'):
             for job in jobs:
-                create_job(build, job)
+                create_job(build.env, build.namespace, job)
 
     if exist_main_deployments:
         with build.stage('Update existing app deployments'):
             for deployment in exist_main_deployments:
-                update_deployment(build, deployment)
+                update_deployment(build.env, build.namespace, deployment)
 
     if exist_main_services:
         with build.stage('Update existing app services'):
             for service in exist_main_services:
-                update_service(build, service)
+                update_service(build.env, build.namespace, service)

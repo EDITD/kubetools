@@ -14,7 +14,7 @@ from kubetools.kubernetes.api import (
 # working on the namespace level only (no apps).
 
 def get_cleanup_objects(build):
-    replica_sets = list_replica_sets(build)
+    replica_sets = list_replica_sets(build.env, build.namespace)
     replica_sets_to_delete = []
     replica_set_names_to_delete = set()
 
@@ -26,7 +26,7 @@ def get_cleanup_objects(build):
             replica_set_names_to_delete.add(get_object_name(replica_set))
             replica_sets_to_delete.append(replica_set)
 
-    pods = list_pods(build)
+    pods = list_pods(build.env, build.namespace)
     pods_to_delete = []
 
     for pod in pods:
