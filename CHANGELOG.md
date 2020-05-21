@@ -1,4 +1,4 @@
-# v11.0.dev1
+# v11.0.dev2
 
 This release follows a major overhaul of Kubetools - most notably moving all of the server/build logic down into this library (to deprecate/remove the server). The `kubetools` command can now deploy direct to Kubernetes.
 
@@ -16,6 +16,9 @@ This release follows a major overhaul of Kubetools - most notably moving all of 
 - Uses `kubeconfig` and Kubernetes contexts
 - Correctly uses Kubernetes deployment objects for proper rolling updates
     + This also adds rollback compatability
+- Support deployment strategy in `kubetools.yml`:
+    + `deployments.NAME.updateStrategy` -> K8s `Deployment.spec.strategy`
+- Add `--shell` argument to `ktd enter`
 
 
 # v10.2
