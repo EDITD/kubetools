@@ -160,6 +160,7 @@ def generate_kubernetes_configs_for_project(
             labels=dependency_labels,
             annotations=app_annotations,
             envvars=envvars,
+            update_strategy=dependency.get('updateStrategy'),
         ))
 
     for name, deployment in config.get('deployments', {}).items():
@@ -200,6 +201,7 @@ def generate_kubernetes_configs_for_project(
             labels=deployment_labels,
             annotations=app_annotations,
             envvars=envvars,
+            update_strategy=deployment.get('updateStrategy'),
         ))
 
     # Jobs can be upgrades and/or passed in as part of the build spec
