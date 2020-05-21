@@ -2,9 +2,13 @@ import os
 
 from subprocess import CalledProcessError, check_output, STDOUT
 
-from kubetools.constants import NAME_LABEL_KEY
+from kubetools.constants import NAME_LABEL_KEY, PROJECT_NAME_LABEL_KEY
 from kubetools.exceptions import KubeBuildError
-from kubetools.kubernetes.api import get_object_name, is_kubetools_object
+from kubetools.kubernetes.api import (
+    get_object_labels_dict,
+    get_object_name,
+    is_kubetools_object,
+)
 from kubetools.log import logger
 
 
@@ -45,7 +49,7 @@ def delete_objects(build, objects, delete_function):
 
 
 def get_app_objects(
-    build, app_names, list_objects_function,
+    build, app_or_project_names, list_objects_function,
     force=False,
     check_leftovers=True,
 ):
@@ -64,20 +68,29 @@ def get_app_objects(
 
     objects = list(filter(filter_object, objects))
 
-    if app_names:
-        objects = list(filter(
-            lambda obj: obj.metadata.labels.get(NAME_LABEL_KEY) in app_names,
-            objects,
-        ))
+    if app_or_project_names:
+        matched_object_names = set()
+
+        def filter_object_names(obj):
+            labels = get_object_labels_dict(obj)
+
+            app_name = labels.get(NAME_LABEL_KEY)
+            if app_name in app_or_project_names:
+                matched_object_names.add(app_name)
+                return True
+
+            project_name = labels.get(PROJECT_NAME_LABEL_KEY)
+            if project_name in app_or_project_names:
+                matched_object_names.add(project_name)
+                return True
+
+            return False
+
+        objects = list(filter(filter_object_names, objects))
 
         if check_leftovers:
-            object_names_to_delete = set([
-                obj.metadata.labels[NAME_LABEL_KEY]
-                for obj in objects
-            ])
-
-            leftover_app_names = set(app_names) - object_names_to_delete
-            if leftover_app_names:
-                raise KubeBuildError(f'{leftover_app_names} not found')
+            leftover_names = set(app_or_project_names) - matched_object_names
+            if leftover_names:
+                raise KubeBuildError(f'Project or app {leftover_names} not found')
 
     return objects

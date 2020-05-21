@@ -153,9 +153,9 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
     help='Run a cleanup immediately after removal.',
 )
 @click.argument('namespace')
-@click.argument('app_names', nargs=-1)
+@click.argument('app_or_project_names', nargs=-1)
 @click.pass_context
-def remove(ctx, yes, force, do_cleanup, namespace, app_names):
+def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
     '''
     Removes one or more apps from a given namespace.
     '''
@@ -166,7 +166,7 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_names):
     )
 
     services_to_delete, deployments_to_delete, jobs_to_delete = (
-        get_remove_objects(build, app_names, force=force)
+        get_remove_objects(build, app_or_project_names, force=force)
     )
 
     if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
@@ -248,9 +248,9 @@ def cleanup(ctx, yes, namespace):
     help='Flag to auto-yes remove confirmation step.',
 )
 @click.argument('namespace')
-@click.argument('app_names', nargs=-1)
+@click.argument('app_or_project_names', nargs=-1)
 @click.pass_context
-def restart(ctx, yes, namespace, app_names):
+def restart(ctx, yes, namespace, app_or_project_names):
     '''
     Restarts one or more apps in a given namespace.
     '''
@@ -260,7 +260,7 @@ def restart(ctx, yes, namespace, app_names):
         namespace=namespace,
     )
 
-    deployments_and_pods_to_delete = get_restart_objects(build, app_names)
+    deployments_and_pods_to_delete = get_restart_objects(build, app_or_project_names)
 
     if not deployments_and_pods_to_delete:
         click.echo('Nothing to do!')
