@@ -13,8 +13,6 @@ from kubetools.exceptions import KubeBuildError
 from kubetools.kubernetes.api import (
     create_deployment,
     create_job,
-    create_or_update_deployment,
-    create_or_update_service,
     create_service,
     deployment_exists,
     get_object_name,
@@ -195,12 +193,22 @@ def execute_deploy(build, services, deployments, jobs):
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:
-                create_or_update_service(build.env, build.namespace, service)
+                if deployment_exists(build.env, build.namespace, service):
+                    build.log_info(f'Update service: {get_object_name(service)}')
+                    update_service(build.env, build.namespace, service)
+                else:
+                    build.log_info(f'Create service: {get_object_name(service)}')
+                    create_service(build.env, build.namespace, service)
 
     if depend_deployments:
         with build.stage('Create and/or update dependency deployments'):
             for deployment in depend_deployments:
-                create_or_update_deployment(build.env, build.namespace, deployment)
+                if deployment_exists(build.env, build.namespace, deployment):
+                    build.log_info(f'Update deployment: {get_object_name(deployment)}')
+                    update_deployment(build.env, build.namespace, deployment)
+                else:
+                    build.log_info(f'Create deployment: {get_object_name(deployment)}')
+                    create_deployment(build.env, build.namespace, deployment)
 
     noexist_main_services = []
     exist_main_services = []

@@ -154,12 +154,6 @@ def update_service(env, namespace, service):
     return k8s_service
 
 
-def create_or_update_service(env, namespace, service):
-    if service_exists(env, namespace, service):
-        return update_service(env, namespace, service)
-    return create_service(env, namespace, service)
-
-
 def list_deployments(env, namespace):
     k8s_apps_api = _get_k8s_apps_api(env)
     return k8s_apps_api.list_namespaced_deployment(namespace=namespace).items
@@ -216,12 +210,6 @@ def wait_for_deployment(env, namespace, deployment):
             return True
 
     _wait_for(check_deployment, get_object_name(deployment))
-
-
-def create_or_update_deployment(env, namespace, deployment):
-    if deployment_exists(env, namespace, deployment):
-        return update_deployment(env, namespace, deployment)
-    return create_deployment(env, namespace, deployment)
 
 
 def list_jobs(env, namespace):
