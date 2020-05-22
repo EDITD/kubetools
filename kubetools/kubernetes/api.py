@@ -218,10 +218,10 @@ def wait_for_deployment(env, namespace, deployment):
     _wait_for(check_deployment, get_object_name(deployment))
 
 
-def create_or_update_deployment(build, deployment):
-    if deployment_exists(build, deployment):
-        return update_deployment(build, deployment)
-    return create_deployment(build, deployment)
+def create_or_update_deployment(env, namespace, deployment):
+    if deployment_exists(env, namespace, deployment):
+        return update_deployment(env, namespace, deployment)
+    return create_deployment(env, namespace, deployment)
 
 
 def list_jobs(env, namespace):
