@@ -221,6 +221,7 @@ def execute_deploy(build, services, deployments, jobs):
     if noexist_main_services:
         with build.stage('Create any app services that do not exist'):
             for service in noexist_main_services:
+                build.log_info(f'Create service: {get_object_name(service)}')
                 create_service(build.env, build.namespace, service)
 
     noexist_main_deployments = []
@@ -234,19 +235,23 @@ def execute_deploy(build, services, deployments, jobs):
     if noexist_main_deployments:
         with build.stage('Create any app deployments that do not exist'):
             for deployment in main_deployments:
+                build.log_info(f'Create deployment: {get_object_name(deployment)}')
                 create_deployment(build.env, build.namespace, deployment)
 
     if jobs:
         with build.stage('Execute upgrades'):
             for job in jobs:
+                build.log_info(f'Create job: {get_object_name(job)}')
                 create_job(build.env, build.namespace, job)
 
     if exist_main_deployments:
         with build.stage('Update existing app deployments'):
             for deployment in exist_main_deployments:
+                build.log_info(f'Update deployment: {get_object_name(deployment)}')
                 update_deployment(build.env, build.namespace, deployment)
 
     if exist_main_services:
         with build.stage('Update existing app services'):
             for service in exist_main_services:
+                build.log_info(f'Update service: {get_object_name(service)}')
                 update_service(build.env, build.namespace, service)

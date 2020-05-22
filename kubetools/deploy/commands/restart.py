@@ -75,5 +75,6 @@ def execute_restart(build, deployments_and_pods):
     for deployment, pods in deployments_and_pods:
         with build.stage(f'Restart pods for {get_object_name(deployment)}'):
             for pod in pods:
+                build.log_info(f'Delete pod: {get_object_name(pod)}')
                 delete_pod(build, pod)
                 wait_for_deployment(build, deployment)
