@@ -30,7 +30,6 @@ def get_remove_objects(build, app_names=None, force=False):
         app_names,
         list_jobs,
         force=force,
-        check_leftovers=False,
     )
 
     return services_to_delete, deployments_to_delete, jobs_to_delete

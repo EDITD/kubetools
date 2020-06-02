@@ -52,7 +52,6 @@ def delete_objects(build, objects, delete_function):
 def get_app_objects(
     build, app_or_project_names, list_objects_function,
     force=False,
-    check_leftovers=True,
 ):
     objects = list_objects_function(build.env, build.namespace)
 
@@ -74,7 +73,6 @@ def get_app_objects(
 
         def filter_object_names(obj):
             labels = get_object_labels_dict(obj)
-
             app_name = labels.get(NAME_LABEL_KEY)
             if app_name in app_or_project_names:
                 matched_object_names.add(app_name)
@@ -88,10 +86,5 @@ def get_app_objects(
             return False
 
         objects = list(filter(filter_object_names, objects))
-
-        if check_leftovers:
-            leftover_names = set(app_or_project_names) - matched_object_names
-            if leftover_names:
-                raise KubeBuildError(f'Project or app {leftover_names} not found')
 
     return objects
