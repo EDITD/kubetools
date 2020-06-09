@@ -57,6 +57,20 @@ def _dry_deploy_loop(build, services, deployments, jobs):
             _dry_deploy_object_loop(object_type, objects)
 
 
+def _validate_annotations(ctx, param, value):
+    annotations = {}
+
+    for annotation_str in value:
+        try:
+            key, value = annotation_str.split('=', 1)
+        except ValueError:
+            raise click.BadParameter(f'"{annotation_str}" does not match "key=value".')
+        else:
+            annotations[key] = value
+
+    return annotations
+
+
 @cli_bootstrap.command(help_priority=0)
 @click.option(
     '--dry',
@@ -79,6 +93,12 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     default=False,
     help='Flag to auto-yes remove confirmation step.',
 )
+@click.option(
+    'annotations', '--annotation',
+    multiple=True,
+    callback=_validate_annotations,
+    help='Extra annotations to apply to Kubernetes objects, format: key=value.',
+)
 @click.argument('namespace')
 @click.argument(
     'app_dirs',
@@ -86,7 +106,7 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
+def deploy(ctx, dry, replicas, default_registry, yes, annotations, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -103,6 +123,7 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
+        extra_annotations=annotations,
     )
 
     if not any((services, deployments, jobs)):

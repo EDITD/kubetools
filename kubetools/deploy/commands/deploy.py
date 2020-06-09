@@ -70,7 +70,13 @@ def _get_git_info(app_dir):
 # Deploy/upgrade
 # Handles deploying new services and upgrading existing ones
 
-def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
+def get_deploy_objects(
+    build,
+    app_dirs,
+    replicas=None,
+    default_registry=None,
+    extra_annotations=None,
+):
     all_services = []
     all_deployments = []
     all_jobs = []
@@ -85,6 +91,9 @@ def get_deploy_objects(build, app_dirs, replicas=None, default_registry=None):
             'kubetools/env': build.env,
             'kubetools/namespace': build.namespace,
         }
+
+        if extra_annotations:
+            annotations.update(extra_annotations)
 
         if path.exists(path.join(app_dir, '.git')):
             if not _is_git_committed(app_dir):
