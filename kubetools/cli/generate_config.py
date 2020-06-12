@@ -12,12 +12,18 @@ from . import cli_bootstrap
 
 
 @cli_bootstrap.command(help_priority=4)
+@click.option(
+    '--replicas',
+    type=int,
+    default=1,
+    help='Default number of replicas for each app.',
+)
 @click.argument(
     'app_dir',
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def config(ctx, app_dir):
+def config(ctx, replicas, app_dir):
     '''
     Generate and write out Kubernetes configs for a project.
     '''
@@ -26,6 +32,7 @@ def config(ctx, app_dir):
     context_to_image = defaultdict(lambda: f'IMAGE')
     services, deployments, jobs = generate_kubernetes_configs_for_project(
         kubetools_config,
+        replicas=replicas,
         context_name_to_image=context_to_image,
     )
 
