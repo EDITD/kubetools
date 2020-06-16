@@ -1,4 +1,4 @@
-# v11.0.dev7
+# v11.0
 
 This release follows a major overhaul of Kubetools - most notably moving all of the server/build logic down into this library (to deprecate/remove the server). The `kubetools` command can now deploy direct to Kubernetes.
 
@@ -21,6 +21,7 @@ This release follows a major overhaul of Kubetools - most notably moving all of 
     + `deployments.NAME.replicaMultiplier`
 - Support deployment strategy in `kubetools.yml`:
     + `deployments.NAME.updateStrategy` -> K8s `Deployment.spec.strategy`
+- Add `--annotation` argument to `kubetools deploy`
 - Add `--shell` argument to `ktd enter`
 
 
