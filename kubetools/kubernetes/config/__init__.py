@@ -81,6 +81,21 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
     return all_containers, all_container_ports
 
 
+def _get_replicas(deployment, default=1):
+    replicas = default
+
+    if 'replicaMultiplier' in deployment:
+        replicas = replicas * deployment['replicaMultiplier']
+
+    if 'maxReplicas' in deployment:
+        replicas = min(replicas, deployment['maxReplicas'])
+
+    if 'minReplicas' in deployment:
+        replicas = max(replicas, deployment['minReplicas'])
+
+    return replicas
+
+
 def generate_kubernetes_configs_for_project(
     config,  # a kubetools config object
     replicas=1,  # number of replicas for each deployment
@@ -157,9 +172,11 @@ def generate_kubernetes_configs_for_project(
         deployments.append(make_deployment_config(
             dependency_name,
             containers,
+            replicas=1,
             labels=dependency_labels,
             annotations=app_annotations,
             envvars=envvars,
+            update_strategy=dependency.get('updateStrategy'),
         ))
 
     for name, deployment in config.get('deployments', {}).items():
@@ -188,11 +205,7 @@ def generate_kubernetes_configs_for_project(
             ))
 
         # Setup top level app deployment
-        deployment_replicas = replicas
-
-        if 'maxReplicas' in deployment:
-            deployment_replicas = min(deployment_replicas, deployment['maxReplicas'])
-
+        deployment_replicas = _get_replicas(deployment, default=replicas)
         deployments.append(make_deployment_config(
             deployment_name,
             containers,
@@ -200,6 +213,7 @@ def generate_kubernetes_configs_for_project(
             labels=deployment_labels,
             annotations=app_annotations,
             envvars=envvars,
+            update_strategy=deployment.get('updateStrategy'),
         ))
 
     # Jobs can be upgrades and/or passed in as part of the build spec

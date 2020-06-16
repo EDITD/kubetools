@@ -1,8 +1,8 @@
 import requests
 
 from kubetools.exceptions import KubeBuildError
+from kubetools.kubernetes.config import make_context_name
 
-from .kubernetes.config import make_context_name
 from .util import run_shell_command
 
 

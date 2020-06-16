@@ -10,6 +10,7 @@ def make_deployment_config(
     labels=None,
     annotations=None,
     envvars=None,
+    update_strategy=None,
 ):
     '''
     Builds a Kubernetes deployment configuration dict.
@@ -53,6 +54,10 @@ def make_deployment_config(
             },
         },
     }
+
+    if update_strategy:
+        controller['spec']['strategy'] = update_strategy
+
     container_volumes = {}
     for container in containers.values():
         if 'volumes' in container:

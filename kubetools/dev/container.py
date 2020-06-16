@@ -13,14 +13,15 @@ from .backend import (
 
 @dev.command()
 @click.argument('container')
+@click.option('--shell', default='sh')
 @click.pass_obj
-def enter(kubetools_config, container):
+def enter(kubetools_config, container, shell):
     '''
     Enter a shell in a running container.
     '''
 
     click.echo('--> Entering {0}'.format(click.style(container, bold=True)))
-    exec_container(kubetools_config, container, ['sh'])
+    exec_container(kubetools_config, container, [shell])
 
 
 @dev.command()

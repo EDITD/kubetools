@@ -11,7 +11,9 @@ from kubetools.constants import (
     ROLE_LABEL_KEY,
 )
 from kubetools.deploy.build import Build
-from kubetools.deploy.kubernetes.api import (
+from kubetools.kubernetes.api import (
+    get_object_annotations_dict,
+    get_object_labels_dict,
     get_object_name,
     is_kubetools_object,
     list_deployments,
@@ -39,14 +41,17 @@ def _print_items(items, header_to_getter=None):
 
     rows = []
     for item in items:
-        row = [get_object_name(item)]
+        labels = get_object_labels_dict(item)
 
-        row.append(item.metadata.labels.get(ROLE_LABEL_KEY))
+        row = [
+            get_object_name(item),
+            labels.get(ROLE_LABEL_KEY),
+        ]
 
         if not is_kubetools_object(item):
             row.append(click.style('NOT MANAGED BY KUBETOOLS', 'yellow'))
         else:
-            row.append(item.metadata.labels.get(PROJECT_NAME_LABEL_KEY, 'unknown'))
+            row.append(labels.get(PROJECT_NAME_LABEL_KEY, 'unknown'))
 
         for getter in header_to_getter.values():
             row.append(getter(item))
@@ -72,7 +77,7 @@ def _get_ready_status(item):
 
 
 def _get_version_info(item):
-    annotations = item.metadata.annotations
+    annotations = get_object_annotations_dict(item)
     bits = []
     for name, key in (
         ('branch', GIT_BRANCH_ANNOTATION_KEY),
@@ -91,7 +96,7 @@ def _get_completion_status(item):
 
 
 def _get_command(item):
-    return item.metadata.annotations.get('description')
+    return get_object_annotations_dict(item).get('description')
 
 
 @cli_bootstrap.command(help_priority=3)
@@ -105,15 +110,12 @@ def show(ctx, namespace, app):
 
     exists = False
 
-    build = Build(
-        env=ctx.meta['kube_context'],
-        namespace=namespace,
-    )
+    env = ctx.meta['kube_context']
 
     if app:
         click.echo(f'--> Filtering by app={app}')
 
-    services = list_services(build)
+    services = list_services(env, namespace)
 
     if services:
         exists = True
@@ -127,7 +129,7 @@ def show(ctx, namespace, app):
         })
         click.echo()
 
-    deployments = list_deployments(build)
+    deployments = list_deployments(env, namespace)
 
     if deployments:
         exists = True
@@ -144,7 +146,7 @@ def show(ctx, namespace, app):
         click.echo()
 
     if app:
-        replica_sets = list_replica_sets(build)
+        replica_sets = list_replica_sets(env, namespace)
         replica_sets = [
             r for r in replica_sets
             if r.metadata.labels.get(NAME_LABEL_KEY) == app
@@ -157,7 +159,7 @@ def show(ctx, namespace, app):
         })
         click.echo()
     else:
-        jobs = list_jobs(build)
+        jobs = list_jobs(env, namespace)
         if jobs:
             exists = True
 

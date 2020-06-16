@@ -4,22 +4,28 @@ import os
 import click
 
 from kubetools.cli import cli_bootstrap
-from kubetools.deploy import (
+from kubetools.deploy.build import Build
+from kubetools.deploy.commands.cleanup import (
     execute_cleanup,
-    execute_deploy,
-    execute_remove,
-    execute_restart,
     get_cleanup_objects,
-    get_deploy_objects,
-    get_remove_objects,
-    get_restart_objects,
     log_cleanup_changes,
+)
+from kubetools.deploy.commands.deploy import (
+    execute_deploy,
+    get_deploy_objects,
     log_deploy_changes,
+)
+from kubetools.deploy.commands.remove import (
+    execute_remove,
+    get_remove_objects,
     log_remove_changes,
+)
+from kubetools.deploy.commands.restart import (
+    execute_restart,
+    get_restart_objects,
     log_restart_changes,
 )
-from kubetools.deploy.build import Build
-from kubetools.deploy.kubernetes.api import get_object_name
+from kubetools.kubernetes.api import get_object_name
 
 
 def _dry_deploy_object_loop(object_type, objects):
@@ -51,6 +57,20 @@ def _dry_deploy_loop(build, services, deployments, jobs):
             _dry_deploy_object_loop(object_type, objects)
 
 
+def _validate_annotations(ctx, param, value):
+    annotations = {}
+
+    for annotation_str in value:
+        try:
+            key, value = annotation_str.split('=', 1)
+        except ValueError:
+            raise click.BadParameter(f'"{annotation_str}" does not match "key=value".')
+        else:
+            annotations[key] = value
+
+    return annotations
+
+
 @cli_bootstrap.command(help_priority=0)
 @click.option(
     '--dry',
@@ -73,6 +93,12 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     default=False,
     help='Flag to auto-yes remove confirmation step.',
 )
+@click.option(
+    'annotations', '--annotation',
+    multiple=True,
+    callback=_validate_annotations,
+    help='Extra annotations to apply to Kubernetes objects, format: key=value.',
+)
 @click.argument('namespace')
 @click.argument(
     'app_dirs',
@@ -80,7 +106,7 @@ def _dry_deploy_loop(build, services, deployments, jobs):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
+def deploy(ctx, dry, replicas, default_registry, yes, annotations, namespace, app_dirs):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -97,6 +123,7 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
+        extra_annotations=annotations,
     )
 
     if not any((services, deployments, jobs)):
@@ -147,9 +174,9 @@ def deploy(ctx, dry, replicas, default_registry, yes, namespace, app_dirs):
     help='Run a cleanup immediately after removal.',
 )
 @click.argument('namespace')
-@click.argument('app_names', nargs=-1)
+@click.argument('app_or_project_names', nargs=-1)
 @click.pass_context
-def remove(ctx, yes, force, do_cleanup, namespace, app_names):
+def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
     '''
     Removes one or more apps from a given namespace.
     '''
@@ -160,11 +187,11 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_names):
     )
 
     services_to_delete, deployments_to_delete, jobs_to_delete = (
-        get_remove_objects(build, app_names, force=force)
+        get_remove_objects(build, app_or_project_names, force=force)
     )
 
     if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_remove_changes(
@@ -212,7 +239,7 @@ def cleanup(ctx, yes, namespace):
     replica_sets_to_delete, pods_to_delete = get_cleanup_objects(build)
 
     if not any((replica_sets_to_delete, pods_to_delete)):
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_cleanup_changes(
@@ -242,9 +269,9 @@ def cleanup(ctx, yes, namespace):
     help='Flag to auto-yes remove confirmation step.',
 )
 @click.argument('namespace')
-@click.argument('app_names', nargs=-1)
+@click.argument('app_or_project_names', nargs=-1)
 @click.pass_context
-def restart(ctx, yes, namespace, app_names):
+def restart(ctx, yes, namespace, app_or_project_names):
     '''
     Restarts one or more apps in a given namespace.
     '''
@@ -254,10 +281,10 @@ def restart(ctx, yes, namespace, app_names):
         namespace=namespace,
     )
 
-    deployments_and_pods_to_delete = get_restart_objects(build, app_names)
+    deployments_and_pods_to_delete = get_restart_objects(build, app_or_project_names)
 
     if not deployments_and_pods_to_delete:
-        click.echo('Nothing to do!')
+        click.echo('Nothing to do 👍!')
         return
 
     log_restart_changes(
