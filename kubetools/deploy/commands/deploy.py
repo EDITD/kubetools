@@ -76,6 +76,8 @@ def get_deploy_objects(
     replicas=None,
     default_registry=None,
     extra_annotations=None,
+    ignore_git_changes=False,
+    custom_config_file=False,
 ):
     all_services = []
     all_deployments = []
@@ -96,7 +98,7 @@ def get_deploy_objects(
             annotations.update(extra_annotations)
 
         if path.exists(path.join(app_dir, '.git')):
-            if not _is_git_committed(app_dir):
+            if not _is_git_committed(app_dir) and not ignore_git_changes:
                 raise KubeBuildError(f'{app_dir} contains uncommitted changes, refusing to deploy!')
 
             commit_hash, git_annotations = _get_git_info(app_dir)
@@ -109,6 +111,7 @@ def get_deploy_objects(
             env=build.env,
             namespace=build.namespace,
             app_name=app_dir,
+            custom_config_file=custom_config_file,
         )
 
         context_to_image = ensure_docker_images(
