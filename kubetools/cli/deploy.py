@@ -99,6 +99,18 @@ def _validate_annotations(ctx, param, value):
     callback=_validate_annotations,
     help='Extra annotations to apply to Kubernetes objects, format: key=value.',
 )
+@click.option(
+    '-f', '--file',
+    nargs=1,
+    help='Specify a non-default Kubetools yml file to deploy from.',
+    type=click.Path(exists=True),
+)
+@click.option(
+    '--ignore-git-changes',
+    is_flag=True,
+    default=False,
+    help='Flag to ignore un-committed changes in git.',
+)
 @click.argument('namespace')
 @click.argument(
     'app_dirs',
@@ -106,7 +118,17 @@ def _validate_annotations(ctx, param, value):
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def deploy(ctx, dry, replicas, default_registry, yes, annotations, namespace, app_dirs):
+def deploy(
+    ctx,
+    dry,
+    replicas,
+    default_registry,
+    yes, annotations,
+    file,
+    ignore_git_changes,
+    namespace,
+    app_dirs,
+):
     '''
     Deploy an app, or apps, to Kubernetes.
     '''
@@ -119,11 +141,15 @@ def deploy(ctx, dry, replicas, default_registry, yes, annotations, namespace, ap
         namespace=namespace,
     )
 
+    custom_config_file = click.format_filename(file)
+
     services, deployments, jobs = get_deploy_objects(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
         extra_annotations=annotations,
+        ignore_git_changes=ignore_git_changes,
+        custom_config_file=custom_config_file,
     )
 
     if not any((services, deployments, jobs)):

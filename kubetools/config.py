@@ -33,6 +33,7 @@ def load_kubetools_config(
     env=None,
     namespace=None,
     dev=False,  # when true disables env/namespace filtering (dev *only*)
+    custom_config_file=False,
 ):
     '''
     Load Kubetools config files.
@@ -50,10 +51,14 @@ def load_kubetools_config(
         dev (bool): filter config items by dev mode
     '''
 
-    possible_filenames = (
-        'kubetools.yml',
-        'kubetools.yaml',
-    )
+    if custom_config_file:
+        possible_filenames = (custom_config_file)
+
+    else:
+        possible_filenames = (
+            'kubetools.yml',
+            'kubetools.yaml',
+        )
 
     if directory:
         possible_files = [
