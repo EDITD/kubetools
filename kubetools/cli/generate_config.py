@@ -18,17 +18,23 @@ from . import cli_bootstrap
     default=1,
     help='Default number of replicas for each app.',
 )
+@click.option(
+    '-f', '--file',
+    nargs=1,
+    help='Specify a non-default Kubetools yml file to generate config from.',
+    type=click.Path(exists=True),
+)
 @click.argument(
     'app_dir',
     type=click.Path(exists=True, file_okay=False),
 )
 @click.pass_context
-def config(ctx, replicas, app_dir):
+def config(ctx, replicas, file, app_dir):
     '''
     Generate and write out Kubernetes configs for a project.
     '''
 
-    kubetools_config = load_kubetools_config(app_dir)
+    kubetools_config = load_kubetools_config(app_dir, custom_config_file=file)
     context_to_image = defaultdict(lambda: f'IMAGE')
     services, deployments, jobs = generate_kubernetes_configs_for_project(
         kubetools_config,

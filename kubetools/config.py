@@ -52,7 +52,7 @@ def load_kubetools_config(
     '''
 
     if custom_config_file:
-        possible_filenames = (custom_config_file)
+        possible_filenames = (custom_config_file,)
 
     else:
         possible_filenames = (
