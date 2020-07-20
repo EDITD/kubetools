@@ -141,7 +141,10 @@ def deploy(
         namespace=namespace,
     )
 
-    custom_config_file = click.format_filename(file)
+    if file:
+        custom_config_file = click.format_filename(file)
+    else:
+        custom_config_file = None
 
     services, deployments, jobs = get_deploy_objects(
         build, app_dirs,

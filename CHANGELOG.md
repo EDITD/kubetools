@@ -1,3 +1,6 @@
+# v11.1.1
+- Fix `-f` / `--file` handling NoneType attribute error (introduced in v11.1)
+
 # v11.1
 - Add `-f`/`--file` argument to specify custom `kubetools.yml` file location for `kubetools deploy` and `kubetools config`
 - Add `--ignore-git-changes` argument to skip git check for uncommitted files for `kubetools deploy`
