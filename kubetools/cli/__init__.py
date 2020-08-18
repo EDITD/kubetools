@@ -58,7 +58,19 @@ class SpecialHelpOrder(click.Group):
 
 
 def _get_context_names():
-    contexts, active_context = config.list_kube_config_contexts()
+    try:
+        contexts, active_context = config.list_kube_config_contexts()
+    except config.ConfigException as e:
+        # The python-kubernetes library currently does not handle a missing "current context"
+        # well at all, raising an exception.
+        # See: https://github.com/kubernetes-client/python/issues/1193
+        if 'Expected key current-context' in e.args[0]:
+            raise click.ClickException((
+                'No current-context set in kubeconfig! Please set this to any '
+                'value using `kubectl config use-context <name>`.'
+            ))
+        raise
+
     if not contexts:
         print('Cannot find any context in kube-config file.')
         return
