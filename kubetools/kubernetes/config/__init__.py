@@ -38,11 +38,13 @@ def _ensure_image(
         return
 
     if 'containerContext' in container:
-        context_name = container['containerContext']
+        context_name = container.pop('containerContext')
+        container.pop('build', None)
 
     elif 'build' in container and deployment_name and container_name:
         # Because no shared context was provided we use the deployment + container name
         context_name = make_context_name(deployment_name, container_name)
+        container.pop('build')
     else:
         raise KubeConfigError('No image for container: {0}'.format(container))
 
@@ -72,7 +74,7 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
     all_containers = {}
 
     for container_name, data in containers.items():
-        all_container_ports.extend(data.get('ports', []))
+        all_container_ports.extend(data.pop('ports', []))
         _ensure_image(
             data, context_name_to_image,
             deployment_name, container_name,

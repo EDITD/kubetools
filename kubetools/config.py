@@ -266,8 +266,10 @@ def _expand_container(container, contexts, dev):
         _merge_config(container, context)
 
     # Expand any dev keys from the dev config
-    if dev and 'dev' in container:
-        _merge_config(container, container.pop('dev'))
+    if 'dev' in container:
+        dev_overrides = container.pop('dev')
+        if dev:
+            _merge_config(container, dev_overrides)
 
     # Apply any commandArguments
     if 'commandArguments' in container:
