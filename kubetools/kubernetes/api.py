@@ -48,10 +48,15 @@ def _get_k8s_batch_api(env):
 
 def _object_exists(api, method, namespace, obj):
     try:
-        getattr(api, method)(
-            namespace=namespace,
-            name=get_object_name(obj),
-        )
+        if namespace:
+            getattr(api, method)(
+                namespace=namespace,
+                name=get_object_name(obj),
+            )
+        else:
+            getattr(api, method)(
+                name=get_object_name(obj),
+            )
     except ApiException as e:
         if e.status == 404:
             return False
@@ -80,6 +85,36 @@ def _wait_for_object(*args):
 
 def _wait_for_no_object(*args):
     return _wait_for(lambda: _object_exists(*args) is False)
+
+
+def namespace_exists(env, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(env)
+    return _object_exists(k8s_core_api, 'read_namespace', None, namespace_obj)
+
+
+def list_namespaces(env):
+    k8s_core_api = _get_k8s_core_api(env)
+    return k8s_core_api.list_namespace().items
+
+
+def create_namespace(env, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(env)
+    k8s_namespace = k8s_core_api.create_namespace(
+        body=namespace_obj,
+    )
+
+    _wait_for_object(k8s_core_api, 'read_namespace', None, namespace_obj)
+    return k8s_namespace
+
+
+def update_namespace(env, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(env)
+    k8s_namespace = k8s_core_api.patch_namespace(
+        name=get_object_name(namespace_obj),
+        body=namespace_obj,
+    )
+
+    return k8s_namespace
 
 
 def list_pods(env, namespace):

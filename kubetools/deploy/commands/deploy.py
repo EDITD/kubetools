@@ -13,16 +13,23 @@ from kubetools.exceptions import KubeBuildError
 from kubetools.kubernetes.api import (
     create_deployment,
     create_job,
+    create_namespace,
     create_service,
     deployment_exists,
     get_object_name,
     list_deployments,
+    list_namespaces,
     list_services,
+    namespace_exists,
     service_exists,
     update_deployment,
+    update_namespace,
     update_service,
 )
-from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
+from kubetools.kubernetes.config import (
+    generate_kubernetes_configs_for_project,
+    generate_namespace_config,
+)
 
 
 def _is_git_committed(app_dir):
@@ -83,19 +90,20 @@ def get_deploy_objects(
     all_deployments = []
     all_jobs = []
 
+    annotations = {
+        'kubetools/env': build.env,
+        'kubetools/namespace': build.namespace,
+    }
+    if extra_annotations:
+        annotations.update(extra_annotations)
+
+    namespace = generate_namespace_config(build.namespace, base_annotations=annotations)
+
     for app_dir in app_dirs:
         envvars = {
             'KUBE_ENV': build.env,
             'KUBE_NAMESPACE': build.namespace,
         }
-
-        annotations = {
-            'kubetools/env': build.env,
-            'kubetools/namespace': build.namespace,
-        }
-
-        if extra_annotations:
-            annotations.update(extra_annotations)
 
         if path.exists(path.join(app_dir, '.git')):
             if not _is_git_committed(app_dir) and not ignore_git_changes:
@@ -145,14 +153,18 @@ def get_deploy_objects(
             if existing_deployment:
                 deployment['spec']['replicas'] = existing_deployment.spec.replicas
 
-    return all_services, all_deployments, all_jobs
+    return namespace, all_services, all_deployments, all_jobs
 
 
 def log_deploy_changes(
-    build, services, deployments, jobs,
+    build, namespace, services, deployments, jobs,
     message='Executing changes:',
     name_formatter=lambda name: name,
 ):
+    existing_namespace_names = set(
+        get_object_name(namespace)
+        for namespace in list_namespaces(build.env)
+    )
     existing_service_names = set(
         get_object_name(service)
         for service in list_services(build.env, build.namespace)
@@ -168,6 +180,11 @@ def log_deploy_changes(
     deploy_deployment_names = set(
         get_object_name(deployment) for deployment in deployments
     )
+    deploy_namespace_name = set(
+        [build.namespace]
+    )
+
+    new_namespace = deploy_namespace_name - existing_namespace_names
 
     new_services = deploy_service_names - existing_service_names
     update_services = deploy_service_names - new_services
@@ -176,13 +193,14 @@ def log_deploy_changes(
     update_deployments = deploy_deployment_names - new_deployments
 
     with build.stage(message):
+        log_actions(build, 'CREATE', 'namespace', new_namespace, name_formatter)
         log_actions(build, 'CREATE', 'service', new_services, name_formatter)
         log_actions(build, 'CREATE', 'deployment', new_deployments, name_formatter)
         log_actions(build, 'UPDATE', 'service', update_services, name_formatter)
         log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
 
 
-def execute_deploy(build, services, deployments, jobs):
+def execute_deploy(build, namespace, services, deployments, jobs):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -202,6 +220,15 @@ def execute_deploy(build, services, deployments, jobs):
             depend_deployments.append(deployment)
 
     # Now execute the deploy process
+    if namespace:
+        with build.stage('Create and/or update namespace'):
+            if namespace_exists(build.env, namespace):
+                build.log_info(f'Update namespace: {get_object_name(namespace)}')
+                update_namespace(build.env, namespace)
+            else:
+                build.log_info(f'Create namespace: {get_object_name(namespace)}')
+                create_namespace(build.env, namespace)
+
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:

@@ -8,6 +8,7 @@ from kubetools.exceptions import KubeConfigError
 
 from .deployment import make_deployment_config
 from .job import make_job_config
+from .namespace import make_namespace_config
 from .service import make_service_config
 from .util import copy_and_update
 
@@ -94,6 +95,24 @@ def _get_replicas(deployment, default=1):
         replicas = max(replicas, deployment['minReplicas'])
 
     return replicas
+
+
+def generate_namespace_config(name, base_labels=None, base_annotations=None):
+    base_annotations = copy_and_update(base_annotations, {
+        MANAGED_BY_ANNOTATION_KEY: 'kubetools',
+    })
+
+    base_labels = copy_and_update(base_labels, {
+        PROJECT_NAME_LABEL_KEY: name,
+    })
+
+    namespace = make_namespace_config(
+        name,
+        labels=base_labels,
+        annotations=base_annotations,
+    )
+
+    return namespace
 
 
 def generate_kubernetes_configs_for_project(

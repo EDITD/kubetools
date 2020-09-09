@@ -146,7 +146,7 @@ def deploy(
     else:
         custom_config_file = None
 
-    services, deployments, jobs = get_deploy_objects(
+    namespace, services, deployments, jobs = get_deploy_objects(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
@@ -155,15 +155,15 @@ def deploy(
         custom_config_file=custom_config_file,
     )
 
-    if not any((services, deployments, jobs)):
+    if not any((namespace, services, deployments, jobs)):
         click.echo('Nothing to do!')
         return
 
     if dry:
-        return _dry_deploy_loop(build, services, deployments, jobs)
+        return _dry_deploy_loop(build, namespace, services, deployments, jobs)
 
     log_deploy_changes(
-        build, services, deployments, jobs,
+        build, namespace, services, deployments, jobs,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -177,6 +177,7 @@ def deploy(
 
     execute_deploy(
         build,
+        namespace,
         services,
         deployments,
         jobs,
