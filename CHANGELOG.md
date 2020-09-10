@@ -1,4 +1,8 @@
-# v11.2
+# Changelog
+
+## Unreleased
+
+### 2020-09-10 10:50 UTC
 - Implicitly create target namespace if it does not exist
 - The `--cleanup` flag will now remove remaining empty namespaces
 - Replace `yaml.load` with `yaml.safe_load` to avoid CLI warning
