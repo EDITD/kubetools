@@ -49,6 +49,8 @@ if __name__ == '__main__':
         extras_require={
             'dev': (
                 'ipdb',
+                'pytest~=6.0',
+                'pytest-cov~=2.10',
             ),
         },
     )
