@@ -1,0 +1,34 @@
+name: generic-app
+
+
+containerContexts:
+  generic-context:
+    image: docker-registry.edtd.net/generic-image
+    command: [generic-command]
+    ports:
+      - 80
+
+
+upgrades:
+  - name: Upgrade the database
+    containerContext: generic-context
+    command: [generic-command, generic-arg]
+
+
+
+tests:
+  - name: Nosetests
+    containerContext: generic-context
+    command: [generic-tests]
+
+
+deployments:
+  generic-app:
+    containers:
+      webserver:
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        containerContext: generic-context
+        probes:
+          timeoutSeconds: 5
+          httpGet:
+            path: /ping
