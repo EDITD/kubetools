@@ -98,7 +98,7 @@ def load_kubetools_config(
             'Could not build app{0} as no kubetools config found!'
         ).format(' ({0})'.format(app_name) if app_name else ''))
 
-    config = yaml.load(config)
+    config = yaml.safe_load(config)
 
     # Check Kubetools version?
     if 'minKubetoolsVersion' in config:

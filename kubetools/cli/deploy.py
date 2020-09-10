@@ -146,7 +146,7 @@ def deploy(
     else:
         custom_config_file = None
 
-    services, deployments, jobs = get_deploy_objects(
+    namespace, services, deployments, jobs = get_deploy_objects(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
@@ -155,15 +155,15 @@ def deploy(
         custom_config_file=custom_config_file,
     )
 
-    if not any((services, deployments, jobs)):
+    if not any((namespace, services, deployments, jobs)):
         click.echo('Nothing to do!')
         return
 
     if dry:
-        return _dry_deploy_loop(build, services, deployments, jobs)
+        return _dry_deploy_loop(build, namespace, services, deployments, jobs)
 
     log_deploy_changes(
-        build, services, deployments, jobs,
+        build, namespace, services, deployments, jobs,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -177,6 +177,7 @@ def deploy(
 
     execute_deploy(
         build,
+        namespace,
         services,
         deployments,
         jobs,
@@ -258,6 +259,7 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
 def cleanup(ctx, yes, namespace):
     '''
     Cleans up a namespace by removing orphaned objects.
+    Will delete the namespace if it's empty after cleanup.
     '''
 
     build = Build(
@@ -265,14 +267,14 @@ def cleanup(ctx, yes, namespace):
         namespace=namespace,
     )
 
-    replica_sets_to_delete, pods_to_delete = get_cleanup_objects(build)
+    namespace_to_delete, replica_sets_to_delete, pods_to_delete = get_cleanup_objects(build)
 
-    if not any((replica_sets_to_delete, pods_to_delete)):
+    if not any((namespace_to_delete, replica_sets_to_delete, pods_to_delete)):
         click.echo('Nothing to do 👍!')
         return
 
     log_cleanup_changes(
-        build, replica_sets_to_delete, pods_to_delete,
+        build, namespace_to_delete, replica_sets_to_delete, pods_to_delete,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -285,6 +287,7 @@ def cleanup(ctx, yes, namespace):
 
     execute_cleanup(
         build,
+        namespace_to_delete,
         replica_sets_to_delete,
         pods_to_delete,
     )
