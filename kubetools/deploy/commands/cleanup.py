@@ -60,7 +60,7 @@ def get_cleanup_objects(build):
         if namespace.metadata.name == build.namespace:
             current_namespace = namespace
 
-    namespace_to_delete = None
+    namespace_to_delete = []
     remaining_pods = pod_names - pod_names_to_delete - pods_already_deleted
     remaining_replicasets = replica_set_names - replica_set_names_to_delete - replica_sets_already_deleted
     
