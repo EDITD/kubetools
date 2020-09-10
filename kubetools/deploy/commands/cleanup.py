@@ -21,7 +21,7 @@ def get_cleanup_objects(build):
     replica_set_names = set(get_object_name(replica_set) for replica_set in replica_sets)
     replica_sets_to_delete = []
     replica_set_names_to_delete = set()
-    replica_sets_already_deleted = set()
+    replica_set_names_already_deleted = set()
 
     for replica_set in replica_sets:
         if not is_kubetools_object(replica_set):
@@ -32,13 +32,13 @@ def get_cleanup_objects(build):
             replica_sets_to_delete.append(replica_set)
 
         if replicaset.metadata.deletion_timestamp:
-            replica_sets_already_deleted.add(get_object_name(replica_set))
+            replica_set_names_already_deleted.add(get_object_name(replica_set))
 
     pods = list_pods(build.env, build.namespace)
     pod_names = set(get_object_name(pod) for pod in pods)
     pods_to_delete = []
     pod_names_to_delete = set()
-    pods_already_deleted = set()
+    pod_names_already_deleted = set()
 
     for pod in pods:
         if not pod.metadata.owner_references:
@@ -52,7 +52,7 @@ def get_cleanup_objects(build):
                 pod_names_to_delete.add(get_object_name(pod))
 
         if pod.metadata.deletion_timestamp:
-            pods_already_deleted.add(get_object_name(pod))
+            pod_names_already_deleted.add(get_object_name(pod))
 
     namespaces = list_namespaces(build.env)
     current_namespace = None
@@ -61,8 +61,8 @@ def get_cleanup_objects(build):
             current_namespace = namespace
 
     namespace_to_delete = []
-    remaining_pods = pod_names - pod_names_to_delete - pods_already_deleted
-    remaining_replicasets = replica_set_names - replica_set_names_to_delete - replica_sets_already_deleted
+    remaining_pods = pod_names - pod_names_to_delete - pod_names_already_deleted
+    remaining_replicasets = replica_set_names - replica_set_names_to_delete - replica_set_names_already_deleted
     
     if len(remaining_pods) == 0 and len(remaining_replicasets) == 0:
         namespace_to_delete = [current_namespace]
