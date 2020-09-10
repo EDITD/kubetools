@@ -7,6 +7,7 @@
 - Fix the test condition for upgrades
 - Add `-f` / `--force` argument to `kubetools restart`
 - Fix issues with listing objects in `kubetools restart`
+- Add `-e KEY=VALUE` flag to inject environment variables when using `kubetools deploy`
 
 
 # v11.1.1
