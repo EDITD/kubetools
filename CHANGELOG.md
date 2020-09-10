@@ -1,19 +1,28 @@
 # Changelog
 
 ### Unreleased
+
+
+# v12.0
+
+Breaking note: this change passes all non Kubetools specific container config through to the generated K8s container spec. Any invalid/unused data would have previously been ignored will now be passed to K8s and throw an error.
+
+- Pass any non-Kubetools specific container config through to K8s container spec
 - Implicitly create target namespace if it does not exist
 - The `--cleanup` flag will now remove remaining empty namespaces
-- Replace `yaml.load` with `yaml.safe_load` to avoid CLI warning
-- Fix the test condition for upgrades
 - Add `-f` / `--force` argument to `kubetools restart`
-- Fix issues with listing objects in `kubetools restart`
 - Add `-e KEY=VALUE` flag to inject environment variables when using `kubetools deploy`
+- Replace `yaml.load` with `yaml.safe_load` to avoid CLI warning
+- Fix issues with listing objects in `kubetools restart`
+- Fix the test condition for upgrades
 
 
 # v11.1.1
+
 - Fix `-f` / `--file` handling NoneType attribute error (introduced in v11.1)
 
 # v11.1
+
 - Add `-f`/`--file` argument to specify custom `kubetools.yml` file location for `kubetools deploy` and `kubetools config`
 - Add `--ignore-git-changes` argument to skip git check for uncommitted files for `kubetools deploy`
 
