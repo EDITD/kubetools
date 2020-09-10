@@ -57,18 +57,18 @@ def _dry_deploy_loop(build, services, deployments, jobs):
             _dry_deploy_object_loop(object_type, objects)
 
 
-def _validate_annotations(ctx, param, value):
-    annotations = {}
+def _validate_key_value_argument(ctx, param, value):
+    key_values = {}
 
-    for annotation_str in value:
+    for key_value_str in value:
         try:
-            key, value = annotation_str.split('=', 1)
+            key, value = key_value_str.split('=', 1)
         except ValueError:
-            raise click.BadParameter(f'"{annotation_str}" does not match "key=value".')
+            raise click.BadParameter(f'"{key_value_str}" does not match "key=value".')
         else:
-            annotations[key] = value
+            key_values[key] = value
 
-    return annotations
+    return key_values
 
 
 @cli_bootstrap.command(help_priority=0)
@@ -94,9 +94,15 @@ def _validate_annotations(ctx, param, value):
     help='Flag to auto-yes remove confirmation step.',
 )
 @click.option(
-    'annotations', '--annotation',
+    'envvars', '-e', '--envvar',
     multiple=True,
-    callback=_validate_annotations,
+    callback=_validate_key_value_argument,
+    help='Extra environment variables to apply to Kubernetes objects, format: key=value.',
+)
+@click.option(
+    'annotations', '-a', '--annotation',
+    multiple=True,
+    callback=_validate_key_value_argument,
     help='Extra annotations to apply to Kubernetes objects, format: key=value.',
 )
 @click.option(
@@ -123,7 +129,9 @@ def deploy(
     dry,
     replicas,
     default_registry,
-    yes, annotations,
+    yes,
+    envvars,
+    annotations,
     file,
     ignore_git_changes,
     namespace,
@@ -150,6 +158,7 @@ def deploy(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
+        extra_envvars=envvars,
         extra_annotations=annotations,
         ignore_git_changes=ignore_git_changes,
         custom_config_file=custom_config_file,

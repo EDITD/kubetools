@@ -82,6 +82,7 @@ def get_deploy_objects(
     app_dirs,
     replicas=None,
     default_registry=None,
+    extra_envvars=None,
     extra_annotations=None,
     ignore_git_changes=False,
     custom_config_file=False,
@@ -89,6 +90,13 @@ def get_deploy_objects(
     all_services = []
     all_deployments = []
     all_jobs = []
+
+    envvars = {
+        'KUBE_ENV': build.env,
+        'KUBE_NAMESPACE': build.namespace,
+    }
+    if extra_envvars:
+        envvars.update(extra_envvars)
 
     annotations = {
         'kubetools/env': build.env,
@@ -100,11 +108,6 @@ def get_deploy_objects(
     namespace = generate_namespace_config(build.namespace, base_annotations=annotations)
 
     for app_dir in app_dirs:
-        envvars = {
-            'KUBE_ENV': build.env,
-            'KUBE_NAMESPACE': build.namespace,
-        }
-
         if path.exists(path.join(app_dir, '.git')):
             if not _is_git_committed(app_dir) and not ignore_git_changes:
                 raise KubeBuildError(f'{app_dir} contains uncommitted changes, refusing to deploy!')
