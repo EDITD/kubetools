@@ -9,7 +9,7 @@ Breaking note: this change passes all non Kubetools specific container config th
 
 - Pass any non-Kubetools specific container config through to K8s container spec
 - Implicitly create target namespace if it does not exist
-- The `--cleanup` flag will now remove remaining empty namespaces
+- The `--cleanup` flag will now remove the target namespace if empty
 - Add `-f` / `--force` argument to `kubetools restart`
 - Add `-e KEY=VALUE` flag to inject environment variables when using `kubetools deploy`
 - Replace `yaml.load` with `yaml.safe_load` to avoid CLI warning
