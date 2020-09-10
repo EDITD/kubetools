@@ -117,6 +117,15 @@ def update_namespace(env, namespace_obj):
     return k8s_namespace
 
 
+def delete_namespace(env, namespace, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(env)
+    k8s_core_api.delete_namespace(
+        name=get_object_name(namespace_obj),
+    )
+
+    _wait_for_no_object(k8s_core_api, 'read_namespace', None, namespace_obj)
+
+
 def list_pods(env, namespace):
     k8s_core_api = _get_k8s_core_api(env)
     return k8s_core_api.list_namespaced_pod(namespace=namespace).items
