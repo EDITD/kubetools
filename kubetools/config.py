@@ -177,11 +177,6 @@ def _filter_config_data(key, items_or_object, env, namespace, dev):
 
 
 def _conditions_match(conditions, env, namespace, dev):
-    # Remove any test condition - this isn't actually part of the matching as is
-    # only considered in development under `ktd test`.
-    if conditions:
-        conditions.pop('test', None)
-
     # No conditions? We're good!
     if conditions is None:
         return True
