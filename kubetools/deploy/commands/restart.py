@@ -14,14 +14,19 @@ from kubetools.kubernetes.api import (
 # Restart
 # Handles restarting a deployment by deleting each pod and waiting for recovery
 
-def get_restart_objects(build, app_names=None):
-    deployments = get_app_objects(build, app_names, list_deployments)
+def get_restart_objects(build, app_names=None, force=False):
+    deployments = get_app_objects(
+        build,
+        app_names,
+        list_deployments,
+        force=force,
+    )
     name_to_deployment = {
         get_object_name(deployment): deployment
         for deployment in deployments
     }
 
-    replica_sets = list_replica_sets(build)
+    replica_sets = list_replica_sets(build.env, build.namespace)
     replica_set_names_to_deployment = {}
 
     for replica_set in replica_sets:
@@ -45,7 +50,7 @@ def get_restart_objects(build, app_names=None):
                 name_to_deployment[owner_name]
             )
 
-    pods = list_pods(build)
+    pods = list_pods(build.env, build.namespace)
     deployment_name_to_pods = defaultdict(list)
 
     for pod in pods:

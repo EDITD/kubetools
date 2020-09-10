@@ -5,6 +5,8 @@
 - The `--cleanup` flag will now remove remaining empty namespaces
 - Replace `yaml.load` with `yaml.safe_load` to avoid CLI warning
 - Fix the test condition for upgrades
+- Add `-f` / `--force` argument to `kubetools restart`
+- Fix issues with listing objects in `kubetools restart`
 
 
 # v11.1.1

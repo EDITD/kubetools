@@ -300,10 +300,16 @@ def cleanup(ctx, yes, namespace):
     default=False,
     help='Flag to auto-yes remove confirmation step.',
 )
+@click.option(
+    '-f', '--force',
+    is_flag=True,
+    default=False,
+    help='Force kubetools to remove objects it does not own.',
+)
 @click.argument('namespace')
 @click.argument('app_or_project_names', nargs=-1)
 @click.pass_context
-def restart(ctx, yes, namespace, app_or_project_names):
+def restart(ctx, yes, force, namespace, app_or_project_names):
     '''
     Restarts one or more apps in a given namespace.
     '''
@@ -313,7 +319,10 @@ def restart(ctx, yes, namespace, app_or_project_names):
         namespace=namespace,
     )
 
-    deployments_and_pods_to_delete = get_restart_objects(build, app_or_project_names)
+    deployments_and_pods_to_delete = get_restart_objects(
+        build, app_or_project_names,
+        force=force,
+    )
 
     if not deployments_and_pods_to_delete:
         click.echo('Nothing to do 👍!')
