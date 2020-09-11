@@ -1,6 +1,9 @@
 # Changelog
 
 ### Unreleased
+
+# v12.0.1
+
 - Fix cleanup failure in removing namespaces which contain replica sets
 
 # v12.0
