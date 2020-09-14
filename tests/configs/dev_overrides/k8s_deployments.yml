@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-app-dev-overrides-generic-app, kubetools/project_name: generic-app-dev-overrides,
+    kubetools/role: app}
+  name: generic-app-dev-overrides-generic-app
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: generic-app-dev-overrides-generic-app, kubetools/project_name: generic-app-dev-overrides,
+      kubetools/role: app}
+  template:
+    metadata:
+      labels: {kubetools/name: generic-app-dev-overrides-generic-app, kubetools/project_name: generic-app-dev-overrides,
+        kubetools/role: app}
+    spec:
+      containers:
+      - command: [generic-dev-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        name: webserver
+      - command: [generic-dev-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        name: worker

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-multi-app-generic-app-webserver, kubetools/project_name: generic-multi-app,
+    kubetools/role: app}
+  name: generic-multi-app-generic-app-webserver
+spec:
+  ports:
+  - {port: 80, targetPort: 80}
+  selector: {kubetools/name: generic-multi-app-generic-app-webserver, kubetools/project_name: generic-multi-app,
+    kubetools/role: app}
+  type: NodePort
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-multi-app-generic-app-workers, kubetools/project_name: generic-multi-app,
+    kubetools/role: app}
+  name: generic-multi-app-generic-app-workers
+spec:
+  ports:
+  - {port: 80, targetPort: 80}
+  selector: {kubetools/name: generic-multi-app-generic-app-workers, kubetools/project_name: generic-multi-app,
+    kubetools/role: app}
+  type: NodePort

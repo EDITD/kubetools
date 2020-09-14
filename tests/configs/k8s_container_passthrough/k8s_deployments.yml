@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-app-passthrough-generic-app, kubetools/project_name: generic-app-passthrough,
+    kubetools/role: app}
+  name: generic-app-passthrough-generic-app
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: generic-app-passthrough-generic-app, kubetools/project_name: generic-app-passthrough,
+      kubetools/role: app}
+  template:
+    metadata:
+      labels: {kubetools/name: generic-app-passthrough-generic-app, kubetools/project_name: generic-app-passthrough,
+        kubetools/role: app}
+    spec:
+      containers:
+      - arbitrary-passthrough-key: true
+        command: [generic-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet: {path: /ping, port: 80}
+          timeoutSeconds: 5
+        name: webserver
+        readinessProbe:
+          httpGet: {path: /ping, port: 80}
+          timeoutSeconds: 5
