@@ -20,7 +20,7 @@ spec:
         command: [generic-command]
         env:
         - {name: KUBE, value: 'true'}
-        image: docker-registry.edtd.net/generic-image
+        image: generic-image
         imagePullPolicy: Always
         name: upgrade
       restartPolicy: Never

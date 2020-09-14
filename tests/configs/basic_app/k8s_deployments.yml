@@ -19,7 +19,7 @@ spec:
         containerContext: generic-context
         env:
         - {name: KUBE, value: 'true'}
-        image: docker-registry.edtd.net/generic-image
+        image: generic-image
         imagePullPolicy: Always
         livenessProbe:
           httpGet: {path: /ping, port: 80}

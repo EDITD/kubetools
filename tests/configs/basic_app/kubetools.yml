@@ -3,7 +3,7 @@ name: generic-app
 
 containerContexts:
   generic-context:
-    image: docker-registry.edtd.net/generic-image
+    image: generic-image
     command: [generic-command]
     ports:
       - 80
@@ -13,13 +13,6 @@ upgrades:
   - name: Upgrade the database
     containerContext: generic-context
     command: [generic-command, generic-arg]
-
-
-
-tests:
-  - name: Nosetests
-    containerContext: generic-context
-    command: [generic-tests]
 
 
 deployments:
