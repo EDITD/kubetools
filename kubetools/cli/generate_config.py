@@ -50,7 +50,7 @@ def config(ctx, replicas, file, app_dir, formatter):
     '''
 
     kubetools_config = load_kubetools_config(app_dir, custom_config_file=file)
-    context_to_image = defaultdict(lambda: f'IMAGE')
+    context_to_image = defaultdict(lambda: 'IMAGE')
     services, deployments, jobs = generate_kubernetes_configs_for_project(
         kubetools_config,
         replicas=replicas,
