@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+# v12.0.2
+
+- Fix issue when creating new deployments alongside existing ones
+- Fix `kubetools restart`
+
 # v12.0.1
 
 - Fix cleanup failure in removing namespaces which contain replica sets
