@@ -183,9 +183,7 @@ def log_deploy_changes(
     deploy_deployment_names = set(
         get_object_name(deployment) for deployment in deployments
     )
-    deploy_namespace_name = set(
-        [build.namespace]
-    )
+    deploy_namespace_name = set((build.namespace,))
 
     new_namespace = deploy_namespace_name - existing_namespace_names
 
@@ -276,7 +274,7 @@ def execute_deploy(build, namespace, services, deployments, jobs):
 
     if noexist_main_deployments:
         with build.stage('Create any app deployments that do not exist'):
-            for deployment in main_deployments:
+            for deployment in noexist_main_deployments:
                 build.log_info(f'Create deployment: {get_object_name(deployment)}')
                 create_deployment(build.env, build.namespace, deployment)
 
