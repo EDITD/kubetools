@@ -51,6 +51,9 @@ if __name__ == '__main__':
                 'ipdb',
                 'pytest~=6.0',
                 'pytest-cov~=2.10',
+                'flake8~=3.8',
+                'flake8-import-order~=0.18',
+                'flake8-commas~=2.0',
             ),
         },
     )
