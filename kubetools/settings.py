@@ -25,8 +25,7 @@ class KubetoolsSettings(object):
     WAIT_SLEEP_TIME = 3
     WAIT_MAX_SLEEPS = 300 / WAIT_SLEEP_TIME
 
-    def __init__(self, debug=False, filename=None):
-        self.debug = debug
+    def __init__(self, filename=None):
         self.filename = filename
         self.scripts = []
 
@@ -35,11 +34,12 @@ def get_settings_directory():
     return click.get_app_dir('kubetools', force_posix=True)
 
 
-def _get_settings(debug=False):
+@memoize
+def get_settings():
     settings_directory = get_settings_directory()
     settings_file = path.join(settings_directory, 'kubetools.conf')
 
-    settings = KubetoolsSettings(debug=debug, filename=settings_file)
+    settings = KubetoolsSettings(filename=settings_file)
 
     if path.exists(settings_file):
         logger.info('Loading settings file: {0}'.format(settings_file))
@@ -63,13 +63,3 @@ def _get_settings(debug=False):
                 settings.scripts.append(filename)
 
     return settings
-
-
-get_settings = memoize(
-    _get_settings,
-    # Ensure we always memoize even if not always called with the same args
-    # this is because we initially bootstrap the settings at the CLI entry points
-    # with the debug kwarg, but in sub-CLI functions we don't have the original
-    # debug arg, but rely on the cached settings.
-    resolver=lambda *args, **kwargs: 'settings',
-)
