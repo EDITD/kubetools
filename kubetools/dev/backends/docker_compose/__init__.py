@@ -59,6 +59,7 @@ def _build_container(kubetools_config, name, dockerfile):
     run_compose_process(
         kubetools_config,
         ('build', '--pull', name),
+        hide_output=True,
     )
 
 
@@ -111,11 +112,7 @@ def _up_container(kubetools_config, name):
         return
 
     # Up the container in the background
-    run_compose_process(
-        kubetools_config,
-        ('up', '-d', name),
-        capture_output=False,
-    )
+    run_compose_process(kubetools_config, ('up', '-d', name))
 
     # Get the new status of the container
     status = get_container_status(kubetools_config, name)
@@ -157,7 +154,7 @@ def _probe_container(kubetools_config, name):
                 timeout=timeout,
             )(run_compose_process)
 
-            run_with_retry(kubetools_config, command)
+            run_with_retry(kubetools_config, command, hide_output=True)
 
         # Check HTTP status to check for container up?
         if 'httpGet' in probe:
@@ -227,13 +224,8 @@ def destroy_containers(kubetools_config, names=None):
     containers_status = get_containers_status(kubetools_config)
 
     if containers_status:
-        # Shortcut: bring the entire environment down
-        if not names:
-            return run_compose_process(
-                kubetools_config,
-                ('down', '--remove-orphans'),
-                capture_output=False,
-            )
+        if not names:  # Shortcut: bring the entire environment down
+            return run_compose_process(kubetools_config, ('down', '--remove-orphans'))
 
     all_containers = get_all_containers(kubetools_config)
 
@@ -246,11 +238,7 @@ def destroy_containers(kubetools_config, names=None):
         ]
 
     for name, config in all_containers:
-        run_compose_process(
-            kubetools_config,
-            ('rm', '--stop', '--force', name),
-            capture_output=False,
-        )
+        run_compose_process(kubetools_config, ('rm', '--stop', '--force', name))
 
 
 def start_containers(kubetools_config, names=None):
@@ -283,24 +271,12 @@ def start_containers(kubetools_config, names=None):
                 'please use `ktd up` to create new containers.'
             ))
 
-    # Start the stopped containers
-    run_compose_process(
-        kubetools_config,
-        ('start',) + tuple(names),
-        capture_output=False,
-    )
+    run_compose_process(kubetools_config, ('start',) + tuple(names))
 
 
 def stop_containers(kubetools_config, names=None):
-    # Stop everything?
     if not names:
-        # Bring the entire environment stop
-        run_compose_process(
-            kubetools_config,
-            ('stop',),
-            capture_output=False,
-        )
-
+        run_compose_process(kubetools_config, ('stop',))
         return
 
     containers_status = get_containers_status(kubetools_config)
@@ -310,12 +286,7 @@ def stop_containers(kubetools_config, names=None):
         container_status = containers_status.get(name)
 
         if container_status and container_status['up']:
-            # Stop just this container
-            run_compose_process(
-                kubetools_config,
-                ('stop', name),
-                capture_output=False,
-            )
+            run_compose_process(kubetools_config, ('stop', name))
 
 
 def run_container(kubetools_config, container, command, envvars=None):
@@ -327,22 +298,14 @@ def run_container(kubetools_config, container, command, envvars=None):
     compose_command.append(container)
     compose_command.extend(command)
 
-    run_compose_process(
-        kubetools_config,
-        compose_command,
-        capture_output=False,
-    )
+    run_compose_process(kubetools_config, compose_command)
 
 
 def exec_container(kubetools_config, container, command):
     compose_command = ['exec', container]
     compose_command.extend(command)
 
-    run_compose_process(
-        kubetools_config,
-        compose_command,
-        capture_output=False,
-    )
+    run_compose_process(kubetools_config, compose_command)
 
 
 def follow_logs(kubetools_config, containers, tail='all'):
@@ -355,7 +318,7 @@ def follow_logs(kubetools_config, containers, tail='all'):
     if containers:
         args.extend(containers)
 
-    run_compose_process(kubetools_config, args, capture_output=False)
+    run_compose_process(kubetools_config, args)
 
 
 def _print_containers(containers):
