@@ -3,6 +3,7 @@
 ### Unreleased
 
 - Ensure docker compose configs are always generated relative to the kubetools config file
+- Fix use of `--debug` when using `ktd`
 
 
 # v12.0.2
