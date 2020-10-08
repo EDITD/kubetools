@@ -4,12 +4,16 @@ from unittest import mock, TestCase
 import yaml
 
 from kubetools.config import load_kubetools_config
+from kubetools.kubernetes.api import get_object_name
 from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
 
 
 def _assert_yaml_objects(objects, yaml_filename):
     with open(yaml_filename, 'r') as f:
         desired_objects = list(yaml.safe_load_all(f))
+
+    objects.sort(key=get_object_name)
+    desired_objects.sort(key=get_object_name)
 
     assert objects == desired_objects
 
