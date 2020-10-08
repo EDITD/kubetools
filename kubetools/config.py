@@ -99,6 +99,7 @@ def load_kubetools_config(
         ).format(' ({0})'.format(app_name) if app_name else ''))
 
     config = yaml.safe_load(config)
+    config['_filename'] = filename
 
     # Check Kubetools version?
     if 'minKubetoolsVersion' in config:

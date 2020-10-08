@@ -63,12 +63,19 @@ def get_compose_name(kubetools_config):
 
 
 @memoize
+def get_compose_dirname(kubetools_config):
+    settings = get_settings()
+    return path.join(
+        path.dirname(kubetools_config['_filename']),
+        settings.DEV_CONFIG_DIRNAME,
+    )
+
+
+@memoize
 def get_compose_filename(kubetools_config):
     env = kubetools_config['env']
     compose_filename = '{0}-compose.yml'.format(env)
-
-    settings = get_settings()
-    return path.join(settings.DEV_CONFIG_DIRNAME, compose_filename)
+    return path.join(get_compose_dirname(kubetools_config), compose_filename)
 
 
 @memoize
@@ -214,7 +221,6 @@ def create_compose_config(kubetools_config):
     ktd_env = kubetools_config.get('env', DEV_DEFAULT_ENV)
     dev_network = ktd_env == DEV_DEFAULT_ENV
 
-    settings = get_settings()
     all_containers = get_all_containers(kubetools_config)
 
     envvars = [
@@ -255,8 +261,9 @@ def create_compose_config(kubetools_config):
 
     yaml_data = yaml.safe_dump(compose_config)
 
-    if not path.exists(settings.DEV_CONFIG_DIRNAME):
-        makedirs(settings.DEV_CONFIG_DIRNAME)
+    compose_dirname = get_compose_dirname(kubetools_config)
+    if not path.exists(compose_dirname):
+        makedirs(compose_dirname)
 
     with click.open_file(get_compose_filename(kubetools_config), 'w') as f:
         f.write(yaml_data)
