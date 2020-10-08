@@ -7,7 +7,7 @@ from os import getcwd, path
 
 import yaml
 
-from pkg_resources import parse_version
+from pkg_resources import parse_version, Requirement
 
 from . import __version__
 from .exceptions import KubeConfigError
@@ -101,9 +101,19 @@ def load_kubetools_config(
     config = yaml.safe_load(config)
     config['_filename'] = filename
 
-    # Check Kubetools version?
+    config_version = config.get('configVersion', 0)
+
+    if 'requireKubetools' in config:
+        _check_kubetools_version(config['requireKubetools'])
+
+    # TODO: remove this in v13, compat w/v12
     if 'minKubetoolsVersion' in config:
-        _check_min_version(config)
+        if config_version > 0:
+            raise KubeConfigError((
+                '`minKubetoolsVersion` is not valid in v1 config files, '
+                'please use `requireKubetools`!'
+            ))
+        _check_kubetools_version(f'>={config["minKubetoolsVersion"]}')
 
     # Apply an env name?
     if env:
@@ -133,19 +143,17 @@ def load_kubetools_config(
     return config
 
 
-def _check_min_version(config):
+def _check_kubetools_version(version_requirement):
     running_version = parse_version(__version__)
-    needed_version = parse_version(
-        # Version must be a string
-        str(config['minKubetoolsVersion']),
+    required_versions = Requirement.parse(
+        'kubetools{0}'.format(version_requirement),
     )
 
-    if needed_version > running_version:
-        raise KubeConfigError(
-            'Minimum Kubetools version not met, need {0} but got {1}'.format(
-                needed_version, running_version,
-            ),
-        )
+    if running_version not in required_versions:
+        raise KubeConfigError((
+            'Kubetools version requirement not met '
+            '(requires {0}, running {1})'
+        ).format(version_requirement, __version__))
 
 
 def _filter_config_data(key, items_or_object, env, namespace, dev):
