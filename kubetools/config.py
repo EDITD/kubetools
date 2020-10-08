@@ -33,6 +33,7 @@ def load_kubetools_config(
     env=None,
     namespace=None,
     dev=False,  # when true disables env/namespace filtering (dev *only*)
+    test=False,
     custom_config_file=False,
 ):
     '''
@@ -127,6 +128,8 @@ def load_kubetools_config(
                 env=env,
                 namespace=namespace,
                 dev=dev,
+                test=test,
+                use_legacy_conditions=config_version <= 0,
             )
 
     # De-nest/apply any contextContexts
@@ -156,13 +159,26 @@ def _check_kubetools_version(version_requirement):
         ).format(version_requirement, __version__))
 
 
-def _filter_config_data(key, items_or_object, env, namespace, dev):
+def _filter_config_data(
+    key,
+    items_or_object,
+    env,
+    namespace,
+    dev,
+    test,
+    use_legacy_conditions=False,
+):
+    condition_checker = (
+        _legacy_conditions_match if use_legacy_conditions else _conditions_match
+    )
+
     def is_match(item):
-        return _conditions_match(
+        return condition_checker(
             item.get('conditions'),
             env=env,
             namespace=namespace,
             dev=dev,
+            test=test,
         )
 
     if isinstance(items_or_object, list):
@@ -185,7 +201,8 @@ def _filter_config_data(key, items_or_object, env, namespace, dev):
         ))
 
 
-def _conditions_match(conditions, env, namespace, dev):
+# TODO: remove this in v13, compat w/v12
+def _legacy_conditions_match(conditions, env, namespace, dev, test):
     # No conditions? We're good!
     if conditions is None:
         return True
@@ -208,6 +225,39 @@ def _conditions_match(conditions, env, namespace, dev):
 
     # If we have notNamespaces and our namespace is present, fail!
     if 'notNamespaces' in conditions and namespace in conditions['notNamespaces']:
+        return False
+
+    return True
+
+
+def _conditions_match(conditions, env, namespace, dev, test):
+    if conditions is None:
+        return True
+
+    if dev:
+        return conditions.get('dev', True) is True
+
+    if test:
+        return conditions.get('test', True) is True
+
+    deploy_conditions = conditions.get('deploy', True)
+    if deploy_conditions is True:
+        return True
+
+    return any(_condition_matches(condition) for condition in deploy_conditions)
+
+
+def _condition_matches(condition, env, namespace):
+    if (
+        'env' in condition and env != condition['env']
+        or 'not_env' in condition and env == condition['not_env']
+    ):
+        return False
+
+    if (
+        'namespace' in condition and namespace != condition['namespace']
+        or 'not_namespace' in condition and namespace == condition['not_namespace']
+    ):
         return False
 
     return True
