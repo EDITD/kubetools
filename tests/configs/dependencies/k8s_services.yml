@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: dependencies-memcache-1, kubetools/project_name: dependencies,
+    kubetools/role: dependency}
+  name: dependencies-memcache-1
+spec:
+  ports:
+  - {port: 11211, targetPort: 11211}
+  selector: {kubetools/name: dependencies-memcache-1, kubetools/project_name: dependencies,
+    kubetools/role: dependency}
+  type: NodePort
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: dependencies-memcache-2, kubetools/project_name: dependencies,
+    kubetools/role: dependency}
+  name: dependencies-memcache-2
+spec:
+  ports:
+  - {port: 11211, targetPort: 11211}
+  selector: {kubetools/name: dependencies-memcache-2, kubetools/project_name: dependencies,
+    kubetools/role: dependency}
+  type: NodePort

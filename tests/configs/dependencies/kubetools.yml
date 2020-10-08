@@ -1,0 +1,45 @@
+name: dependencies
+
+
+containerContexts:
+  memcache:
+    image: memcache:1.4.33
+    command: [memcached, -u, root, -I, 10m]
+    ports:
+      - 11211
+
+
+dependencies:
+  memcache-1:
+    containers:
+      memcache-1:
+        containerContext: memcache
+
+  memcache-2:
+    containers:
+      memcache-2:
+        containerContext: memcache
+
+  elasticsearch:
+    conditions:
+      dev: true
+    containers:
+      elasticsearch:
+        image: elasticsearch:v6.2
+        ports:
+          - 9200
+        probes:
+          exec:
+            command: [curl, 'wardrobe-elasticsearch:9200']
+
+  riak:
+    conditions:
+      dev: true
+    containers:
+      riak:
+        image: basho/riak-kv:2.1.4
+        ports:
+          - 8098
+        probes:
+          exec:
+            command: [riak-admin, test]
