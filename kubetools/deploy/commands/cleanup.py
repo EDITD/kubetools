@@ -17,7 +17,7 @@ from kubetools.kubernetes.api import (
 # If the cleanup removes all remaining objects, the namespace will be deleted too.
 
 def get_cleanup_objects(build):
-    replica_sets = list_replica_sets(build.env, build.namespace)
+    replica_sets = list_replica_sets(build.context, build.namespace)
     replica_set_names = set(get_object_name(replica_set) for replica_set in replica_sets)
     replica_sets_to_delete = []
     replica_set_names_to_delete = set()
@@ -34,7 +34,7 @@ def get_cleanup_objects(build):
         if replica_set.metadata.deletion_timestamp:
             replica_set_names_already_deleted.add(get_object_name(replica_set))
 
-    pods = list_pods(build.env, build.namespace)
+    pods = list_pods(build.context, build.namespace)
     pod_names = set(get_object_name(pod) for pod in pods)
     pods_to_delete = []
     pod_names_to_delete = set()
@@ -54,7 +54,7 @@ def get_cleanup_objects(build):
         if pod.metadata.deletion_timestamp:
             pod_names_already_deleted.add(get_object_name(pod))
 
-    namespaces = list_namespaces(build.env)
+    namespaces = list_namespaces(build.context)
     current_namespace = None
     for namespace in namespaces:
         if namespace.metadata.name == build.namespace:

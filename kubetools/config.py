@@ -30,7 +30,7 @@ def load_kubetools_config(
     directory=None,
     app_name=None,
     # Filters for config items
-    env=None,
+    context=None,
     namespace=None,
     dev=False,  # when true disables env/namespace filtering (dev *only*)
     test=False,
@@ -42,13 +42,13 @@ def load_kubetools_config(
     Filtering:
         Most config items (deployments, dependencies, upgrades) can have conditions
         attached to them (eg dev: true). If an item has conditions, *either* dev or
-        both env/namespace must match.
+        both context/namespace must match.
 
     Args:
         directory (str): directory to load ther config from (defaults to cwd)
         app_name (str): name of the app we're trying to load
-        env (str): which envrionment to filter the config items by
-        namespace (str): which namespace to filter the config items by
+        context (str): which K8s context to filter the config items by
+        namespace (str): which K8s namespace to filter the config items by
         dev (bool): filter config items by dev mode
     '''
 
@@ -116,16 +116,16 @@ def load_kubetools_config(
             ))
         _check_kubetools_version(f'>={config["minKubetoolsVersion"]}')
 
-    # Apply an env name?
-    if env:
-        config['env'] = env
+    if context:
+        config['context'] = context
+        config['env'] = context
 
     # Filter out config items according to our conditions
     for key in TOP_LEVEL_CONDITION_KEYS:
         if key in config:
             config[key] = _filter_config_data(
                 key, config[key],
-                env=env,
+                context=context,
                 namespace=namespace,
                 dev=dev,
                 test=test,
@@ -162,7 +162,7 @@ def _check_kubetools_version(version_requirement):
 def _filter_config_data(
     key,
     items_or_object,
-    env,
+    context,
     namespace,
     dev,
     test,
@@ -175,7 +175,7 @@ def _filter_config_data(
     def is_match(item):
         return condition_checker(
             item.get('conditions'),
-            env=env,
+            context=context,
             namespace=namespace,
             dev=dev,
             test=test,
@@ -202,7 +202,7 @@ def _filter_config_data(
 
 
 # TODO: remove this in v13, compat w/v12
-def _legacy_conditions_match(conditions, env, namespace, dev, test):
+def _legacy_conditions_match(conditions, context, namespace, dev, test):
     # No conditions? We're good!
     if conditions is None:
         return True
@@ -216,7 +216,7 @@ def _legacy_conditions_match(conditions, env, namespace, dev, test):
         return False
 
     # If we have envs but our env isn't present, fail!
-    if 'envs' in conditions and env not in conditions['envs']:
+    if 'envs' in conditions and context not in conditions['envs']:
         return False
 
     # We have namespaces but our namespace isn't present, fail!
@@ -230,7 +230,7 @@ def _legacy_conditions_match(conditions, env, namespace, dev, test):
     return True
 
 
-def _conditions_match(conditions, env, namespace, dev, test):
+def _conditions_match(conditions, context, namespace, dev, test):
     if conditions is None:
         return True
 
@@ -244,13 +244,16 @@ def _conditions_match(conditions, env, namespace, dev, test):
     if deploy_conditions is True:
         return True
 
-    return any(_condition_matches(condition) for condition in deploy_conditions)
+    return any(
+        _condition_matches(condition, context, namespace)
+        for condition in deploy_conditions
+    )
 
 
-def _condition_matches(condition, env, namespace):
+def _condition_matches(condition, context, namespace):
     if (
-        'env' in condition and env != condition['env']
-        or 'not_env' in condition and env == condition['not_env']
+        'context' in condition and context != condition['context']
+        or 'not_context' in condition and context == condition['not_context']
     ):
         return False
 
