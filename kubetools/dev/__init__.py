@@ -25,8 +25,7 @@ def dev(ctx, env, debug=False):
 
     setup_logging(debug)
 
-    # Get/setup settings
-    settings = get_settings(debug)
+    settings = get_settings()
 
     if not env:
         env = settings.DEV_DEFAULT_ENV

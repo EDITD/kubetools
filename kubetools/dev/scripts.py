@@ -89,4 +89,4 @@ def script(kubetools_config, container=None, script=None):
         script_env['PORT_{0}'.format(local_port)] = host_port
 
     # Execute the script!
-    run_process([script_path], env=script_env, capture_output=False)
+    run_process([script_path], env=script_env)

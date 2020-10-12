@@ -1,3 +1,4 @@
+import logging
 import re
 
 from subprocess import CalledProcessError, PIPE, Popen, STDOUT
@@ -6,7 +7,6 @@ from threading import Thread
 from kubetools.cli.server_util import UPDATE_DIVISOR, wait_with_spinner
 from kubetools.exceptions import KubeDevCommandError
 from kubetools.log import logger
-from kubetools.settings import get_settings
 
 
 def _read_command_output(command, output_lines):
@@ -86,18 +86,9 @@ def _run_process_with_spinner(args):
     return command.returncode, stdout
 
 
-def run_process(args, env=None, capture_output=None):
-    settings = get_settings()
-
-    capturing_output = False
-
-    if (
-        # If we explicitly need to capture, always capture
-        capture_output
-        # Otherwise, capture if we're not --debug and not explicitly no capture
-        or (settings.debug == 0 and capture_output is not False)
-    ):
-        capturing_output = True
+def run_process(args, env=None, hide_output=False):
+    if logger.level <= logging.DEBUG:  # always show output when debugging
+        hide_output = False
 
     logger.debug('--> Executing: {0}'.format(' '.join(args)))
 
@@ -105,7 +96,7 @@ def run_process(args, env=None, capture_output=None):
         # If we're capturing output - things are more complicated. We need to spawn
         # the subprocess in a thread and read its output into two lists, which we
         # then rejoin to return.
-        if capturing_output:
+        if hide_output:
             code, stdout = _run_process_with_spinner(args)
 
         # Inline? Simply start the process and "communicate", this will print stdout

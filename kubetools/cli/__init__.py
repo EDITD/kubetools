@@ -128,4 +128,4 @@ def cli_bootstrap(ctx, context, debug):
     ctx.meta['kube_context'] = context
 
     setup_logging(debug)
-    get_settings(debug)  # trigger settings load
+    get_settings()
