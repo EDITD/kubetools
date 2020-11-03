@@ -4,15 +4,16 @@ from setuptools import find_packages, setup
 
 
 # Regex matching pattern followed by 3 numerical values separated by '.'
-pattern = re.compile(r'[0-9]+\.[0-9]+\.?[0-9]*\.?[a-z0-9]*')
+pattern = re.compile(r'# v(?P<version>[0-9]+\.[0-9]+(\.[0-9]+(\.[a-z0-9]+)?)?)')
 
 
 def get_version():
     with open('CHANGELOG.md', 'r') as fn:
-        while True:
-            version = pattern.findall(fn.readline())
-            if len(version) > 0:
-                return ''.join(version[0])
+        for line in fn.readlines():
+            match = pattern.fullmatch(line.strip())
+            if match:
+                return ''.join(match.group("version"))
+    raise RuntimeError("No version found in CHANGELOG.md")
 
 
 if __name__ == '__main__':
