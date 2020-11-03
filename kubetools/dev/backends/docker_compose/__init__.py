@@ -37,16 +37,16 @@ def http_get(url, timeout):
 
 
 def find_container_for_config(kubetools_config, config):
-    dockerfile = config['build']['dockerfile']
+    container_context = config['containerContext']
     all_containers = get_all_containers(kubetools_config)
 
     for name, container in all_containers:
-        if container.get('build', {}).get('dockerfile') == dockerfile:
+        if container.get('containerContext') == container_context:
             return name
     else:
         raise KubeDevError((
-            'No container found using Dockerfile: {0}'
-        ).format(dockerfile))
+            'No container found using containerContext: {0}'
+        ).format(container_context))
 
 
 def _build_container(kubetools_config, name, dockerfile):
