@@ -51,23 +51,6 @@ def _ensure_image(
     container['image'] = context_name_to_image[context_name]
 
 
-def _should_expose_ports(ports):
-    for port in ports:
-        if port == 80:  # simply HTTP? OK!
-            return True
-
-        if not isinstance(port, dict):
-            continue
-
-        if (
-            port.get('name') == 'http'  # either called http
-            or port.get('targetPort', port.get('port')) == 80  # or on port 80
-        ):
-            return True
-
-    return False
-
-
 def _get_containers_data(containers, context_name_to_image, deployment_name):
     # Setup top level app service mapping all ports from all top level containers
     all_container_ports = []
