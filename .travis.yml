@@ -16,3 +16,14 @@ install: 'pip install -e .[dev]'
 script:
   - flake8
   - pytest --cov
+
+deploy:
+  provider: pypi
+  user: __token__
+  # Due to a bug, using the environment variable defined in the UI for the password
+  # https://github.com/travis-ci/travis.rb/issues/687
+  on:
+    branch: master
+    tags: true
+    python: '3.8'
+  skip_existing: true
