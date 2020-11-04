@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/EDITD/kubetools.svg?branch=master)](https://travis-ci.com/EDITD/kubetools)
+[![Pypi Version](https://img.shields.io/pypi/v/kubetools.svg)](https://pypi.org/project/kubetools/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/kubetools.svg)](https://pypi.org/project/kubetools/)
+
 # Kubetools
 
 Kubetools is a tool and processes for developing and deploying microservices to Kubernetes. Say that:
@@ -81,3 +85,12 @@ Install the package in editable mode, with the dev extras:
 ```sh
 pip install -e .[dev]
 ```
+
+## Releasing
+* Update [CHANGELOG](CHANGELOG.md) to add new version and document it
+* In GitHub, create a new release
+  * Name the release `v<version>` (for example `v1.2.3`)
+  * Title the release with a highlight of the changes
+  * Copy changes in the release from `CHANGELOG.md` into the release description
+ [TravisCI](https://travis-ci.com/EDITD/kubetools) will package the release and publish it to
+ [Pypi](https://pypi.org/project/kubetools/)

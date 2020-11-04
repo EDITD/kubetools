@@ -1,4 +1,5 @@
 import re
+from os import path
 
 from setuptools import find_packages, setup
 
@@ -16,6 +17,15 @@ def get_version():
     raise RuntimeError("No version found in CHANGELOG.md")
 
 
+base_dir = path.abspath(path.dirname(__file__))
+
+
+def get_readme_content():
+    readme_file = path.join(base_dir, 'README.md')
+    with open(readme_file, 'r') as f:
+        return f.read()
+
+
 if __name__ == '__main__':
     setup(
         version=get_version(),
@@ -24,9 +34,11 @@ if __name__ == '__main__':
             'Kubetools is a tool and processes for developing and deploying '
             'microservices to Kubernetes.'
         ),
-        author='Devs @ EDITED',
-        author_email='nick@edited.com',
+        author='EDITED devs',
+        author_email='dev@edited.com',
         url='http://github.com/EDITD/kubetools',
+        long_description=get_readme_content(),
+        long_description_content_type='text/markdown',
         packages=find_packages(),
         entry_points={
             'console_scripts': (
@@ -36,6 +48,7 @@ if __name__ == '__main__':
                 'ktd=kubetools.dev.__main__:main',
             ),
         },
+        python_requires='>=3.6',
         install_requires=(
             'click>=7,<8',
             'docker>=3,<5',
