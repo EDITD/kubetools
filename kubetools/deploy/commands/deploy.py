@@ -92,14 +92,15 @@ def get_deploy_objects(
     all_jobs = []
 
     envvars = {
-        'KUBE_ENV': build.env,
+        'KUBE_ENV': build.context,  # legacy support
+        'KUBE_CONTEXT': build.context,
         'KUBE_NAMESPACE': build.namespace,
     }
     if extra_envvars:
         envvars.update(extra_envvars)
 
     annotations = {
-        'kubetools/env': build.env,
+        'kubetools/env': build.context,
         'kubetools/namespace': build.namespace,
     }
     if extra_annotations:
@@ -119,7 +120,7 @@ def get_deploy_objects(
 
         kubetools_config = load_kubetools_config(
             app_dir,
-            env=build.env,
+            context=build.context,
             namespace=build.namespace,
             app_name=app_dir,
             custom_config_file=custom_config_file,
@@ -145,7 +146,7 @@ def get_deploy_objects(
 
     existing_deployments = {
         get_object_name(deployment): deployment
-        for deployment in list_deployments(build.env, build.namespace)
+        for deployment in list_deployments(build.context, build.namespace)
     }
 
     # If we haven't been provided an explicit number of replicas, default to using
@@ -166,15 +167,15 @@ def log_deploy_changes(
 ):
     existing_namespace_names = set(
         get_object_name(namespace)
-        for namespace in list_namespaces(build.env)
+        for namespace in list_namespaces(build.context)
     )
     existing_service_names = set(
         get_object_name(service)
-        for service in list_services(build.env, build.namespace)
+        for service in list_services(build.context, build.namespace)
     )
     existing_deployment_names = set(
         get_object_name(deployment)
-        for deployment in list_deployments(build.env, build.namespace)
+        for deployment in list_deployments(build.context, build.namespace)
     )
 
     deploy_service_names = set(
@@ -223,37 +224,37 @@ def execute_deploy(build, namespace, services, deployments, jobs):
     # Now execute the deploy process
     if namespace:
         with build.stage('Create and/or update namespace'):
-            if namespace_exists(build.env, namespace):
+            if namespace_exists(build.context, namespace):
                 build.log_info(f'Update namespace: {get_object_name(namespace)}')
-                update_namespace(build.env, namespace)
+                update_namespace(build.context, namespace)
             else:
                 build.log_info(f'Create namespace: {get_object_name(namespace)}')
-                create_namespace(build.env, namespace)
+                create_namespace(build.context, namespace)
 
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:
-                if deployment_exists(build.env, build.namespace, service):
+                if deployment_exists(build.context, build.namespace, service):
                     build.log_info(f'Update service: {get_object_name(service)}')
-                    update_service(build.env, build.namespace, service)
+                    update_service(build.context, build.namespace, service)
                 else:
                     build.log_info(f'Create service: {get_object_name(service)}')
-                    create_service(build.env, build.namespace, service)
+                    create_service(build.context, build.namespace, service)
 
     if depend_deployments:
         with build.stage('Create and/or update dependency deployments'):
             for deployment in depend_deployments:
-                if deployment_exists(build.env, build.namespace, deployment):
+                if deployment_exists(build.context, build.namespace, deployment):
                     build.log_info(f'Update deployment: {get_object_name(deployment)}')
-                    update_deployment(build.env, build.namespace, deployment)
+                    update_deployment(build.context, build.namespace, deployment)
                 else:
                     build.log_info(f'Create deployment: {get_object_name(deployment)}')
-                    create_deployment(build.env, build.namespace, deployment)
+                    create_deployment(build.context, build.namespace, deployment)
 
     noexist_main_services = []
     exist_main_services = []
     for service in main_services:
-        if not service_exists(build.env, build.namespace, service):
+        if not service_exists(build.context, build.namespace, service):
             noexist_main_services.append(service)
         else:
             exist_main_services.append(service)
@@ -262,12 +263,12 @@ def execute_deploy(build, namespace, services, deployments, jobs):
         with build.stage('Create any app services that do not exist'):
             for service in noexist_main_services:
                 build.log_info(f'Create service: {get_object_name(service)}')
-                create_service(build.env, build.namespace, service)
+                create_service(build.context, build.namespace, service)
 
     noexist_main_deployments = []
     exist_main_deployments = []
     for deployment in main_deployments:
-        if not deployment_exists(build.env, build.namespace, deployment):
+        if not deployment_exists(build.context, build.namespace, deployment):
             noexist_main_deployments.append(deployment)
         else:
             exist_main_deployments.append(deployment)
@@ -276,22 +277,22 @@ def execute_deploy(build, namespace, services, deployments, jobs):
         with build.stage('Create any app deployments that do not exist'):
             for deployment in noexist_main_deployments:
                 build.log_info(f'Create deployment: {get_object_name(deployment)}')
-                create_deployment(build.env, build.namespace, deployment)
+                create_deployment(build.context, build.namespace, deployment)
 
     if jobs:
         with build.stage('Execute upgrades'):
             for job in jobs:
                 build.log_info(f'Create job: {get_object_name(job)}')
-                create_job(build.env, build.namespace, job)
+                create_job(build.context, build.namespace, job)
 
     if exist_main_deployments:
         with build.stage('Update existing app deployments'):
             for deployment in exist_main_deployments:
                 build.log_info(f'Update deployment: {get_object_name(deployment)}')
-                update_deployment(build.env, build.namespace, deployment)
+                update_deployment(build.context, build.namespace, deployment)
 
     if exist_main_services:
         with build.stage('Update existing app services'):
             for service in exist_main_services:
                 build.log_info(f'Update service: {get_object_name(service)}')
-                update_service(build.env, build.namespace, service)
+                update_service(build.context, build.namespace, service)

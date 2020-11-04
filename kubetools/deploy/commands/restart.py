@@ -26,7 +26,7 @@ def get_restart_objects(build, app_names=None, force=False):
         for deployment in deployments
     }
 
-    replica_sets = list_replica_sets(build.env, build.namespace)
+    replica_sets = list_replica_sets(build.context, build.namespace)
     replica_set_names_to_deployment = {}
 
     for replica_set in replica_sets:
@@ -50,7 +50,7 @@ def get_restart_objects(build, app_names=None, force=False):
                 name_to_deployment[owner_name]
             )
 
-    pods = list_pods(build.env, build.namespace)
+    pods = list_pods(build.context, build.namespace)
     deployment_name_to_pods = defaultdict(list)
 
     for pod in pods:
@@ -81,5 +81,5 @@ def execute_restart(build, deployments_and_pods):
         with build.stage(f'Restart pods for {get_object_name(deployment)}'):
             for pod in pods:
                 build.log_info(f'Delete pod: {get_object_name(pod)}')
-                delete_pod(build.env, build.namespace, pod)
-                wait_for_deployment(build.env, build.namespace, deployment)
+                delete_pod(build.context, build.namespace, pod)
+                wait_for_deployment(build.context, build.namespace, deployment)

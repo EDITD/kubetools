@@ -109,12 +109,12 @@ def show(ctx, namespace, app):
 
     exists = False
 
-    env = ctx.meta['kube_context']
+    context = ctx.meta['kube_context']
 
     if app:
         click.echo(f'--> Filtering by app={app}')
 
-    services = list_services(env, namespace)
+    services = list_services(context, namespace)
 
     if services:
         exists = True
@@ -128,7 +128,7 @@ def show(ctx, namespace, app):
         })
         click.echo()
 
-    deployments = list_deployments(env, namespace)
+    deployments = list_deployments(context, namespace)
 
     if deployments:
         exists = True
@@ -145,7 +145,7 @@ def show(ctx, namespace, app):
         click.echo()
 
     if app:
-        replica_sets = list_replica_sets(env, namespace)
+        replica_sets = list_replica_sets(context, namespace)
         replica_sets = [
             r for r in replica_sets
             if r.metadata.labels.get(NAME_LABEL_KEY) == app
@@ -158,7 +158,7 @@ def show(ctx, namespace, app):
         })
         click.echo()
     else:
-        jobs = list_jobs(env, namespace)
+        jobs = list_jobs(context, namespace)
         if jobs:
             exists = True
 

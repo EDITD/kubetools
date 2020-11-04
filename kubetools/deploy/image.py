@@ -177,7 +177,8 @@ def _ensure_docker_images(
 
             # Run it, passing in the commit hashes as ENVars
             env = {
-                'KUBE_ENV': build.env,
+                'KUBE_ENV': build.context,  # legacy support
+                'KUBE_CONTEXT': build.context,
                 'BUILD_COMMIT': commit_hash,
             }
             if previous_commit:

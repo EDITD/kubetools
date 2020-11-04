@@ -7,7 +7,7 @@ from os import getcwd, path
 
 import yaml
 
-from pkg_resources import parse_version
+from pkg_resources import parse_version, Requirement
 
 from . import __version__
 from .exceptions import KubeConfigError
@@ -30,9 +30,10 @@ def load_kubetools_config(
     directory=None,
     app_name=None,
     # Filters for config items
-    env=None,
+    context=None,
     namespace=None,
     dev=False,  # when true disables env/namespace filtering (dev *only*)
+    test=False,
     custom_config_file=False,
 ):
     '''
@@ -41,13 +42,13 @@ def load_kubetools_config(
     Filtering:
         Most config items (deployments, dependencies, upgrades) can have conditions
         attached to them (eg dev: true). If an item has conditions, *either* dev or
-        both env/namespace must match.
+        both context/namespace must match.
 
     Args:
         directory (str): directory to load ther config from (defaults to cwd)
         app_name (str): name of the app we're trying to load
-        env (str): which envrionment to filter the config items by
-        namespace (str): which namespace to filter the config items by
+        context (str): which K8s context to filter the config items by
+        namespace (str): which K8s namespace to filter the config items by
         dev (bool): filter config items by dev mode
     '''
 
@@ -101,22 +102,34 @@ def load_kubetools_config(
     config = yaml.safe_load(config)
     config['_filename'] = filename
 
-    # Check Kubetools version?
-    if 'minKubetoolsVersion' in config:
-        _check_min_version(config)
+    config_version = config.get('configVersion', 0)
 
-    # Apply an env name?
-    if env:
-        config['env'] = env
+    if 'requireKubetools' in config:
+        _check_kubetools_version(config['requireKubetools'])
+
+    # TODO: remove this in v13, compat w/v12
+    if 'minKubetoolsVersion' in config:
+        if config_version > 0:
+            raise KubeConfigError((
+                '`minKubetoolsVersion` is not valid in v1 config files, '
+                'please use `requireKubetools`!'
+            ))
+        _check_kubetools_version(f'>={config["minKubetoolsVersion"]}')
+
+    if context:
+        config['context'] = context
+        config['env'] = context
 
     # Filter out config items according to our conditions
     for key in TOP_LEVEL_CONDITION_KEYS:
         if key in config:
             config[key] = _filter_config_data(
                 key, config[key],
-                env=env,
+                context=context,
                 namespace=namespace,
                 dev=dev,
+                test=test,
+                use_legacy_conditions=config_version <= 0,
             )
 
     # De-nest/apply any contextContexts
@@ -133,28 +146,39 @@ def load_kubetools_config(
     return config
 
 
-def _check_min_version(config):
+def _check_kubetools_version(version_requirement):
     running_version = parse_version(__version__)
-    needed_version = parse_version(
-        # Version must be a string
-        str(config['minKubetoolsVersion']),
+    required_versions = Requirement.parse(
+        'kubetools{0}'.format(version_requirement),
     )
 
-    if needed_version > running_version:
-        raise KubeConfigError(
-            'Minimum Kubetools version not met, need {0} but got {1}'.format(
-                needed_version, running_version,
-            ),
-        )
+    if running_version not in required_versions:
+        raise KubeConfigError((
+            'Kubetools version requirement not met '
+            '(requires {0}, running {1})'
+        ).format(version_requirement, __version__))
 
 
-def _filter_config_data(key, items_or_object, env, namespace, dev):
+def _filter_config_data(
+    key,
+    items_or_object,
+    context,
+    namespace,
+    dev,
+    test,
+    use_legacy_conditions=False,
+):
+    condition_checker = (
+        _legacy_conditions_match if use_legacy_conditions else _conditions_match
+    )
+
     def is_match(item):
-        return _conditions_match(
+        return condition_checker(
             item.get('conditions'),
-            env=env,
+            context=context,
             namespace=namespace,
             dev=dev,
+            test=test,
         )
 
     if isinstance(items_or_object, list):
@@ -177,7 +201,8 @@ def _filter_config_data(key, items_or_object, env, namespace, dev):
         ))
 
 
-def _conditions_match(conditions, env, namespace, dev):
+# TODO: remove this in v13, compat w/v12
+def _legacy_conditions_match(conditions, context, namespace, dev, test):
     # No conditions? We're good!
     if conditions is None:
         return True
@@ -191,7 +216,7 @@ def _conditions_match(conditions, env, namespace, dev):
         return False
 
     # If we have envs but our env isn't present, fail!
-    if 'envs' in conditions and env not in conditions['envs']:
+    if 'envs' in conditions and context not in conditions['envs']:
         return False
 
     # We have namespaces but our namespace isn't present, fail!
@@ -200,6 +225,42 @@ def _conditions_match(conditions, env, namespace, dev):
 
     # If we have notNamespaces and our namespace is present, fail!
     if 'notNamespaces' in conditions and namespace in conditions['notNamespaces']:
+        return False
+
+    return True
+
+
+def _conditions_match(conditions, context, namespace, dev, test):
+    if conditions is None:
+        return True
+
+    if dev:
+        return conditions.get('dev', True) is True
+
+    if test:
+        return conditions.get('test', True) is True
+
+    deploy_conditions = conditions.get('deploy', True)
+    if deploy_conditions is True:
+        return True
+
+    return any(
+        _condition_matches(condition, context, namespace)
+        for condition in deploy_conditions
+    )
+
+
+def _condition_matches(condition, context, namespace):
+    if (
+        'context' in condition and context != condition['context']
+        or 'not_context' in condition and context == condition['not_context']
+    ):
+        return False
+
+    if (
+        'namespace' in condition and namespace != condition['namespace']
+        or 'not_namespace' in condition and namespace == condition['not_namespace']
+    ):
         return False
 
     return True

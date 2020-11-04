@@ -145,7 +145,7 @@ def deploy(
         app_dirs = (os.getcwd(),)
 
     build = Build(
-        env=ctx.meta['kube_context'],
+        context=ctx.meta['kube_context'],
         namespace=namespace,
     )
 
@@ -221,7 +221,7 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
     '''
 
     build = Build(
-        env=ctx.meta['kube_context'],
+        context=ctx.meta['kube_context'],
         namespace=namespace,
     )
 
@@ -272,7 +272,7 @@ def cleanup(ctx, yes, namespace):
     '''
 
     build = Build(
-        env=ctx.meta['kube_context'],
+        context=ctx.meta['kube_context'],
         namespace=namespace,
     )
 
@@ -324,7 +324,7 @@ def restart(ctx, yes, force, namespace, app_or_project_names):
     '''
 
     build = Build(
-        env=ctx.meta['kube_context'],
+        context=ctx.meta['kube_context'],
         namespace=namespace,
     )
 

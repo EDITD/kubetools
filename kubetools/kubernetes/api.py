@@ -27,22 +27,22 @@ def is_kubetools_object(obj):
         return True
 
 
-def _get_api_client(env):
-    return config.new_client_from_config(context=env)
+def _get_api_client(context):
+    return config.new_client_from_config(context=context)
 
 
-def _get_k8s_core_api(env):
-    api_client = _get_api_client(env)
+def _get_k8s_core_api(context):
+    api_client = _get_api_client(context)
     return client.CoreV1Api(api_client=api_client)
 
 
-def _get_k8s_apps_api(env):
-    api_client = _get_api_client(env)
+def _get_k8s_apps_api(context):
+    api_client = _get_api_client(context)
     return client.AppsV1Api(api_client=api_client)
 
 
-def _get_k8s_batch_api(env):
-    api_client = _get_api_client(env)
+def _get_k8s_batch_api(context):
+    api_client = _get_api_client(context)
     return client.BatchV1Api(api_client=api_client)
 
 
@@ -87,18 +87,18 @@ def _wait_for_no_object(*args):
     return _wait_for(lambda: _object_exists(*args) is False)
 
 
-def namespace_exists(env, namespace_obj):
-    k8s_core_api = _get_k8s_core_api(env)
+def namespace_exists(context, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(context)
     return _object_exists(k8s_core_api, 'read_namespace', None, namespace_obj)
 
 
-def list_namespaces(env):
-    k8s_core_api = _get_k8s_core_api(env)
+def list_namespaces(context):
+    k8s_core_api = _get_k8s_core_api(context)
     return k8s_core_api.list_namespace().items
 
 
-def create_namespace(env, namespace_obj):
-    k8s_core_api = _get_k8s_core_api(env)
+def create_namespace(context, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_namespace = k8s_core_api.create_namespace(
         body=namespace_obj,
     )
@@ -107,8 +107,8 @@ def create_namespace(env, namespace_obj):
     return k8s_namespace
 
 
-def update_namespace(env, namespace_obj):
-    k8s_core_api = _get_k8s_core_api(env)
+def update_namespace(context, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_namespace = k8s_core_api.patch_namespace(
         name=get_object_name(namespace_obj),
         body=namespace_obj,
@@ -117,8 +117,8 @@ def update_namespace(env, namespace_obj):
     return k8s_namespace
 
 
-def delete_namespace(env, namespace, namespace_obj):
-    k8s_core_api = _get_k8s_core_api(env)
+def delete_namespace(context, namespace, namespace_obj):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_core_api.delete_namespace(
         name=get_object_name(namespace_obj),
     )
@@ -126,13 +126,13 @@ def delete_namespace(env, namespace, namespace_obj):
     _wait_for_no_object(k8s_core_api, 'read_namespace', None, namespace_obj)
 
 
-def list_pods(env, namespace):
-    k8s_core_api = _get_k8s_core_api(env)
+def list_pods(context, namespace):
+    k8s_core_api = _get_k8s_core_api(context)
     return k8s_core_api.list_namespaced_pod(namespace=namespace).items
 
 
-def delete_pod(env, namespace, pod):
-    k8s_core_api = _get_k8s_core_api(env)
+def delete_pod(context, namespace, pod):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_core_api.delete_namespaced_pod(
         name=get_object_name(pod),
         namespace=namespace,
@@ -141,13 +141,13 @@ def delete_pod(env, namespace, pod):
     _wait_for_no_object(k8s_core_api, 'read_namespaced_pod', namespace, pod)
 
 
-def list_replica_sets(env, namespace):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def list_replica_sets(context, namespace):
+    k8s_apps_api = _get_k8s_apps_api(context)
     return k8s_apps_api.list_namespaced_replica_set(namespace=namespace).items
 
 
-def delete_replica_set(env, namespace, replica_set):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def delete_replica_set(context, namespace, replica_set):
+    k8s_apps_api = _get_k8s_apps_api(context)
     k8s_apps_api.delete_namespaced_replica_set(
         name=get_object_name(replica_set),
         namespace=namespace,
@@ -156,13 +156,13 @@ def delete_replica_set(env, namespace, replica_set):
     _wait_for_no_object(k8s_apps_api, 'read_namespaced_replica_set', namespace, replica_set)
 
 
-def list_services(env, namespace):
-    k8s_core_api = _get_k8s_core_api(env)
+def list_services(context, namespace):
+    k8s_core_api = _get_k8s_core_api(context)
     return k8s_core_api.list_namespaced_service(namespace=namespace).items
 
 
-def delete_service(env, namespace, service):
-    k8s_core_api = _get_k8s_core_api(env)
+def delete_service(context, namespace, service):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_core_api.delete_namespaced_service(
         name=get_object_name(service),
         namespace=namespace,
@@ -171,13 +171,13 @@ def delete_service(env, namespace, service):
     _wait_for_no_object(k8s_core_api, 'read_namespaced_service', namespace, service)
 
 
-def service_exists(env, namespace, service):
-    k8s_core_api = _get_k8s_core_api(env)
+def service_exists(context, namespace, service):
+    k8s_core_api = _get_k8s_core_api(context)
     return _object_exists(k8s_core_api, 'read_namespaced_service', namespace, service)
 
 
-def create_service(env, namespace, service):
-    k8s_core_api = _get_k8s_core_api(env)
+def create_service(context, namespace, service):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_service = k8s_core_api.create_namespaced_service(
         body=service,
         namespace=namespace,
@@ -187,8 +187,8 @@ def create_service(env, namespace, service):
     return k8s_service
 
 
-def update_service(env, namespace, service):
-    k8s_core_api = _get_k8s_core_api(env)
+def update_service(context, namespace, service):
+    k8s_core_api = _get_k8s_core_api(context)
     k8s_service = k8s_core_api.patch_namespaced_service(
         name=get_object_name(service),
         body=service,
@@ -198,13 +198,13 @@ def update_service(env, namespace, service):
     return k8s_service
 
 
-def list_deployments(env, namespace):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def list_deployments(context, namespace):
+    k8s_apps_api = _get_k8s_apps_api(context)
     return k8s_apps_api.list_namespaced_deployment(namespace=namespace).items
 
 
-def delete_deployment(env, namespace, deployment):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def delete_deployment(context, namespace, deployment):
+    k8s_apps_api = _get_k8s_apps_api(context)
     k8s_apps_api.delete_namespaced_deployment(
         name=get_object_name(deployment),
         namespace=namespace,
@@ -213,36 +213,36 @@ def delete_deployment(env, namespace, deployment):
     _wait_for_no_object(k8s_apps_api, 'read_namespaced_deployment', namespace, deployment)
 
 
-def deployment_exists(env, namespace, deployment):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def deployment_exists(context, namespace, deployment):
+    k8s_apps_api = _get_k8s_apps_api(context)
     return _object_exists(k8s_apps_api, 'read_namespaced_deployment', namespace, deployment)
 
 
-def create_deployment(env, namespace, deployment):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def create_deployment(context, namespace, deployment):
+    k8s_apps_api = _get_k8s_apps_api(context)
     k8s_deployment = k8s_apps_api.create_namespaced_deployment(
         body=deployment,
         namespace=namespace,
     )
 
-    wait_for_deployment(env, namespace, k8s_deployment)
+    wait_for_deployment(context, namespace, k8s_deployment)
     return k8s_deployment
 
 
-def update_deployment(env, namespace, deployment):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def update_deployment(context, namespace, deployment):
+    k8s_apps_api = _get_k8s_apps_api(context)
     k8s_deployment = k8s_apps_api.patch_namespaced_deployment(
         name=get_object_name(deployment),
         body=deployment,
         namespace=namespace,
     )
 
-    wait_for_deployment(env, namespace, k8s_deployment)
+    wait_for_deployment(context, namespace, k8s_deployment)
     return k8s_deployment
 
 
-def wait_for_deployment(env, namespace, deployment):
-    k8s_apps_api = _get_k8s_apps_api(env)
+def wait_for_deployment(context, namespace, deployment):
+    k8s_apps_api = _get_k8s_apps_api(context)
 
     def check_deployment():
         d = k8s_apps_api.read_namespaced_deployment(
@@ -256,13 +256,13 @@ def wait_for_deployment(env, namespace, deployment):
     _wait_for(check_deployment, get_object_name(deployment))
 
 
-def list_jobs(env, namespace):
-    k8s_batch_api = _get_k8s_batch_api(env)
+def list_jobs(context, namespace):
+    k8s_batch_api = _get_k8s_batch_api(context)
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items
 
 
-def delete_job(env, namespace, job):
-    k8s_batch_api = _get_k8s_batch_api(env)
+def delete_job(context, namespace, job):
+    k8s_batch_api = _get_k8s_batch_api(context)
     k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
         namespace=namespace,
@@ -271,19 +271,19 @@ def delete_job(env, namespace, job):
     _wait_for_no_object(k8s_batch_api, 'read_namespaced_job', namespace, job)
 
 
-def create_job(env, namespace, job):
-    k8s_batch_api = _get_k8s_batch_api(env)
+def create_job(context, namespace, job):
+    k8s_batch_api = _get_k8s_batch_api(context)
     k8s_job = k8s_batch_api.create_namespaced_job(
         body=job,
         namespace=namespace,
     )
 
-    wait_for_job(env, namespace, k8s_job)
+    wait_for_job(context, namespace, k8s_job)
     return k8s_job
 
 
-def wait_for_job(env, namespace, job):
-    k8s_batch_api = _get_k8s_batch_api(env)
+def wait_for_job(context, namespace, job):
+    k8s_batch_api = _get_k8s_batch_api(context)
 
     def check_job():
         j = k8s_batch_api.read_namespaced_job(

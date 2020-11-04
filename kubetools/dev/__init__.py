@@ -31,4 +31,4 @@ def dev(ctx, env, debug=False):
         env = settings.DEV_DEFAULT_ENV
 
     # Get the config and attach it to the context
-    ctx.obj = load_kubetools_config(env=env, dev=True)
+    ctx.obj = load_kubetools_config(context=env, dev=True)

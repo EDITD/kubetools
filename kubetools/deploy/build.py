@@ -14,8 +14,8 @@ class Build(object):
 
     in_stage = False
 
-    def __init__(self, env, namespace):
-        self.env = env
+    def __init__(self, context, namespace):
+        self.context = context
         self.namespace = namespace
 
     def log_info(self, text, extra_detail=None, formatter=lambda s: s):

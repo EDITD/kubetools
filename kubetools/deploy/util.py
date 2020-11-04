@@ -46,14 +46,14 @@ def log_actions(build, action, object_type, names, name_formatter):
 def delete_objects(build, objects, delete_function):
     for obj in objects:
         build.log_info(f'Delete: {get_object_name(obj)}')
-        delete_function(build.env, build.namespace, obj)
+        delete_function(build.context, build.namespace, obj)
 
 
 def get_app_objects(
     build, app_or_project_names, list_objects_function,
     force=False,
 ):
-    objects = list_objects_function(build.env, build.namespace)
+    objects = list_objects_function(build.context, build.namespace)
 
     def filter_object(obj):
         if not is_kubetools_object(obj):
