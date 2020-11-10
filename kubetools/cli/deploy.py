@@ -117,6 +117,12 @@ def _validate_key_value_argument(ctx, param, value):
     default=False,
     help='Flag to ignore un-committed changes in git.',
 )
+@click.option(
+    'delete_completed_jobs', '--delete-jobs/--no-delete-jobs',
+    is_flag=True,
+    default=True,
+    help='Delete jobs after they complete.',
+)
 @click.argument('namespace')
 @click.argument(
     'app_dirs',
@@ -134,6 +140,7 @@ def deploy(
     annotations,
     file,
     ignore_git_changes,
+    delete_completed_jobs,
     namespace,
     app_dirs,
 ):
@@ -190,6 +197,7 @@ def deploy(
         services,
         deployments,
         jobs,
+        delete_completed_jobs=delete_completed_jobs,
     )
 
 

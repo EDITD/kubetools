@@ -15,6 +15,7 @@ from kubetools.kubernetes.api import (
     create_job,
     create_namespace,
     create_service,
+    delete_job,
     deployment_exists,
     get_object_name,
     list_deployments,
@@ -201,7 +202,7 @@ def log_deploy_changes(
         log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
 
 
-def execute_deploy(build, namespace, services, deployments, jobs):
+def execute_deploy(build, namespace, services, deployments, jobs, delete_completed_jobs=True):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -283,6 +284,8 @@ def execute_deploy(build, namespace, services, deployments, jobs):
             for job in jobs:
                 build.log_info(f'Create job: {get_object_name(job)}')
                 create_job(build.env, build.namespace, job)
+                if delete_completed_jobs:
+                    delete_job(build.env, build.namespace, job)
 
     if exist_main_deployments:
         with build.stage('Update existing app deployments'):
