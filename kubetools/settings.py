@@ -1,9 +1,8 @@
 from configparser import ConfigParser
+from functools import lru_cache
 from os import access, listdir, path, X_OK
 
 import click
-
-from pydash import memoize
 
 from .log import logger
 
@@ -34,7 +33,7 @@ def get_settings_directory():
     return click.get_app_dir('kubetools', force_posix=True)
 
 
-@memoize
+@lru_cache(maxsize=1)
 def get_settings():
     settings_directory = get_settings_directory()
     settings_file = path.join(settings_directory, 'kubetools.conf')

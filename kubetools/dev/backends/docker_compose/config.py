@@ -1,13 +1,12 @@
 import re
 
 from collections import OrderedDict
+from functools import lru_cache
 from hashlib import md5
 from os import makedirs, path
 
 import click
 import yaml
-
-from pydash import memoize
 
 from kubetools.exceptions import KubeDevError
 from kubetools.settings import get_settings
@@ -47,7 +46,6 @@ def dockerise_label(value):
     return re.sub(r'[^a-z0-9]', '', value.lower())
 
 
-@memoize
 def get_project_name(kubetools_config):
     name = kubetools_config['name']
     env = kubetools_config['env']
@@ -56,13 +54,11 @@ def get_project_name(kubetools_config):
     return '-'.join((name, env))
 
 
-@memoize
 def get_compose_name(kubetools_config):
     name_env = get_project_name(kubetools_config)
     return dockerise_label(name_env)
 
 
-@memoize
 def get_compose_dirname(kubetools_config):
     settings = get_settings()
     return path.join(
@@ -71,14 +67,12 @@ def get_compose_dirname(kubetools_config):
     )
 
 
-@memoize
 def get_compose_filename(kubetools_config):
     env = kubetools_config['env']
     compose_filename = '{0}-compose.yml'.format(env)
     return path.join(get_compose_dirname(kubetools_config), compose_filename)
 
 
-@memoize
 def get_all_containers(kubetools_config, container_keys=CONTAINER_KEYS):
     containers = []
 
@@ -100,7 +94,6 @@ def get_all_containers(kubetools_config, container_keys=CONTAINER_KEYS):
     return containers
 
 
-@memoize
 def get_all_containers_by_name(kubetools_config, container_keys=CONTAINER_KEYS):
     return OrderedDict(get_all_containers(
         kubetools_config,
@@ -188,7 +181,7 @@ def _create_compose_service(kubetools_config, name, config, envvars=None):
     return service
 
 
-@memoize
+@lru_cache(maxsize=1)
 def get_dev_network_environment_variables():
     # This "fixes" a horrible circular dependency between config/docker_util
     from .docker_util import get_all_docker_dev_network_containers
@@ -213,7 +206,6 @@ def get_dev_network_environment_variables():
     return list(envvars)
 
 
-@memoize  # prevent us writing the file over and over
 def create_compose_config(kubetools_config):
     # If we're not in a custom env, everything sits on the "dev" network. Envs
     # remain encapsulated inside their own network.

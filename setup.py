@@ -13,8 +13,8 @@ def get_version():
         for line in fn.readlines():
             match = pattern.fullmatch(line.strip())
             if match:
-                return ''.join(match.group("version"))
-    raise RuntimeError("No version found in CHANGELOG.md")
+                return ''.join(match.group('version'))
+    raise RuntimeError('No version found in CHANGELOG.md')
 
 
 base_dir = path.abspath(path.dirname(__file__))
@@ -54,7 +54,6 @@ if __name__ == '__main__':
             'docker>=3,<5',
             'pyyaml>=3,<6',
             'requests>=2,<3',
-            'pydash',
             'pyretry',
             'setuptools',
             'kubernetes',

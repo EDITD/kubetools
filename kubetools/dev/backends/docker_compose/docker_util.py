@@ -1,7 +1,7 @@
+from functools import lru_cache
+
 import docker
 import requests
-
-from pydash import memoize
 
 from kubetools.dev.process_util import run_process
 from kubetools.exceptions import KubeDevError
@@ -16,7 +16,7 @@ from .config import (
 )
 
 
-@memoize
+@lru_cache(maxsize=1)
 def get_docker_client():
     client = docker.from_env()
 
