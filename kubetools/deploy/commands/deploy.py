@@ -155,6 +155,7 @@ def log_deploy_changes(
         log_actions(build, 'CREATE', 'deployment', new_deployments, name_formatter)
         log_actions(build, 'UPDATE', 'service', update_services, name_formatter)
         log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
+        log_actions(build, 'CREATE', 'job', jobs, name_formatter)
 
 
 def execute_deploy(build, namespace, services, deployments, jobs, delete_completed_jobs=True):
