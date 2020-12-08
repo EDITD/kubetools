@@ -234,7 +234,7 @@ def execute_deploy(build, namespace, services, deployments, jobs, delete_complet
     if depend_services:
         with build.stage('Create and/or update dependency services'):
             for service in depend_services:
-                if deployment_exists(build.env, build.namespace, service):
+                if service_exists(build.env, build.namespace, service):
                     build.log_info(f'Update service: {get_object_name(service)}')
                     update_service(build.env, build.namespace, service)
                 else:
