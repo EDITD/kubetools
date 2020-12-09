@@ -2,11 +2,16 @@
 
 ### Unreleased
 
+# v12.2.1
+
+- Fix call to check if service exists
+
 # v12.2.0
 
 - Remove Kubernetes jobs after they complete successfully
 
 # v12.1.0
+
 - Allow to run upgrades and tests on any container using a containerContext. Especially allows containers that use a released image rather than a Dockerfile
 
 # v12.0.3
