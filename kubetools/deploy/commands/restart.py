@@ -54,7 +54,7 @@ def get_restart_objects(build, app_names=None, force=False):
     deployment_name_to_pods = defaultdict(list)
 
     for pod in pods:
-        if len(pod.metadata.owner_references) == 1:
+        if pod.metadata.owner_references and len(pod.metadata.owner_references) == 1:
             owner = pod.metadata.owner_references[0]
             deployment = replica_set_names_to_deployment.get(owner.name)
             if deployment:
