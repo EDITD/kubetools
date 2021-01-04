@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v12.2.2
+
+- Ignore pods with no owner metadata when restarting a service
+
 # v12.2.1
 
 - Fix call to check if service exists
