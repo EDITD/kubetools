@@ -25,6 +25,11 @@ from kubetools.deploy.commands.restart import (
     get_restart_objects,
     log_restart_changes,
 )
+from kubetools.deploy.commands.run import (
+    execute_run,
+    get_run_objects,
+    log_run_changes,
+)
 from kubetools.kubernetes.api import get_object_name
 
 
@@ -198,6 +203,123 @@ def deploy(
         deployments,
         jobs,
         delete_completed_jobs=delete_completed_jobs,
+    )
+
+
+@cli_bootstrap.command(help_priority=0)
+@click.option(
+    '--default-registry',
+    help='Default registry for apps that do not specify.',
+)
+@click.option(
+    '-y', '--yes',
+    is_flag=True,
+    default=False,
+    help='Flag to auto-yes remove confirmation step.',
+)
+@click.option(
+    'envvars', '-e', '--envvar',
+    multiple=True,
+    callback=_validate_key_value_argument,
+    help='Extra environment variables to apply to Kubernetes objects, format: key=value.',
+)
+@click.option(
+    '-f', '--file',
+    nargs=1,
+    help='Specify a non-default Kubetools yml file to deploy from.',
+    type=click.Path(exists=True),
+)
+@click.option(
+    '--ignore-git-changes',
+    is_flag=True,
+    default=False,
+    help='Flag to ignore un-committed changes in git.',
+)
+@click.option(
+    'wait_for_job', '--wait',
+    is_flag=True,
+    default=False,
+    help='Whether to wait for the job to complete.',
+)
+@click.option(
+    'delete_completed_job', '--delete',
+    is_flag=True,
+    default=False,
+    help='Delete jobs after they complete (requires `--wait`).',
+)
+@click.argument('namespace')
+@click.argument(
+    'app_dir',
+    type=click.Path(exists=True, file_okay=False),
+)
+@click.argument('container_context')
+@click.argument(
+    'command',
+    nargs=-1,
+)
+@click.pass_context
+def run(
+    ctx,
+    default_registry,
+    yes,
+    envvars,
+    file,
+    ignore_git_changes,
+    wait_for_job,
+    delete_completed_job,
+    namespace,
+    app_dir,
+    container_context,
+    command,
+):
+    '''
+    Run a command for a given app in Kubernetes.
+    '''
+
+    if not wait_for_job and delete_completed_job:
+        raise click.BadParameter('Cannot have `--delete-job` without `--wait`!')
+
+    build = Build(
+        env=ctx.meta['kube_context'],
+        namespace=namespace,
+    )
+
+    if file:
+        custom_config_file = click.format_filename(file)
+    else:
+        custom_config_file = None
+
+    namespace, job = get_run_objects(
+        build, app_dir, container_context, command,
+        default_registry=default_registry,
+        extra_envvars=envvars,
+        ignore_git_changes=ignore_git_changes,
+        custom_config_file=custom_config_file,
+    )
+
+    if not any((namespace, job)):
+        click.echo('Nothing to do!')
+        return
+
+    log_run_changes(
+        build, namespace, job,
+        message='Executing changes:' if yes else 'Proposed changes:',
+        name_formatter=lambda name: click.style(name, bold=True),
+    )
+
+    if not yes:
+        click.confirm(click.style((
+            'Are you sure you wish to CREATE the above resource? '
+            'This cannot be undone.'
+        )), abort=True)
+        click.echo()
+
+    execute_run(
+        build,
+        namespace,
+        job,
+        wait_for_job=wait_for_job,
+        delete_completed_job=delete_completed_job,
     )
 
 

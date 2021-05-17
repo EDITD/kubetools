@@ -36,11 +36,19 @@ def run_shell_command(*command, **kwargs):
         ))
 
 
-def log_actions(build, action, object_type, names, name_formatter):
-    for name in names:
-        if not isinstance(name, str):
-            name = get_object_name(name)
-        build.log_info(f'{action} {object_type} {name_formatter(name)}')
+def log_actions(build, action, object_type, objects_or_names, name_formatter):
+    for object_or_name in objects_or_names:
+        if isinstance(object_or_name, str):
+            name = name_formatter(object_or_name)
+        else:
+            name = name_formatter(get_object_name(object_or_name))
+
+            if object_type == 'job':
+                command = object_or_name['spec']['template']['spec']['containers'][0]['command']
+                command = ' '.join(command)
+                name = f'{name} ({command})'
+
+        build.log_info(f'{action} {object_type} {name}')
 
 
 def delete_objects(build, objects, delete_function):
