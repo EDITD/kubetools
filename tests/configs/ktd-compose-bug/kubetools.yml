@@ -1,0 +1,16 @@
+name: reproduce-ktd-bug-with-compose
+
+containerContexts:
+  container-with-entrypoint:
+    build:
+      dockerfile: Dockerfile
+
+
+deployments:
+  demo-app:
+    containers:
+      demo-container:
+        containerContext: container-with-entrypoint
+        args: ["-c", "print('Hello World')"]  # this works in k8s
+        dev:
+          command: ["-c", "print('Hello World')"]  # this works in ktd

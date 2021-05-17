@@ -2,6 +2,15 @@
 
 ### Unreleased
 
+# v13.0.0
+
+- Translate k8s-style `command`/`args` options to docker[-compose]-style `entrypoint`/`command`
+  
+  This is breaking backwards compatibility for any project using `entrypoint`/`command` options in a `dev` section.
+  These need to be renamed resp. `command`/`args` to be picked up. The bright side of this is that these cases
+  will now only require 1 copy of the options when the same values were just repeated under `dev` to get them to
+  work with `ktd` (`docker-compose`)
+  
 # v12.2.2
 
 - Ignore pods with no owner metadata when restarting a service
