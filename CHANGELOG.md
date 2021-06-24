@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.1.0
+
+- Update kubernetes api create job with non-blocking option
+
 # v13.0.0
 
 - Translate k8s-style `command`/`args` options to docker[-compose]-style `entrypoint`/`command`
