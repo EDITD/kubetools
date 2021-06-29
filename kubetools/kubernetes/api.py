@@ -261,6 +261,19 @@ def list_jobs(env, namespace):
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items
 
 
+def is_running(job):
+    conditions = job.status.conditions
+    if conditions is None:
+        return True
+    complete = any(condition.type == 'Complete' for condition in job.status.conditions)
+    return not complete
+
+
+def list_running_jobs(env, namespace):
+    jobs = list_jobs(env, namespace)
+    return [job for job in jobs if is_running(job)]
+
+
 def delete_job(env, namespace, job):
     k8s_batch_api = _get_k8s_batch_api(env)
     k8s_batch_api.delete_namespaced_job(
