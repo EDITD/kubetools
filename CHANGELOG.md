@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.2.0
+
+- Add function to kubernetes api to list running jobs
+
 # v13.1.0
 
 - Update kubernetes api create job with non-blocking option
