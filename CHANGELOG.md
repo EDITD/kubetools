@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.3.0
+
+- Add cli command for building and pushing app images to docker repo
+
 # v13.2.0
 
 - Add function to kubernetes api to list running jobs

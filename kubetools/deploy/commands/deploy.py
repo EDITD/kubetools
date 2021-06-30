@@ -1,15 +1,10 @@
-from os import path
-
+from kubetools.cli.git_utils import get_git_info
 from kubetools.config import load_kubetools_config
 from kubetools.constants import (
-    GIT_BRANCH_ANNOTATION_KEY,
-    GIT_COMMIT_ANNOTATION_KEY,
-    GIT_TAG_ANNOTATION_KEY,
     ROLE_LABEL_KEY,
 )
 from kubetools.deploy.image import ensure_docker_images
-from kubetools.deploy.util import log_actions, run_shell_command
-from kubetools.exceptions import KubeBuildError
+from kubetools.deploy.util import log_actions
 from kubetools.kubernetes.api import (
     create_deployment,
     create_job,
@@ -31,48 +26,6 @@ from kubetools.kubernetes.config import (
     generate_kubernetes_configs_for_project,
     generate_namespace_config,
 )
-
-
-def _is_git_committed(app_dir):
-    git_status = run_shell_command(
-        'git', 'status', '--porcelain',
-        cwd=app_dir,
-    ).strip().decode()
-
-    if git_status:
-        return False
-    return True
-
-
-def _get_git_info(app_dir):
-    git_annotations = {}
-
-    commit_hash = run_shell_command(
-        'git', 'rev-parse', '--short=7', 'HEAD',
-        cwd=app_dir,
-    ).strip().decode()
-    git_annotations[GIT_COMMIT_ANNOTATION_KEY] = commit_hash
-
-    branch_name = run_shell_command(
-        'git', 'rev-parse', '--abbrev-ref', 'HEAD',
-        cwd=app_dir,
-    ).strip().decode()
-
-    if branch_name != 'HEAD':
-        git_annotations[GIT_BRANCH_ANNOTATION_KEY] = branch_name
-
-    try:
-        git_tag = run_shell_command(
-            'git', 'tag', '--points-at', commit_hash,
-            cwd=app_dir,
-        ).strip().decode()
-    except KubeBuildError:
-        pass
-    else:
-        if git_tag:
-            git_annotations[GIT_TAG_ANNOTATION_KEY] = git_tag
-
-    return commit_hash, git_annotations
 
 
 # Deploy/upgrade
@@ -109,14 +62,8 @@ def get_deploy_objects(
     namespace = generate_namespace_config(build.namespace, base_annotations=annotations)
 
     for app_dir in app_dirs:
-        if path.exists(path.join(app_dir, '.git')):
-            if not _is_git_committed(app_dir) and not ignore_git_changes:
-                raise KubeBuildError(f'{app_dir} contains uncommitted changes, refusing to deploy!')
-
-            commit_hash, git_annotations = _get_git_info(app_dir)
-            annotations.update(git_annotations)
-        else:
-            raise KubeBuildError(f'{app_dir} is not a valid git repository!')
+        commit_hash, git_annotations = get_git_info(app_dir, ignore_git_changes)
+        annotations.update(git_annotations)
 
         kubetools_config = load_kubetools_config(
             app_dir,
