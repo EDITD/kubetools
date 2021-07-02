@@ -1,3 +1,4 @@
+import os
 from configparser import ConfigParser
 from functools import lru_cache
 from os import access, listdir, path, X_OK
@@ -35,8 +36,12 @@ def get_settings_directory():
 
 @lru_cache(maxsize=1)
 def get_settings():
-    settings_directory = get_settings_directory()
-    settings_file = path.join(settings_directory, 'kubetools.conf')
+    env_setting = os.environ.get("KUBECONFIG")
+    if env_setting:
+        settings_file = env_setting
+    else:
+        settings_directory = get_settings_directory()
+        settings_file = path.join(settings_directory, 'kubetools.conf')
 
     settings = KubetoolsSettings(filename=settings_file)
 
