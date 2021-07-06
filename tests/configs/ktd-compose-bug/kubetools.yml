@@ -11,6 +11,4 @@ deployments:
     containers:
       demo-container:
         containerContext: container-with-entrypoint
-        args: ["-c", "print('Hello World')"]  # this works in k8s
-        dev:
-          command: ["-c", "print('Hello World')"]  # this works in ktd
+        args: ["-c", "print('Hello World')"]  # this works in k8s but needs translating for docker-compose
