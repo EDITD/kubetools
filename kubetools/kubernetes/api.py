@@ -274,11 +274,17 @@ def list_running_jobs(env, namespace):
     return [job for job in jobs if is_running(job)]
 
 
-def delete_job(env, namespace, job):
+valid_propagation_policies = ["Orphan", "Background", "Foreground"]
+
+
+def delete_job(env, namespace, job, propagation_policy=None):
+    if propagation_policy and propagation_policy not in valid_propagation_policies:
+        raise KubeBuildError(f"Propagation policy must be one of {valid_propagation_policies}")
     k8s_batch_api = _get_k8s_batch_api(env)
     k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
         namespace=namespace,
+        propagation_policy=propagation_policy,
     )
 
     _wait_for_no_object(k8s_batch_api, 'read_namespaced_job', namespace, job)

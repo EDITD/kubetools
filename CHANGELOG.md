@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.4.0
+
+- Expose propagation_policy param in k8s api job deletion
+
 # v13.3.0
 
 - Add cli command for building and pushing app images to docker repo
