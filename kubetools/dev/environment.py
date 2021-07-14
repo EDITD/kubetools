@@ -137,7 +137,6 @@ def up(
     Create and/or start containers and run any upgrades.
     '''
 
-    upgrade = not no_upgrade
     container_statuses = get_containers_status(kubetools_config)
 
     # Figure out containers, if any, to upgrade

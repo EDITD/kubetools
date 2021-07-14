@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+# v13.4.1
+
+- Fix regression from 13.0.0 causing upgrades and tests to fail when using an image with an entrypoint, or specifying
+  one with "command" in the config
+
 # v13.4.0
 
 - Expose propagation_policy param in k8s api job deletion
