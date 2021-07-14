@@ -123,13 +123,11 @@ def _create_compose_service(kubetools_config, name, config, envvars=None):
 
     service.update(config)
 
-    if 'args' in service:
-        if 'command' in service:
-            service['command'].extend(service.pop('args'))
-        else:
-            # Translate k8s 'args' to docker-compose 'command' that will be
-            # passed to entrypoint if it exists
-            service['command'] = service.pop('args')
+    # Translate k8s command/args to docker-compose entrypoint/command
+    if 'command' in service:
+        service['entrypoint'] = service.pop('command')
+    if 'args' in config:
+        service['command'] = service.pop('args')
 
     if 'build' in service and 'context' not in service['build']:
         service['build']['context'] = '.'
