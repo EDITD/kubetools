@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.5.1
+
+- Fix defaulting of propagation_policy param in k8s api job deletion
+
 # v13.5.0
 
 - Update push command to allow additional tags for image
