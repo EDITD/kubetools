@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.5.0
+
+- Update push command to allow additional tags for image
+
 # v13.4.1
 
 - Fix regression from 13.0.0 causing upgrades and tests to fail when using an image with an entrypoint, or specifying

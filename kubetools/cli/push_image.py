@@ -14,8 +14,13 @@ from kubetools.deploy.image import ensure_docker_images
     '--default-registry',
     help='Default registry for apps that do not specify.',
 )
+@click.option(
+    'additional_tags', '-t', '--tag',
+    multiple=True,
+    help='Extra tags to apply to built image',
+)
 @click.pass_context
-def push(ctx, default_registry):
+def push(ctx, default_registry, additional_tags):
     '''
     Push app images to docker repo
     '''
@@ -36,4 +41,5 @@ def push(ctx, default_registry):
         kubetools_config, build, app_dir,
         commit_hash=commit_hash,
         default_registry=default_registry,
+        additional_tags=additional_tags,
     )
