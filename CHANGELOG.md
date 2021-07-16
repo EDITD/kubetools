@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.6.0
+
+- Add envvar to set timeouts for waiting for k8s funcs to complete
+
 # v13.5.1
 
 - Fix defaulting of propagation_policy param in k8s api job deletion
