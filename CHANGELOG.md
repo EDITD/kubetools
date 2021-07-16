@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.6.1
+
+- Convert timeout envvar to int
+
 # v13.6.0
 
 - Add envvar to set timeouts for waiting for k8s funcs to complete
