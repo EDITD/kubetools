@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 from functools import lru_cache
-from os import access, listdir, path, X_OK, environ
+from os import access, environ, listdir, path, X_OK
 
 import click
 
