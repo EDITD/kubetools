@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.6.2
+- Only build/push images relevant to relevant container contexts during a deploy
+
 # v13.6.1
 
 - Convert timeout envvar to int
