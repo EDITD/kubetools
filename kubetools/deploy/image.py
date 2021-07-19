@@ -49,19 +49,20 @@ def has_app_commit_image(registry, app_name, context_name, commit_hash):
 
 
 def _get_container_contexts_from_config(app_config):
-    context_name_to_build = {
-        key: context['build']
-        for key, context in app_config.get('containerContexts', {}).items()
-        if 'build' in context
-    }
-
+    context_name_to_build = {}
+    container_contexts = app_config.get('containerContexts', {})
     for deployment, data in app_config.get('deployments', {}).items():
         containers = data.get('containers')
         for name, container in containers.items():
             if 'containerContext' in container:
-                continue
+                context_name = container['containerContext']
+                if context_name not in container_contexts:
+                    raise KubeBuildError(f'{context_name} is not a valid container context')
+                container_context = container_contexts[context_name]
+                if 'build' in container_context:
+                    context_name_to_build[context_name] = container_context['build']
 
-            if 'build' in container:
+            elif 'build' in container:
                 context_name = make_context_name(deployment, name)
                 if context_name in context_name_to_build:
                     raise KubeBuildError('Duplicate deployment/container')
