@@ -1,4 +1,5 @@
 import os
+import shlex
 
 from time import sleep
 
@@ -295,7 +296,7 @@ def run_container(kubetools_config, container, command, envvars=None):
     if envvars:
         compose_command.extend(['-e{0}'.format(e) for e in envvars])
 
-    compose_command.extend(["--entrypoint", " ".join(command)])
+    compose_command.extend(['--entrypoint', ' '.join(shlex.quote(arg) for arg in command)])
     compose_command.append(container)
 
     run_compose_process(kubetools_config, compose_command)
