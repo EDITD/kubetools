@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.6.3
+- Shell-escape command in run container entrypoint
+
 # v13.6.2
 - Only build/push images relevant to relevant container contexts during a deploy
 
