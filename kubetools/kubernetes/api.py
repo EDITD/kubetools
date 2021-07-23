@@ -274,6 +274,11 @@ def list_running_jobs(env, namespace):
     return [job for job in jobs if is_running(job)]
 
 
+def list_complete_jobs(env, namespace):
+    jobs = list_jobs(env, namespace)
+    return [job for job in jobs if not is_running(job)]
+
+
 valid_propagation_policies = ["Orphan", "Background", "Foreground"]
 
 
