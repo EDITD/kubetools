@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.7.3
+- Add option to cleanup command for cleaning up completed jobs
+
 # v13.6.3
 - Shell-escape command in run container entrypoint
 
