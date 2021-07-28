@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.7.5
+- Ensure command format is correct for full command strings
+
 # v13.7.4
 - Avoid shell escaping full command strings
 
