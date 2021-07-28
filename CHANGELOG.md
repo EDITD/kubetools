@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.7.4
+- Avoid shell escaping full command strings
+
 # v13.7.3
 - Add option to cleanup command for cleaning up completed jobs
 
