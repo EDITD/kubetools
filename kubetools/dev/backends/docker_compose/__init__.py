@@ -290,14 +290,14 @@ def stop_containers(kubetools_config, names=None):
             run_compose_process(kubetools_config, ('stop', name))
 
 
-def run_container(kubetools_config, container, command, envvars=None):
+def build_run_compose_command(container, command, envvars):
     compose_command = ['run']
 
     if envvars:
         compose_command.extend(['-e{0}'.format(e) for e in envvars])
 
     if len(command) == 0:
-        raise KubeDevError("No command provided to run container")
+        raise KubeDevError('No command provided to run container')
     escaped_command = command[0]
     if len(command) > 1:
         # ensure any individual elements of a command with spaces in them
@@ -306,6 +306,11 @@ def run_container(kubetools_config, container, command, envvars=None):
     compose_command.extend(['--entrypoint', escaped_command])
     compose_command.append(container)
 
+    return compose_command
+
+
+def run_container(kubetools_config, container, command, envvars=None):
+    compose_command = build_run_compose_command(container, command, envvars)
     run_compose_process(kubetools_config, compose_command)
 
 
