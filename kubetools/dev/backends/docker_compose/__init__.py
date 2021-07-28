@@ -296,7 +296,12 @@ def run_container(kubetools_config, container, command, envvars=None):
     if envvars:
         compose_command.extend(['-e{0}'.format(e) for e in envvars])
 
-    compose_command.extend(['--entrypoint', ' '.join(shlex.quote(arg) for arg in command)])
+    escaped_command = command
+    if len(command) > 1:
+        # ensure any individual elements of a command with spaces in them
+        # are quoted properly
+        escaped_command = ' '.join(shlex.quote(arg) for arg in command)
+    compose_command.extend(['--entrypoint', escaped_command])
     compose_command.append(container)
 
     run_compose_process(kubetools_config, compose_command)
