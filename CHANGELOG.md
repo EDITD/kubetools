@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.8.0
+- Allow customisation of naming in job configuration
+
 # v13.7.5
 - Ensure command format is correct for full command strings
 
