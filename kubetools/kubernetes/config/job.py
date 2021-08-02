@@ -11,6 +11,8 @@ def make_job_config(
     labels=None,
     annotations=None,
     envvars=None,
+    job_name=None,
+    container_name="upgrade",
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -23,6 +25,8 @@ def make_job_config(
 
     # Generate name
     job_id = str(uuid4())
+    if job_name is None:
+        job_name = job_id
 
     # Attach the ID to labels
     labels = copy_and_update(labels, {
@@ -44,17 +48,18 @@ def make_job_config(
     })
 
     # Update global envvars with job specific ones
-    copy_and_update(
+    envvars = copy_and_update(
         envvars,
         config.get('envars'),  # legacy support TODO: remove!
         config.get('envvars'),
+        {'KUBE_JOB_ID': job_id},
     )
 
     # Make our container
     container = make_container_config(
         job_id,
         {
-            'name': 'upgrade',
+            'name': container_name,
             'command': command,
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
@@ -74,7 +79,7 @@ def make_job_config(
         'apiVersion': 'batch/v1',
         'kind': 'Job',
         'metadata': {
-            'name': job_id,
+            'name': job_name,
             'labels': labels,
             'annotations': annotations,
         },
