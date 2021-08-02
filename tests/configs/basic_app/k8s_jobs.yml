@@ -20,6 +20,7 @@ spec:
         command: [generic-command]
         env:
         - {name: KUBE, value: 'true'}
+        - {name: KUBE_JOB_ID, value: UUID}
         image: generic-image
         imagePullPolicy: Always
         name: upgrade
