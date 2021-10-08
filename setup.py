@@ -58,6 +58,8 @@ if __name__ == '__main__':
             'setuptools',
             'kubernetes',
             'tabulate<1',
+            # compose v2 has broken container naming
+            'docker-compose<2',
         ),
         extras_require={
             'dev': (

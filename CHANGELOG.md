@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.8.1
+- Pin docker-compose as v2 breaks docker naming convention
+
 # v13.8.0
 - Allow customisation of naming in job configuration
 
