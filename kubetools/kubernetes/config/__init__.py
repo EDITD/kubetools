@@ -11,6 +11,7 @@ from .job import make_job_config
 from .namespace import make_namespace_config
 from .service import make_service_config
 from .util import copy_and_update
+from .cronjob import make_cronjob_config
 
 
 def make_deployment_name(project_name, deployment_name):
@@ -268,5 +269,40 @@ def generate_kubernetes_configs_for_project(
             annotations=base_annotations,
             envvars=job_envvars,
         ))
+    
+    cronjobs = []
 
-    return services, deployments, jobs
+    for name, cronjob in config.get('cronjobs', {}).items():
+        # cronjob_name = make_deployment_name(project_name, name)
+        cronjob_labels = copy_and_update(base_labels, {
+            ROLE_LABEL_KEY: 'cronjob',
+            NAME_LABEL_KEY: name,
+        })
+
+        containers, container_ports = _get_containers_data(
+            cronjob['containers'],
+            context_name_to_image=context_name_to_image,
+            deployment_name=name,
+        )
+
+        app_annotations = copy_and_update(base_annotations)
+        schedule = cronjob['schedule']
+
+        if container_ports:
+            services.append(make_service_config(
+                name,
+                container_ports,
+                labels=cronjob_labels,
+                annotations=app_annotations,
+            ))
+
+        cronjobs.append(make_cronjob_config(
+            name,
+            schedule,
+            containers,
+            labels=cronjob_labels,
+            annotations=app_annotations,
+            envvars=None,
+        ))
+
+    return services, deployments, jobs, cronjobs

@@ -60,6 +60,14 @@ dependencies:
     containers:
       mariadb:
         image: mariadb:v10.4.1
+
+cronjobs:
+  my-cronjob:
+    schedule: "*/1 * * * *"
+    containers:
+      hello:
+        image: busybox
+        comnmand: [/bin/sh, -c, date; echo Hello from the Kubernetes cluster]
 ```
 
 With this in your current directory, you can now:
