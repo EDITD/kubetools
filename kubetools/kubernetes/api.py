@@ -256,6 +256,69 @@ def wait_for_deployment(env, namespace, deployment):
     _wait_for(check_deployment, get_object_name(deployment))
 
 
+
+
+
+def list_cronjobs(env, namespace):
+    k8s_batch_api = _get_k8s_batch_api(env)
+    return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
+
+
+def delete_cronjobs(env, namespace, cronjob):
+    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api.delete_namespaced_cron_job(
+        name=get_object_name(cronjob),
+        namespace=namespace,
+    )
+
+    _wait_for_no_object(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
+
+
+def cronjob_exists(env, namespace, cronjob):
+    k8s_batch_api = _get_k8s_batch_api(env)
+    return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
+
+
+def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
+    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
+        body=cronjob,
+        namespace=namespace,
+    )
+
+    if wait_for_completion:
+        wait_for_cron_job(env, namespace, k8s_cronjob)
+    return k8s_cronjob
+
+
+def update_cronjob(env, namespace, cronjob):
+    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_cronjob = k8s_batch_api.patch_namespaced_cron_job(
+        name=get_object_name(cronjob),
+        body=cronjob,
+        namespace=namespace,
+    )
+
+    wait_for_cron_job(env, namespace, k8s_cronjob)
+    return k8s_cronjob
+
+
+def wait_for_cron_job(env, namespace, cronjob):
+    k8s_batch_api = _get_k8s_batch_api(env)
+
+    def check_cronjob():
+        cj = k8s_batch_api.read_namespaced_cron_job(
+            name=get_object_name(cronjob),
+            namespace=namespace,
+        )
+
+        if cj.status.succeeded == cj.status.completions:
+            return True
+
+    _wait_for(check_cronjob, get_object_name(cronjob))
+
+
+
 def list_jobs(env, namespace):
     k8s_batch_api = _get_k8s_batch_api(env)
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items

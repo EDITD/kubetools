@@ -10,17 +10,21 @@ from kubetools.kubernetes.api import (
     create_job,
     create_namespace,
     create_service,
+    create_cronjob,
     delete_job,
     deployment_exists,
     get_object_name,
     list_deployments,
     list_namespaces,
     list_services,
+    list_cronjobs,
     namespace_exists,
     service_exists,
+    cronjob_exists,
     update_deployment,
     update_namespace,
     update_service,
+    update_cronjob,
 )
 from kubetools.kubernetes.config import (
     generate_kubernetes_configs_for_project,
@@ -44,6 +48,7 @@ def get_deploy_objects(
     all_services = []
     all_deployments = []
     all_jobs = []
+    all_cronjobs = []
 
     envvars = {
         'KUBE_ENV': build.env,
@@ -79,7 +84,7 @@ def get_deploy_objects(
             default_registry=default_registry,
         )
 
-        services, deployments, jobs = generate_kubernetes_configs_for_project(
+        services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
             envvars=envvars,
             context_name_to_image=context_to_image,
@@ -90,6 +95,7 @@ def get_deploy_objects(
         all_services.extend(services)
         all_deployments.extend(deployments)
         all_jobs.extend(jobs)
+        all_cronjobs.extend(cronjobs)
 
     existing_deployments = {
         get_object_name(deployment): deployment
@@ -104,11 +110,11 @@ def get_deploy_objects(
             if existing_deployment:
                 deployment['spec']['replicas'] = existing_deployment.spec.replicas
 
-    return namespace, all_services, all_deployments, all_jobs
+    return namespace, all_services, all_deployments, all_jobs, all_cronjobs
 
 
 def log_deploy_changes(
-    build, namespace, services, deployments, jobs,
+    build, namespace, services, deployments, jobs, cronjobs,
     message='Executing changes:',
     name_formatter=lambda name: name,
 ):
@@ -124,7 +130,14 @@ def log_deploy_changes(
         get_object_name(deployment)
         for deployment in list_deployments(build.env, build.namespace)
     )
+    existing_cronjobs_names = set(
+        get_object_name(cronjob)
+        for cronjob in list_cronjobs(build.env, build.namespace)
+    )
 
+    deploy_cronjobs_names = set(
+        get_object_name(cronjob) for cronjob in cronjobs
+    )
     deploy_service_names = set(
         get_object_name(service) for service in services
     )
@@ -141,15 +154,20 @@ def log_deploy_changes(
     new_deployments = deploy_deployment_names - existing_deployment_names
     update_deployments = deploy_deployment_names - new_deployments
 
+    new_cronjobs = deploy_cronjobs_names - existing_cronjobs_names
+    update_cronjobs = deploy_cronjobs_names - new_cronjobs
+
     with build.stage(message):
         log_actions(build, 'CREATE', 'namespace', new_namespace, name_formatter)
         log_actions(build, 'CREATE', 'service', new_services, name_formatter)
         log_actions(build, 'CREATE', 'deployment', new_deployments, name_formatter)
+        log_actions(build, 'CREATE', 'cronjob', new_cronjobs, name_formatter)
         log_actions(build, 'UPDATE', 'service', update_services, name_formatter)
         log_actions(build, 'UPDATE', 'deployment', update_deployments, name_formatter)
+        log_actions(build, 'UPDATE', 'cronjob', update_cronjobs, name_formatter)
 
 
-def execute_deploy(build, namespace, services, deployments, jobs, delete_completed_jobs=True):
+def execute_deploy(build, namespace, services, deployments, jobs, cronjobs, delete_completed_jobs=True):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -245,3 +263,12 @@ def execute_deploy(build, namespace, services, deployments, jobs, delete_complet
             for service in exist_main_services:
                 build.log_info(f'Update service: {get_object_name(service)}')
                 update_service(build.env, build.namespace, service)
+
+    for cronjob in cronjobs:
+        if cronjob['metadata']['labels'][ROLE_LABEL_KEY] == 'cronjob':
+            if cronjob_exists(build.env, namespace, cronjob):
+                build.log_info(f'Update cronjob: {get_object_name(cronjob)}')
+                update_cronjob(build.env, namespace, cronjob)
+            else:
+                build.log_info(f'Create cronjob: {get_object_name(cronjob)}')
+                create_cronjob(build.env, namespace, cronjob)

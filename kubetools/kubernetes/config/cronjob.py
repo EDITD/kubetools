@@ -34,13 +34,18 @@ def make_cronjob_config(
         'apiVersion': 'batch/v1',
         'kind': 'CronJob',
         'metadata': {
-            'name': make_dns_safe_name(cronjob_name)
+            'name': make_dns_safe_name(cronjob_name),
+            'labels': labels,
+            'annotations': annotations,
         },
         'spec': {
             'schedule': schedule,
             'jobTemplate': {
                 'spec': {
                     'template': {
+                        'metadata': {
+                            'labels': labels,
+                        },
                         'spec': {
                             'restartPolicy': 'OnFailure',
                             'containers': kubernetes_containers                         
