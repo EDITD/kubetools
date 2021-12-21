@@ -256,15 +256,12 @@ def wait_for_deployment(env, namespace, deployment):
     _wait_for(check_deployment, get_object_name(deployment))
 
 
-
-
-
 def list_cronjobs(env, namespace):
     k8s_batch_api = _get_k8s_batch_api(env)
     return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
 
 
-def delete_cronjobs(env, namespace, cronjob):
+def delete_cronjob(env, namespace, cronjob):
     k8s_batch_api = _get_k8s_batch_api(env)
     k8s_batch_api.delete_namespaced_cron_job(
         name=get_object_name(cronjob),
@@ -312,11 +309,11 @@ def wait_for_cron_job(env, namespace, cronjob):
             namespace=namespace,
         )
 
-        if cj.status.succeeded == cj.status.completions:
-            return True
+        if cj.status.last_schedule_time is not None and cj.status.last_successful_time is not None:
+            if cj.status.last_schedule_time <= cj.status.last_successful_time:
+                return True
 
     _wait_for(check_cronjob, get_object_name(cronjob))
-
 
 
 def list_jobs(env, namespace):

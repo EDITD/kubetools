@@ -1,5 +1,4 @@
 from .container import make_container_config
-from .util import make_dns_safe_name
 
 
 def make_cronjob_config(
@@ -17,7 +16,6 @@ def make_cronjob_config(
     labels = labels or {}
     annotations = annotations or {}
 
-
     # Build our container list
     kubernetes_containers = []
     for container_name, container in containers.items():
@@ -28,13 +26,14 @@ def make_cronjob_config(
             annotations=annotations,
         ))
 
-
     # The actual cronjob spec
     cronjob = {
         'apiVersion': 'batch/v1',
+        'startingDeadlineSeconds': 10,
+        'suspend': 'false',
         'kind': 'CronJob',
         'metadata': {
-            'name': make_dns_safe_name(cronjob_name),
+            'name': cronjob_name,
             'labels': labels,
             'annotations': annotations,
         },
@@ -48,7 +47,7 @@ def make_cronjob_config(
                         },
                         'spec': {
                             'restartPolicy': 'OnFailure',
-                            'containers': kubernetes_containers                         
+                            'containers': kubernetes_containers,
                         },
                     },
                 },

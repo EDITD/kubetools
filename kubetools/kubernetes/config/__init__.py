@@ -6,12 +6,12 @@ from kubetools.constants import (
 )
 from kubetools.exceptions import KubeConfigError
 
+from .cronjob import make_cronjob_config
 from .deployment import make_deployment_config
 from .job import make_job_config
 from .namespace import make_namespace_config
 from .service import make_service_config
 from .util import copy_and_update
-from .cronjob import make_cronjob_config
 
 
 def make_deployment_name(project_name, deployment_name):
@@ -269,7 +269,7 @@ def generate_kubernetes_configs_for_project(
             annotations=base_annotations,
             envvars=job_envvars,
         ))
-    
+
     cronjobs = []
 
     for name, cronjob in config.get('cronjobs', {}).items():

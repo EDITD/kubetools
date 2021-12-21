@@ -6,25 +6,25 @@ from kubetools.constants import (
 from kubetools.deploy.image import ensure_docker_images
 from kubetools.deploy.util import log_actions
 from kubetools.kubernetes.api import (
+    create_cronjob,
     create_deployment,
     create_job,
     create_namespace,
     create_service,
-    create_cronjob,
+    cronjob_exists,
     delete_job,
     deployment_exists,
     get_object_name,
+    list_cronjobs,
     list_deployments,
     list_namespaces,
     list_services,
-    list_cronjobs,
     namespace_exists,
     service_exists,
-    cronjob_exists,
+    update_cronjob,
     update_deployment,
     update_namespace,
     update_service,
-    update_cronjob,
 )
 from kubetools.kubernetes.config import (
     generate_kubernetes_configs_for_project,
@@ -167,7 +167,15 @@ def log_deploy_changes(
         log_actions(build, 'UPDATE', 'cronjob', update_cronjobs, name_formatter)
 
 
-def execute_deploy(build, namespace, services, deployments, jobs, cronjobs, delete_completed_jobs=True):
+def execute_deploy(
+    build,
+    namespace,
+    services,
+    deployments,
+    jobs,
+    cronjobs,
+    delete_completed_jobs=True,
+):
     # Split services + deployments into app (main) and dependencies
     depend_services = []
     main_services = []
@@ -266,9 +274,9 @@ def execute_deploy(build, namespace, services, deployments, jobs, cronjobs, dele
 
     for cronjob in cronjobs:
         if cronjob['metadata']['labels'][ROLE_LABEL_KEY] == 'cronjob':
-            if cronjob_exists(build.env, namespace, cronjob):
+            if cronjob_exists(build.env, build.namespace, cronjob):
                 build.log_info(f'Update cronjob: {get_object_name(cronjob)}')
-                update_cronjob(build.env, namespace, cronjob)
+                update_cronjob(build.env, build.namespace, cronjob)
             else:
                 build.log_info(f'Create cronjob: {get_object_name(cronjob)}')
-                create_cronjob(build.env, namespace, cronjob)
+                create_cronjob(build.env, build.namespace, cronjob)
