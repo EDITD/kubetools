@@ -82,7 +82,8 @@ def get_cleanup_objects(build, cleanup_jobs):
     if len(remaining_pods) == 0 and len(remaining_replicasets) == 0:
         namespace_to_delete = [current_namespace]
 
-    return namespace_to_delete, replica_sets_to_delete, pods_to_delete, jobs_to_delete, cronjobs_to_delete
+    return namespace_to_delete, replica_sets_to_delete, \
+        pods_to_delete, jobs_to_delete, cronjobs_to_delete
 
 
 def log_cleanup_changes(

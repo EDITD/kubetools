@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-cronjob, kubetools/project_name: generic-app,
+    kubetools/role: cronjob}
+  name: generic-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  startingDeadlineSeconds: 10
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        labels: {kubetools/name: generic-cronjob, kubetools/project_name: generic-app,
+          kubetools/role: cronjob}
+        spec:
+          containers:
+          - name: upgrade
+            image: generic-image
+            imagePullPolicy: IfNotPresent
+            command: [generic-command]
+          restartPolicy: OnFailure

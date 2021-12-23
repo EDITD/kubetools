@@ -15,6 +15,7 @@ from kubetools.kubernetes.api import (
     get_object_labels_dict,
     get_object_name,
     is_kubetools_object,
+    list_cronjobs,
     list_deployments,
     list_jobs,
     list_replica_sets,
@@ -98,6 +99,17 @@ def _get_command(item):
     return get_object_annotations_dict(item).get('description')
 
 
+def _get_cronjob_status(item):
+    # CronJob didn't start yet
+    if item.status.last_schedule_time is None and item.status.last_successful_time is None:
+        return '0/1'
+    # CronJob is running
+    elif item.status.last_schedule_time is not None:
+        return '1/1'
+    else:
+        return 'unknown'
+
+
 @cli_bootstrap.command(help_priority=3)
 @click.argument('namespace')
 @click.argument('app', required=False)
@@ -140,6 +152,19 @@ def show(ctx, namespace, app):
 
         _print_items(deployments, {
             'Ready': _get_ready_status,
+            'Version': _get_version_info,
+        })
+        click.echo()
+
+    cronjobs = list_cronjobs(env, namespace)
+
+    if cronjobs:
+        exists = True
+
+        click.echo(f'--> {len(cronjobs)} Cronjobs')
+
+        _print_items(cronjobs, {
+            'Ready': _get_cronjob_status,
             'Version': _get_version_info,
         })
         click.echo()

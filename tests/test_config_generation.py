@@ -24,7 +24,7 @@ def _test_configs(folder_name, **kwargs):
     kubetools_config = load_kubetools_config(app_dir, **kwargs)
 
     with mock.patch('kubetools.kubernetes.config.job.uuid4', lambda: 'UUID'):
-        services, deployments, jobs = generate_kubernetes_configs_for_project(
+        services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
         )
 
@@ -34,6 +34,8 @@ def _test_configs(folder_name, **kwargs):
         _assert_yaml_objects(deployments, path.join(app_dir, 'k8s_deployments.yml'))
     if jobs:
         _assert_yaml_objects(jobs, path.join(app_dir, 'k8s_jobs.yml'))
+    if cronjobs:
+        _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs.yml'))
 
 
 class TestKubernetesConfigGeneration(TestCase):
