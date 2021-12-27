@@ -156,19 +156,6 @@ def show(ctx, namespace, app):
         })
         click.echo()
 
-    cronjobs = list_cronjobs(env, namespace)
-
-    if cronjobs:
-        exists = True
-
-        click.echo(f'--> {len(cronjobs)} Cronjobs')
-
-        _print_items(cronjobs, {
-            'Ready': _get_cronjob_status,
-            'Version': _get_version_info,
-        })
-        click.echo()
-
     if app:
         replica_sets = list_replica_sets(env, namespace)
         replica_sets = [
@@ -183,16 +170,48 @@ def show(ctx, namespace, app):
         })
         click.echo()
     else:
-        jobs = list_jobs(env, namespace)
-        if jobs:
+        cronjobs = list_cronjobs(env, namespace)
+
+        if cronjobs:
             exists = True
 
-            click.echo(f'--> {len(jobs)} Jobs')
-            _print_items(jobs, {
-                'Completions': _get_completion_status,
-                'Command': _get_command,
+            click.echo(f'--> {len(cronjobs)} Cronjobs')
+
+            _print_items(cronjobs, {
+                'Ready': _get_cronjob_status,
+                'Version': _get_version_info,
             })
             click.echo()
+
+        jobs = []
+        jobs_cronjobs = []
+        job_list = list_jobs(env, namespace)
+        if job_list:
+            for job in job_list:
+                labels = get_object_labels_dict(job)
+                if labels.get(ROLE_LABEL_KEY) == 'job':
+                    jobs.append(job)
+                elif labels.get(ROLE_LABEL_KEY) == 'cronjob':
+                    jobs_cronjobs.append(job)
+
+            if jobs_cronjobs:
+                exists = True
+                click.echo(f'--> {len(jobs_cronjobs)} Jobs created by Cronjobs')
+
+                _print_items(jobs_cronjobs, {
+                    'Completions': _get_completion_status,
+                    'Command': _get_command,
+                })
+                click.echo()
+
+            if jobs:
+                exists = True
+                click.echo(f'--> {len(jobs)} Jobs')
+                _print_items(jobs, {
+                    'Completions': _get_completion_status,
+                    'Command': _get_command,
+                })
+                click.echo()
 
     if not exists:
         click.echo('Nothing to be found here 👀!')

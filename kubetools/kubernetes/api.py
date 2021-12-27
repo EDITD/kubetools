@@ -13,7 +13,7 @@ def get_object_labels_dict(obj):
 
 
 def get_object_annotations_dict(obj):
-    return obj.metadata.annotations or {}
+    return obj.metadata.annotations or obj.spec.template.metadata.annotations or {}
 
 
 def get_object_name(obj):

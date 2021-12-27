@@ -1,7 +1,11 @@
+import shlex
+
 from .container import make_container_config
+from .util import copy_and_update
 
 
 def make_cronjob_config(
+    config,
     cronjob_name,
     schedule,
     containers,
@@ -19,6 +23,20 @@ def make_cronjob_config(
     # Build our container list
     kubernetes_containers = []
     for container_name, container in containers.items():
+        # Figure out the command
+        command = config['cronjobs'][cronjob_name]['containers'][container_name]['command']
+
+        if isinstance(command, str):
+            command = shlex.split(command)
+
+        # Get/create description
+        description = config.get('description', 'Run: {0}'.format(command))
+
+        # Attach description to annotations
+        annotations = copy_and_update(annotations, {
+            'description': description,
+        })
+
         kubernetes_containers.append(make_container_config(
             container_name, container,
             envvars=envvars,
@@ -29,8 +47,6 @@ def make_cronjob_config(
     # The actual cronjob spec
     cronjob = {
         'apiVersion': 'batch/v1',
-        'startingDeadlineSeconds': 10,
-        'suspend': 'false',
         'kind': 'CronJob',
         'metadata': {
             'name': cronjob_name,
@@ -39,11 +55,14 @@ def make_cronjob_config(
         },
         'spec': {
             'schedule': schedule,
+            'startingDeadlineSeconds': 10,
             'jobTemplate': {
                 'spec': {
                     'template': {
                         'metadata': {
+                            'name': cronjob_name,
                             'labels': labels,
+                            'annotations': annotations,
                         },
                         'spec': {
                             'restartPolicy': 'OnFailure',

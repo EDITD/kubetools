@@ -1,6 +1,5 @@
 from kubetools.deploy.util import delete_objects, log_actions
 from kubetools.kubernetes.api import (
-    delete_cronjob,
     delete_job,
     delete_namespace,
     delete_pod,
@@ -64,9 +63,6 @@ def get_cleanup_objects(build, cleanup_jobs):
         if pod.metadata.deletion_timestamp:
             pod_names_already_deleted.add(get_object_name(pod))
 
-    cronjobs_to_delete = []
-    # TO COMPLETE
-
     namespaces = list_namespaces(build.env)
     current_namespace = None
     for namespace in namespaces:
@@ -82,12 +78,11 @@ def get_cleanup_objects(build, cleanup_jobs):
     if len(remaining_pods) == 0 and len(remaining_replicasets) == 0:
         namespace_to_delete = [current_namespace]
 
-    return namespace_to_delete, replica_sets_to_delete, \
-        pods_to_delete, jobs_to_delete, cronjobs_to_delete
+    return namespace_to_delete, replica_sets_to_delete, pods_to_delete, jobs_to_delete
 
 
 def log_cleanup_changes(
-    build, namespace, replica_sets, pods, jobs, cronjobs,
+    build, namespace, replica_sets, pods, jobs,
     message='Executing changes:',
     name_formatter=lambda name: name,
 ):
@@ -96,10 +91,9 @@ def log_cleanup_changes(
         log_actions(build, 'DELETE', 'jobs', jobs, name_formatter)
         log_actions(build, 'DELETE', 'pod', pods, name_formatter)
         log_actions(build, 'DELETE', 'namespace', namespace, name_formatter)
-        log_actions(build, 'DELETE', 'cronjobs', cronjobs, name_formatter)
 
 
-def execute_cleanup(build, namespace, replica_sets, pods, jobs, cronjobs):
+def execute_cleanup(build, namespace, replica_sets, pods, jobs):
     with build.stage('Delete replica sets'):
         delete_objects(build, replica_sets, delete_replica_set)
 
@@ -111,6 +105,3 @@ def execute_cleanup(build, namespace, replica_sets, pods, jobs, cronjobs):
 
     with build.stage('Delete namespace'):
         delete_objects(build, namespace, delete_namespace)
-
-    with build.stage('Delete cronjobs'):
-        delete_objects(build, cronjobs, delete_cronjob)

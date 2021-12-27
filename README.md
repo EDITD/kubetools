@@ -67,7 +67,7 @@ cronjobs:
     containers:
       hello:
         image: busybox
-        comnmand: [/bin/sh, -c, date; echo Hello from the Kubernetes cluster]
+        command: [/bin/sh, -c, date; echo Hello from the Kubernetes cluster]
 ```
 
 With this in your current directory, you can now:

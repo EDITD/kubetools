@@ -297,12 +297,13 @@ def generate_kubernetes_configs_for_project(
             ))
 
         cronjobs.append(make_cronjob_config(
+            config,
             name,
             schedule,
             containers,
             labels=cronjob_labels,
             annotations=app_annotations,
-            envvars=None,
+            envvars=envvars,
         ))
 
     return services, deployments, jobs, cronjobs

@@ -6,7 +6,3 @@ build/
 
 docs/_html
 docs/build
-
-# TO REMOVE
-kubetools_env/
-kubetools.yml

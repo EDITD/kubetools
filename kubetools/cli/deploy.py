@@ -294,21 +294,19 @@ def cleanup(ctx, cleanup_jobs, yes, namespace):
         namespace=namespace,
     )
 
-    namespace_to_delete, replica_sets_to_delete, \
-        pods_to_delete, jobs_to_delete, cronjobs_to_delete =\
+    namespace_to_delete, replica_sets_to_delete, pods_to_delete, jobs_to_delete =\
         get_cleanup_objects(build, cleanup_jobs)
 
     if not any((namespace_to_delete,
                 replica_sets_to_delete,
                 pods_to_delete,
-                jobs_to_delete,
-                cronjobs_to_delete)):
+                jobs_to_delete)):
         click.echo('Nothing to do 👍!')
         return
 
     log_cleanup_changes(
         build, namespace_to_delete, replica_sets_to_delete,
-        pods_to_delete, jobs_to_delete, cronjobs_to_delete,
+        pods_to_delete, jobs_to_delete,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -325,7 +323,6 @@ def cleanup(ctx, cleanup_jobs, yes, namespace):
         replica_sets_to_delete,
         pods_to_delete,
         jobs_to_delete,
-        cronjobs_to_delete,
     )
 
 
