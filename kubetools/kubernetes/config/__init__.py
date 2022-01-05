@@ -273,7 +273,6 @@ def generate_kubernetes_configs_for_project(
     cronjobs = []
 
     for name, cronjob in config.get('cronjobs', {}).items():
-        # cronjob_name = make_deployment_name(project_name, name)
         cronjob_labels = copy_and_update(base_labels, {
             ROLE_LABEL_KEY: 'cronjob',
             NAME_LABEL_KEY: name,

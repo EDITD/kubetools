@@ -64,6 +64,7 @@ dependencies:
 cronjobs:
   my-cronjob:
     schedule: "*/1 * * * *"
+    concurrency_policy: "Replace"
     containers:
       hello:
         image: busybox
