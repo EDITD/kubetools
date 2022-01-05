@@ -274,10 +274,9 @@ def execute_deploy(
 
     for cronjob in cronjobs:
         with build.stage('Create and/or update cronjobs'):
-            if cronjob['metadata']['labels'][ROLE_LABEL_KEY] == 'cronjob':
-                if cronjob_exists(build.env, build.namespace, cronjob):
-                    build.log_info(f'Update cronjob: {get_object_name(cronjob)}')
-                    update_cronjob(build.env, build.namespace, cronjob)
-                else:
-                    build.log_info(f'Create cronjob: {get_object_name(cronjob)}')
-                    create_cronjob(build.env, build.namespace, cronjob)
+            if cronjob_exists(build.env, build.namespace, cronjob):
+                build.log_info(f'Update cronjob: {get_object_name(cronjob)}')
+                update_cronjob(build.env, build.namespace, cronjob)
+            else:
+                build.log_info(f'Create cronjob: {get_object_name(cronjob)}')
+                create_cronjob(build.env, build.namespace, cronjob)
