@@ -287,6 +287,7 @@ def generate_kubernetes_configs_for_project(
 
         app_annotations = copy_and_update(base_annotations)
         schedule = cronjob['schedule']
+        concurrency_policy = cronjob['concurrency_policy']
 
         if container_ports:
             services.append(make_service_config(
@@ -300,6 +301,7 @@ def generate_kubernetes_configs_for_project(
             config,
             name,
             schedule,
+            concurrency_policy,
             containers,
             labels=cronjob_labels,
             annotations=app_annotations,

@@ -8,6 +8,7 @@ def make_cronjob_config(
     config,
     cronjob_name,
     schedule,
+    concurrency_policy,
     containers,
     labels=None,
     annotations=None,
@@ -56,6 +57,7 @@ def make_cronjob_config(
         'spec': {
             'schedule': schedule,
             'startingDeadlineSeconds': 10,
+            'concurrencyPolicy': concurrency_policy,
             'jobTemplate': {
                 'spec': {
                     'template': {
