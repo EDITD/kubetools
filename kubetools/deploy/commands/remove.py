@@ -69,6 +69,8 @@ def execute_remove(build, services, deployments, jobs, cronjobs):
         with build.stage('Delete jobs'):
             delete_objects(build, jobs, delete_job)
 
+    # This will delete all cronjobs associated with a project
+    # Need to look into this in the future, to be able to delete individual jobs
     if cronjobs:
         with build.stage('Delete cronjobs'):
             delete_objects(build, cronjobs, delete_cronjob)
