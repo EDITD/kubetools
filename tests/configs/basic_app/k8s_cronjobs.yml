@@ -7,7 +7,6 @@ metadata:
   name: generic-cronjob
 spec:
   schedule: "*/1 * * * *"
-  startingDeadlineSeconds: 10
   suspend: false
   jobTemplate:
     spec:
