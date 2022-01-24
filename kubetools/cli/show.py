@@ -99,17 +99,6 @@ def _get_command(item):
     return get_object_annotations_dict(item).get('description')
 
 
-def _get_cronjob_status(item):
-    # CronJob didn't start yet
-    if item.status.last_schedule_time is None and item.status.last_successful_time is None:
-        return '0/1'
-    # CronJob is running
-    elif item.status.last_schedule_time is not None:
-        return '1/1'
-    else:
-        return 'unknown'
-
-
 @cli_bootstrap.command(help_priority=3)
 @click.argument('namespace')
 @click.argument('app', required=False)
@@ -215,3 +204,14 @@ def show(ctx, namespace, app):
 
     if not exists:
         click.echo('Nothing to be found here 👀!')
+
+
+def _get_cronjob_status(item):
+    # CronJob didn't start yet
+    if item.status.last_schedule_time is None and item.status.last_successful_time is None:
+        return '0/1'
+    # CronJob is running
+    elif item.status.last_schedule_time is not None:
+        return '1/1'
+    else:
+        return 'unknown'

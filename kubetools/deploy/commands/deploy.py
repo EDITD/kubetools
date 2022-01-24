@@ -135,14 +135,14 @@ def log_deploy_changes(
         for cronjob in list_cronjobs(build.env, build.namespace)
     )
 
-    deploy_cronjobs_names = set(
-        get_object_name(cronjob) for cronjob in cronjobs
-    )
     deploy_service_names = set(
         get_object_name(service) for service in services
     )
     deploy_deployment_names = set(
         get_object_name(deployment) for deployment in deployments
+    )
+    deploy_cronjobs_names = set(
+        get_object_name(cronjob) for cronjob in cronjobs
     )
     deploy_namespace_name = set((build.namespace,))
 
