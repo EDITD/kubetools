@@ -1,31 +1,40 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  annotations: {
-    app.kubernetes.io/managed-by: kubetools
-  }
+  name: generic-cronjob
   labels: {
     kubetools/name: generic-cronjob,
     kubetools/project_name: generic-app,
     kubetools/role: cronjob
   }
-  name: generic-cronjob
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    description: 'Run: [''generic-command'']'
+  }
 spec:
   schedule: "*/1 * * * *"
-  concurrency_policy: "Replace"
-  suspend: false
+  startingDeadlineSeconds: 10
+  concurrencyPolicy: "Allow"
   jobTemplate:
     spec:
       template:
-        labels: {
-          kubetools/name: generic-cronjob,
-          kubetools/project_name: generic-app,
-          kubetools/role: cronjob
-        }
+        metadata:
+          name: generic-cronjob
+          labels: {
+            kubetools/name: generic-cronjob,
+            kubetools/project_name: generic-app,
+            kubetools/role: cronjob
+          }
+          annotations: {
+            app.kubernetes.io/managed-by: kubetools,
+            description: 'Run: [''generic-command'']'
+          }
         spec:
           containers:
-          - name: upgrade
+          - command: [generic-command]
+            env:
+            - {name: KUBE, value: 'true'}
             image: generic-image
-            imagePullPolicy: IfNotPresent
-            command: [generic-command]
+            imagePullPolicy: 'Always'
+            name: generic-container
           restartPolicy: OnFailure
