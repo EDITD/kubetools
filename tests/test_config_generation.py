@@ -1,4 +1,4 @@
-from os import path
+from os import path, listdir
 from unittest import mock, TestCase
 
 import yaml
@@ -28,13 +28,15 @@ def _test_configs(folder_name, **kwargs):
             kubetools_config,
         )
 
-    if services:
+    k8s_files = listdir(app_dir)
+
+    if services or 'k8s_services.yml' in k8s_files:
         _assert_yaml_objects(services, path.join(app_dir, 'k8s_services.yml'))
-    if deployments:
+    if deployments or 'k8s_deployments.yml' in k8s_files:
         _assert_yaml_objects(deployments, path.join(app_dir, 'k8s_deployments.yml'))
-    if jobs:
+    if jobs or 'k8s_jobs.yml' in k8s_files:
         _assert_yaml_objects(jobs, path.join(app_dir, 'k8s_jobs.yml'))
-    if cronjobs:
+    if cronjobs or 'k8s_cronjobs.yml' in k8s_files:
         _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs.yml'))
 
 
