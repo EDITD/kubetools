@@ -7,6 +7,9 @@ containerContexts:
     command: [generic-command]
     ports:
       - 80
+  generic-container-context:
+    image: generic-image
+    command: [generic-command]
 
 
 upgrades:
@@ -32,5 +35,4 @@ cronjobs:
     concurrency_policy: "Allow"
     containers:
       generic-container:
-        image: generic-image
-        command: [generic-command]
+        containerContext: generic-container-context

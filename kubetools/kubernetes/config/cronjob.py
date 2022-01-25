@@ -25,8 +25,7 @@ def make_cronjob_config(
     kubernetes_containers = []
     for container_name, container in containers.items():
         # Figure out the command
-        command = config['cronjobs'][cronjob_name]['containers'][container_name]['command']
-
+        command = container['command']
         if isinstance(command, str):
             command = shlex.split(command)
 
