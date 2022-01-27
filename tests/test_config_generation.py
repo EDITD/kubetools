@@ -1,4 +1,4 @@
-from os import path, listdir
+from os import listdir, path
 from unittest import mock, TestCase
 
 import yaml
