@@ -207,7 +207,7 @@ def show(ctx, namespace, app):
 
 
 def _get_cronjob_status(item):
-    if  item.status.active is not None:
+    if item.status.active is not None:
         # Job is currently running (implies successfully started)
         return "?/1"
     elif item.status.last_successful_time is not None:
