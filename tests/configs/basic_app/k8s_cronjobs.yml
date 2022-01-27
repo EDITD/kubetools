@@ -32,7 +32,7 @@ spec:
         spec:
           containers:
           - command: [generic-command]
-            containerContext: generic-container-context
+            containerContext: generic-context
             env:
             - {name: KUBE, value: 'true'}
             image: generic-image
