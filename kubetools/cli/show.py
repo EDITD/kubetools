@@ -207,13 +207,15 @@ def show(ctx, namespace, app):
 
 
 def _get_cronjob_status(item):
-    # CronJob is running
-    if item.status.active is not None:
-        return '1/1'
+    if  item.status.active is not None:
+        # Job is currently running (implies successfully started)
+        return "?/1"
+    elif item.status.last_successful_time is not None:
+        # Job has been successful (implies successfully started)
+        return "1/1"
+    elif item.status.last_schedule_time is not None:
+        # Job has been scheduled
+        return "0/1"
     else:
-        # CronJob didn't start yet
-        if item.status.last_schedule_time is None:
-            return '0/1'
-        # CronJob is running but the Job didn't start yet
-        else:
-            return '1/1'
+        # Job has never been scheduled (error in CronJob?)
+        return "0/0"
