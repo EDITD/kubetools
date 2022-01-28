@@ -6,6 +6,7 @@ from kubetools.constants import (
 )
 from kubetools.exceptions import KubeConfigError
 
+from .cronjob import make_cronjob_config
 from .deployment import make_deployment_config
 from .job import make_job_config
 from .namespace import make_namespace_config
@@ -269,4 +270,33 @@ def generate_kubernetes_configs_for_project(
             envvars=job_envvars,
         ))
 
-    return services, deployments, jobs
+    cronjobs = []
+
+    for name, cronjob in config.get('cronjobs', {}).items():
+        cronjob_labels = copy_and_update(base_labels, {
+            ROLE_LABEL_KEY: 'cronjob',
+            NAME_LABEL_KEY: name,
+        })
+
+        containers, container_ports = _get_containers_data(
+            cronjob['containers'],
+            context_name_to_image=context_name_to_image,
+            deployment_name=name,
+        )
+
+        app_annotations = copy_and_update(base_annotations)
+        schedule = cronjob['schedule']
+        concurrency_policy = cronjob['concurrency_policy']
+
+        cronjobs.append(make_cronjob_config(
+            config,
+            name,
+            schedule,
+            concurrency_policy,
+            containers,
+            labels=cronjob_labels,
+            annotations=app_annotations,
+            envvars=envvars,
+        ))
+
+    return services, deployments, jobs, cronjobs

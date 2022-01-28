@@ -15,6 +15,7 @@ from kubetools.kubernetes.api import (
     get_object_labels_dict,
     get_object_name,
     is_kubetools_object,
+    list_cronjobs,
     list_deployments,
     list_jobs,
     list_replica_sets,
@@ -158,16 +159,63 @@ def show(ctx, namespace, app):
         })
         click.echo()
     else:
-        jobs = list_jobs(env, namespace)
-        if jobs:
+        cronjobs = list_cronjobs(env, namespace)
+
+        if cronjobs:
             exists = True
 
-            click.echo(f'--> {len(jobs)} Jobs')
-            _print_items(jobs, {
-                'Completions': _get_completion_status,
-                'Command': _get_command,
+            click.echo(f'--> {len(cronjobs)} Cronjobs')
+
+            _print_items(cronjobs, {
+                'Ready': _get_cronjob_status,
+                'Version': _get_version_info,
             })
             click.echo()
 
+        jobs = []
+        jobs_cronjobs = []
+        job_list = list_jobs(env, namespace)
+        if job_list:
+            for job in job_list:
+                labels = get_object_labels_dict(job)
+                if labels.get(ROLE_LABEL_KEY) == 'job':
+                    jobs.append(job)
+                elif labels.get(ROLE_LABEL_KEY) == 'cronjob':
+                    jobs_cronjobs.append(job)
+
+            if jobs_cronjobs:
+                exists = True
+                click.echo(f'--> {len(jobs_cronjobs)} Jobs created by Cronjobs')
+
+                _print_items(jobs_cronjobs, {
+                    'Completions': _get_completion_status,
+                    'Command': _get_command,
+                })
+                click.echo()
+
+            if jobs:
+                exists = True
+                click.echo(f'--> {len(jobs)} Jobs')
+                _print_items(jobs, {
+                    'Completions': _get_completion_status,
+                    'Command': _get_command,
+                })
+                click.echo()
+
     if not exists:
         click.echo('Nothing to be found here 👀!')
+
+
+def _get_cronjob_status(item):
+    if item.status.active is not None:
+        # Job is currently running (implies successfully started)
+        return "?/1"
+    elif item.status.last_successful_time is not None:
+        # Job has been successful (implies successfully started)
+        return "1/1"
+    elif item.status.last_schedule_time is not None:
+        # Job has been scheduled
+        return "0/1"
+    else:
+        # Job has never been scheduled (error in CronJob?)
+        return "0/0"

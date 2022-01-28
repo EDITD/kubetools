@@ -47,11 +47,12 @@ def _dry_deploy_object_loop(object_type, objects):
         click.echo(json.dumps(name_to_object[object_name], indent=4))
 
 
-def _dry_deploy_loop(build, services, deployments, jobs):
+def _dry_deploy_loop(build, services, deployments, jobs, cronjobs):
     for object_type, objects in (
         ('service', services),
         ('deployment', deployments),
         ('job', jobs),
+        ('cronjob', cronjobs),
     ):
         if objects:
             _dry_deploy_object_loop(object_type, objects)
@@ -161,7 +162,7 @@ def deploy(
     else:
         custom_config_file = None
 
-    namespace, services, deployments, jobs = get_deploy_objects(
+    namespace, services, deployments, jobs, cronjobs = get_deploy_objects(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
@@ -171,15 +172,15 @@ def deploy(
         custom_config_file=custom_config_file,
     )
 
-    if not any((namespace, services, deployments, jobs)):
+    if not any((namespace, services, deployments, jobs, cronjobs)):
         click.echo('Nothing to do!')
         return
 
     if dry:
-        return _dry_deploy_loop(build, namespace, services, deployments, jobs)
+        return _dry_deploy_loop(build, namespace, services, deployments, jobs, cronjobs)
 
     log_deploy_changes(
-        build, namespace, services, deployments, jobs,
+        build, namespace, services, deployments, jobs, cronjobs,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -197,6 +198,7 @@ def deploy(
         services,
         deployments,
         jobs,
+        cronjobs,
         delete_completed_jobs=delete_completed_jobs,
     )
 
@@ -233,16 +235,16 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
         namespace=namespace,
     )
 
-    services_to_delete, deployments_to_delete, jobs_to_delete = (
+    services_to_delete, deployments_to_delete, jobs_to_delete, cronjobs_to_delete = (
         get_remove_objects(build, app_or_project_names, force=force)
     )
 
-    if not any((services_to_delete, deployments_to_delete, jobs_to_delete)):
+    if not any((services_to_delete, deployments_to_delete, jobs_to_delete, cronjobs_to_delete)):
         click.echo('Nothing to do 👍!')
         return
 
     log_remove_changes(
-        build, services_to_delete, deployments_to_delete, jobs_to_delete,
+        build, services_to_delete, deployments_to_delete, jobs_to_delete, cronjobs_to_delete,
         message='Executing changes:' if yes else 'Proposed changes:',
         name_formatter=lambda name: click.style(name, bold=True),
     )
@@ -258,6 +260,7 @@ def remove(ctx, yes, force, do_cleanup, namespace, app_or_project_names):
         services_to_delete,
         deployments_to_delete,
         jobs_to_delete,
+        cronjobs_to_delete,
     )
 
     if do_cleanup:

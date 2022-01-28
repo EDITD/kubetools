@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.9.0
+- Add CronJob object
+
 # v13.8.1
 - Pin docker-compose as v2 breaks docker naming convention
 

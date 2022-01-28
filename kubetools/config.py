@@ -18,6 +18,7 @@ TOP_LEVEL_CONDITION_KEYS = (
     'upgrades',
     'deployments',
     'dependencies',
+    'cronjobs',
 )
 
 # Config keys that can have re-usable containerContext: names

@@ -51,7 +51,7 @@ def config(ctx, replicas, file, app_dir, formatter):
 
     kubetools_config = load_kubetools_config(app_dir, custom_config_file=file)
     context_to_image = defaultdict(lambda: 'IMAGE')
-    services, deployments, jobs = generate_kubernetes_configs_for_project(
+    services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
         kubetools_config,
         replicas=replicas,
         context_name_to_image=context_to_image,
@@ -75,4 +75,10 @@ def config(ctx, replicas, file, app_dir, formatter):
         name = get_object_name(job)
         click.echo(f'Job: {click.style(name, bold=True)}')
         click.echo(writer(job))
+        click.echo()
+
+    for cronjob in cronjobs:
+        name = get_object_name(cronjob)
+        click.echo(f'Cronjob: {click.style(name, bold=True)}')
+        click.echo(writer(cronjob))
         click.echo()

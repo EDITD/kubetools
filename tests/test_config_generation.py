@@ -1,4 +1,4 @@
-from os import path
+from os import listdir, path
 from unittest import mock, TestCase
 
 import yaml
@@ -24,16 +24,20 @@ def _test_configs(folder_name, **kwargs):
     kubetools_config = load_kubetools_config(app_dir, **kwargs)
 
     with mock.patch('kubetools.kubernetes.config.job.uuid4', lambda: 'UUID'):
-        services, deployments, jobs = generate_kubernetes_configs_for_project(
+        services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
         )
 
-    if services:
+    k8s_files = listdir(app_dir)
+
+    if services or 'k8s_services.yml' in k8s_files:
         _assert_yaml_objects(services, path.join(app_dir, 'k8s_services.yml'))
-    if deployments:
+    if deployments or 'k8s_deployments.yml' in k8s_files:
         _assert_yaml_objects(deployments, path.join(app_dir, 'k8s_deployments.yml'))
-    if jobs:
+    if jobs or 'k8s_jobs.yml' in k8s_files:
         _assert_yaml_objects(jobs, path.join(app_dir, 'k8s_jobs.yml'))
+    if cronjobs or 'k8s_cronjobs.yml' in k8s_files:
+        _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs.yml'))
 
 
 class TestKubernetesConfigGeneration(TestCase):
