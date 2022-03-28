@@ -59,7 +59,8 @@ if __name__ == '__main__':
             'kubernetes',
             'tabulate<1',
             # compose v2 has broken container naming
-            'docker-compose<2',
+            # and compose 1.29 requires docker >5
+            'docker-compose<1.29',
         ),
         extras_require={
             'dev': (
