@@ -25,3 +25,11 @@ deployments:
           timeoutSeconds: 5
           httpGet:
             path: /ping
+
+cronjobs:
+  generic-cronjob:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
