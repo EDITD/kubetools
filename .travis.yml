@@ -11,7 +11,11 @@ python:
   - '3.8'
   - '3.9-dev'
 
-install: 'pip install -e .[dev]'
+install:
+  # upgrade importlib_metadata due to bug in TravisCI
+  # https://travis-ci.community/t/build-error-for-python-3-7-on-two-different-projects/12895
+  - 'pip install --upgrade importlib_metadata'
+  - 'pip install -e .[dev]'
 
 script:
   - flake8
