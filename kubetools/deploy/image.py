@@ -40,7 +40,7 @@ def has_app_commit_image(registry, app_name, context_name, commit_hash):
     commit_version = get_commit_hash_tag(context_name, commit_hash)
     url = 'http://{0}/v2/{1}/manifests/{2}'.format(registry, app_name, commit_version)
 
-    response = requests.get(url)
+    response = requests.head(url)
 
     if response.status_code != 200:
         return False
