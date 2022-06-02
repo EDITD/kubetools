@@ -47,7 +47,7 @@ def _dry_deploy_object_loop(object_type, objects):
         click.echo(json.dumps(name_to_object[object_name], indent=4))
 
 
-def _dry_deploy_loop(build, services, deployments, jobs, cronjobs):
+def _dry_deploy_loop(build, namespace, services, deployments, jobs, cronjobs):
     for object_type, objects in (
         ('service', services),
         ('deployment', deployments),
