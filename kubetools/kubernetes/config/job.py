@@ -13,6 +13,7 @@ def make_job_config(
     envvars=None,
     job_name=None,
     container_name="upgrade",
+    resources=None,
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -67,6 +68,7 @@ def make_job_config(
         envvars=envvars,
         labels=labels,
         annotations=annotations,
+        resources=resources,
     )
 
     # Completions default to 1, same as Kubernetes
