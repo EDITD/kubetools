@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.10.0
+- Fix bug where 2 concurrent `ktd` commands could create a duplicated `dev` network
+
 # v13.9.0
 - Add CronJob object
 
