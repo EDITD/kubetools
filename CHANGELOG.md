@@ -2,11 +2,10 @@
 
 ### Unreleased
 
-# v13.10.0
-- Fix bug where 2 concurrent `ktd` commands could create a duplicated `dev` network
-
 # v13.9.0
-- Add CronJob object
+- Add support for creating CronJob objects in k8s
+- Fix bug where 2 concurrent `ktd` commands could create a duplicated `dev` network
+- Small optimisation for checking presence of image in registry
 
 # v13.8.1
 - Pin docker-compose as v2 breaks docker naming convention
