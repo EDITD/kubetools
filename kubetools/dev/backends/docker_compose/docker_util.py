@@ -39,13 +39,21 @@ def ensure_docker_dev_network():
 
     docker_client = get_docker_client()
 
-    network_names = [
-        network.name
-        for network in docker_client.networks.list()
-    ]
-
-    if 'dev' not in network_names:
-        docker_client.networks.create('dev')
+    try:
+        new_network = docker_client.networks.create(name='dev', check_duplicate=True)
+    except docker.errors.APIError as e:
+        if e.status_code != 409:
+            raise
+    else:
+        # There's no guarantee that check_duplicate will be enforced.
+        # If we still created a duplicate, remove it
+        dev_network_ids = [
+            network.id
+            for network in docker_client.networks.list()
+            if network.name == 'dev'
+        ]
+        if len(dev_network_ids) > 1:
+            new_network.remove()
 
 
 def get_all_docker_dev_network_containers():
