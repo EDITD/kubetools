@@ -1,5 +1,7 @@
 import shlex
 
+from kubetools.settings import get_settings
+
 from .container import make_container_config
 from .util import copy_and_update
 
@@ -18,6 +20,9 @@ def make_cronjob_config(
     Builds a Kubernetes cronjob configuration dict.
     '''
 
+    settings = get_settings()
+
+    apiVersion = 'batch/v1' if settings.IS_CRONJOB_COMPATIBLE else 'batch/v1beta1'
     labels = labels or {}
     annotations = annotations or {}
 
@@ -46,7 +51,7 @@ def make_cronjob_config(
 
     # The actual cronjob spec
     cronjob = {
-        'apiVersion': 'batch/v1',
+        'apiVersion': apiVersion,
         'kind': 'CronJob',
         'metadata': {
             'name': cronjob_name,

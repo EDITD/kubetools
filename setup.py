@@ -56,7 +56,7 @@ if __name__ == '__main__':
             'requests>=2,<3',
             'pyretry',
             'setuptools',
-            'kubernetes',
+            'kubernetes>=21.7.0',
             'tabulate<1',
             # compose v2 has broken container naming
             'docker-compose<2',

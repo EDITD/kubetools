@@ -11,6 +11,7 @@ class KubetoolsSettings(object):
     KUBETOOLS_HOST = None
     KUBETOOLS_PORT = 80
     KUBETOOLS_API_VERSION = 4
+    IS_CRONJOB_COMPATIBLE = False
 
     DEFAULT_KUBE_ENV = 'staging'  # default environment when speaking to the server
 
