@@ -2,6 +2,7 @@ from time import sleep
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from packaging import version
 
 from kubetools.constants import MANAGED_BY_ANNOTATION_KEY
 from kubetools.exceptions import KubeBuildError
@@ -46,12 +47,16 @@ def check_if_cronjob_compatible(env):
 
     api_core = _get_k8s_core_api(env)
     list_node = api_core.list_node().items
-    first_node_info = list_node[0].status.node_info
-    kubelet_version = first_node_info.kubelet_version.replace('v', '').split(".")
-    major_version = int(kubelet_version[0])
-    minor_version = int(kubelet_version[1])
+    k8s_version = "1.21.0"
+    lowest_version = "1.21.0"
 
-    if major_version > 1 or (major_version == 1 and minor_version >= 21):
+    # Get the lowest kubelet version of all the nodes of the Cluster
+    for node in list_node:
+        kubelet_version = node.status.node_info.kubelet_version.replace('v', '')
+        if version.parse(kubelet_version) < version.parse(lowest_version):
+            lowest_version = kubelet_version
+
+    if version.parse(lowest_version) >= version.parse(k8s_version):
         settings.IS_CRONJOB_COMPATIBLE = True
 
     return settings.IS_CRONJOB_COMPATIBLE
