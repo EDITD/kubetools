@@ -62,10 +62,15 @@ def check_if_cronjob_compatible(env):
     return settings.IS_CRONJOB_COMPATIBLE
 
 
-def _get_k8s_batch_api(env, cronjob=False):
+def _get_k8s_jobs_batch_api(env):
+    api_client = _get_api_client(env)
+    return client.BatchV1Api(api_client=api_client)
+
+
+def _get_k8s_cronjobs_batch_api(env):
     api_client = _get_api_client(env)
 
-    if cronjob is False or check_if_cronjob_compatible(env):
+    if check_if_cronjob_compatible(env):
         return client.BatchV1Api(api_client=api_client)
     else:
         return client.BatchV1beta1Api(api_client=api_client)
@@ -282,12 +287,12 @@ def wait_for_deployment(env, namespace, deployment):
 
 
 def list_cronjobs(env, namespace):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
     return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
 
 
 def delete_cronjob(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
     k8s_batch_api.delete_namespaced_cron_job(
         name=get_object_name(cronjob),
         namespace=namespace,
@@ -297,12 +302,12 @@ def delete_cronjob(env, namespace, cronjob):
 
 
 def cronjob_exists(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
     return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
 
 
 def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
     k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
         body=cronjob,
         namespace=namespace,
@@ -314,7 +319,7 @@ def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
 
 
 def update_cronjob(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
     k8s_cronjob = k8s_batch_api.patch_namespaced_cron_job(
         name=get_object_name(cronjob),
         body=cronjob,
@@ -326,7 +331,7 @@ def update_cronjob(env, namespace, cronjob):
 
 
 def wait_for_cron_job(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env, cronjob=True)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env)
 
     def check_cronjob():
         cj = k8s_batch_api.read_namespaced_cron_job(
@@ -342,7 +347,7 @@ def wait_for_cron_job(env, namespace, cronjob):
 
 
 def list_jobs(env, namespace):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items
 
 
@@ -373,7 +378,7 @@ def delete_job(env, namespace, job, propagation_policy=None):
     args = {}
     if propagation_policy:
         args['propagation_policy'] = propagation_policy
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
         namespace=namespace,
@@ -384,7 +389,7 @@ def delete_job(env, namespace, job, propagation_policy=None):
 
 
 def create_job(env, namespace, job, wait_for_completion=True):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     k8s_job = k8s_batch_api.create_namespaced_job(
         body=job,
         namespace=namespace,
@@ -396,7 +401,7 @@ def create_job(env, namespace, job, wait_for_completion=True):
 
 
 def wait_for_job(env, namespace, job):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
 
     def check_job():
         j = k8s_batch_api.read_namespaced_job(
