@@ -43,11 +43,9 @@ def _get_k8s_apps_api(env):
 
 
 def check_if_cronjob_compatible(env):
-    settings = get_settings()
-
     api_core = _get_k8s_core_api(env)
     list_node = api_core.list_node().items
-    k8s_version = "1.21.0"
+    required_k8s_version = "1.21.0"
     lowest_version = "1.21.0"
 
     # Get the lowest kubelet version of all the nodes of the Cluster
@@ -56,10 +54,7 @@ def check_if_cronjob_compatible(env):
         if version.parse(kubelet_version) < version.parse(lowest_version):
             lowest_version = kubelet_version
 
-    if version.parse(lowest_version) >= version.parse(k8s_version):
-        settings.IS_CRONJOB_COMPATIBLE = True
-
-    return settings.IS_CRONJOB_COMPATIBLE
+    return version.parse(lowest_version) >= version.parse(required_k8s_version)
 
 
 def _get_k8s_jobs_batch_api(env):

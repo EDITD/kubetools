@@ -1,5 +1,6 @@
 import shlex
 
+from kubetools.kubernetes.api import check_if_cronjob_compatible
 from kubetools.settings import get_settings
 
 from .container import make_container_config
@@ -21,8 +22,9 @@ def make_cronjob_config(
     '''
 
     settings = get_settings()
+    env = config.get('env', settings.DEFAULT_KUBE_ENV)
+    apiVersion = 'batch/v1' if check_if_cronjob_compatible(env) else 'batch/v1beta1'
 
-    apiVersion = 'batch/v1' if settings.IS_CRONJOB_COMPATIBLE else 'batch/v1beta1'
     labels = labels or {}
     annotations = annotations or {}
 
