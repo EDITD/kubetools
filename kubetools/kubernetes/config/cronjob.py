@@ -1,6 +1,5 @@
 import shlex
 
-from kubetools.kubernetes.api import check_if_cronjob_compatible
 from kubetools.settings import get_settings
 
 from .container import make_container_config
@@ -22,8 +21,8 @@ def make_cronjob_config(
     '''
 
     settings = get_settings()
-    env = config.get('env', settings.DEFAULT_KUBE_ENV)
-    apiVersion = 'batch/v1' if check_if_cronjob_compatible(env) else 'batch/v1beta1'
+    cronjobs_conf = config['cronjobs']
+    batch_api_version = cronjobs_conf.get('batch-api-version', settings.CRONJOBS_BATCH_API_VERSION)
 
     labels = labels or {}
     annotations = annotations or {}
@@ -53,7 +52,7 @@ def make_cronjob_config(
 
     # The actual cronjob spec
     cronjob = {
-        'apiVersion': apiVersion,
+        'apiVersion': batch_api_version,
         'kind': 'CronJob',
         'metadata': {
             'name': cronjob_name,
