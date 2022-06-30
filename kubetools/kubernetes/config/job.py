@@ -64,11 +64,11 @@ def make_job_config(
             'command': command,
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
+            'resources': resources,
         },
         envvars=envvars,
         labels=labels,
         annotations=annotations,
-        resources=resources,
     )
 
     # Completions default to 1, same as Kubernetes

@@ -28,10 +28,7 @@ def _make_probe_config(config):
 
 def make_container_config(
     name, container,
-    envvars=None,
-    labels=None,
-    annotations=None,
-    resources=None,
+    envvars=None, labels=None, annotations=None,
 ):
     '''
     Builds the common Kubernetes container config.
@@ -120,8 +117,6 @@ def make_container_config(
                 'mountPath': volume.split(':')[1],
                 'name': get_hash(volume),
             })
-    if resources:
-        container_data['resources'] = resources
 
     # Finally, attach all remaining data
     container_data.update(container)
