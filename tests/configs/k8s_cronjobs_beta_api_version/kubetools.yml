@@ -1,0 +1,19 @@
+name: generic-app
+
+
+containerContexts:
+  generic-context:
+    image: generic-image
+    command: [generic-command]
+    ports:
+      - 80
+
+
+cronjobs:
+  batch-api-version: 'batch/v1beta1'
+  generic-cronjob:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
