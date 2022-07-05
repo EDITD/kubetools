@@ -285,6 +285,7 @@ def generate_kubernetes_configs_for_project(
             labels=job_labels,
             annotations=base_annotations,
             envvars=job_envvars,
+            resources=resources,
             job_name=job_name,
             container_name=container_name,
         ))
