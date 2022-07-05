@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from kubetools.constants import (
     MANAGED_BY_ANNOTATION_KEY,
     NAME_LABEL_KEY,
@@ -108,7 +110,7 @@ def generate_kubernetes_configs_for_project(
 
     # Upgrades/jobs
     include_upgrade_jobs=True,  # whether to generate jobs for config.upgrades
-    job_specs=None,  # additional job configs to execute
+    job_specs=None,  # additional job configs to execute, should be list of tuples
 
     # Labels/annotations
     base_labels=None,
@@ -229,21 +231,26 @@ def generate_kubernetes_configs_for_project(
 
     # Add any upgrade jobs
     if include_upgrade_jobs:
-        job_specs = config.get('upgrades', []) + job_specs
+        for upgrade_config in config.get('upgrades', []):
+            job_specs.append(('upgrade', upgrade_config))
 
-    for job_spec in job_specs:
-        _ensure_image(job_spec, context_name_to_image)
+    # Add any jobs
+    for name, job_config in config.get('jobs', {}).items():
+        job_specs.append((name, job_config))
+
+    for container_name, job_config in job_specs:
+        _ensure_image(job_config, context_name_to_image)
 
         # Stil no image? Let's pull the first container we have available - this
         # maintains backwards compatability where one can ask for a job without
         # specifying any container (back when every app was one container).
-        if 'image' not in job_spec:
+        if 'image' not in job_config:
             for name, data in config.get('deployments').items():
                 found_image = False
 
                 for _, container in data['containers'].items():
                     if 'image' in container:
-                        job_spec['image'] = container['image']
+                        job_config['image'] = container['image']
                         found_image = True
                         break
 
@@ -254,20 +261,32 @@ def generate_kubernetes_configs_for_project(
             else:
                 raise KubeConfigError((
                     'Could not find a containerContext to use for job: {0}'
-                ).format(job_spec))
+                ).format(job_config))
+
+        resources = job_config.get('resources', {})
+
+        if container_name is not 'upgrade':
+            time_now = datetime.now(timezone.utc).strftime('%Y-%m-%d-%H%M%S')
+            job_name = f'{container_name}-{time_now}'
+        else:
+            # We pass this as none so make_job_config will give it upgrade
+            # jobs a unique UUID for a job_name
+            job_name = None
 
         job_envvars = copy_and_update(
             envvars,
-            job_spec.get('envars'),  # legacy support TODO: remove!
-            job_spec.get('envvars'),
+            job_config.get('envars'),  # legacy support TODO: remove!
+            job_config.get('envvars'),
         )
 
         jobs.append(make_job_config(
-            job_spec,
+            job_config,
             app_name=project_name,
             labels=job_labels,
             annotations=base_annotations,
             envvars=job_envvars,
+            job_name=job_name,
+            container_name=container_name,
         ))
 
     cronjobs = []
