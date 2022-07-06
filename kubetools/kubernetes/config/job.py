@@ -13,6 +13,7 @@ def make_job_config(
     envvars=None,
     job_name=None,
     container_name="upgrade",
+    resources=None,
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -63,6 +64,7 @@ def make_job_config(
             'command': command,
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
+            'resources': resources,
         },
         envvars=envvars,
         labels=labels,
