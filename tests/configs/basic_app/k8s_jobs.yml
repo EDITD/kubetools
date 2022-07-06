@@ -24,7 +24,8 @@ spec:
         image: generic-image
         imagePullPolicy: Always
         name: upgrade
-        resources: {
-          requests: { 'cpu': 1, 'memory': '1Gi'}
-        }
+        resources:
+          requests:
+            cpu: 1
+            memory: "1Gi"
       restartPolicy: Never
