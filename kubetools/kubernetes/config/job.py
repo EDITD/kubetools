@@ -56,6 +56,10 @@ def make_job_config(
         {'KUBE_JOB_ID': job_id},
     )
 
+    # if resources exist in job config, use it here
+    if config.get('resources'):
+        resources = config.get('resources')
+
     # Make our container
     container = make_container_config(
         job_id,
