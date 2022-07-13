@@ -41,7 +41,6 @@ class TestMakeJobConfig(TestCase):
     def test_resources_being_passed(self):
         test_resources = {
                 "requests": {
-                    "cpu": 1,
                     "memory": "1Gi",
                 },
         }
