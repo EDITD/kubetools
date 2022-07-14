@@ -15,7 +15,6 @@ upgrades:
     command: [generic-command, generic-arg]
     resources:
       requests:
-        cpu: 1
         memory: "1Gi"
 
 

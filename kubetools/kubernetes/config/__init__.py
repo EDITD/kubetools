@@ -256,8 +256,6 @@ def generate_kubernetes_configs_for_project(
                     'Could not find a containerContext to use for job: {0}'
                 ).format(job_spec))
 
-        resources = job_spec.get('resources', {})
-
         job_envvars = copy_and_update(
             envvars,
             job_spec.get('envars'),  # legacy support TODO: remove!
@@ -270,7 +268,6 @@ def generate_kubernetes_configs_for_project(
             labels=job_labels,
             annotations=base_annotations,
             envvars=job_envvars,
-            resources=resources,
         ))
 
     cronjobs = []

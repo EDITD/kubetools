@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.9.2
+- Ensure Resources within Job containers are parsed correctly, optimise
+passing resources through `job_spec`
+
 # v13.9.1
 - Allow jobs to specify Resources within Job spec
 

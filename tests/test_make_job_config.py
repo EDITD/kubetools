@@ -37,3 +37,13 @@ class TestMakeJobConfig(TestCase):
         job_config = make_job_config(load_job_spec(), container_name='mycoolcontainer')
         container_name = job_config['spec']['template']['spec']['containers'][0]['name']
         self.assertEqual('mycoolcontainer', container_name)
+
+    def test_resources_being_passed(self):
+        expected_resources = {
+                "requests": {
+                    "memory": "1Gi",
+                },
+        }
+        job_config = make_job_config(load_job_spec())
+        resource_config = job_config['spec']['template']['spec']['containers'][0]['resources']
+        self.assertEqual(expected_resources, resource_config)
