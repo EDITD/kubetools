@@ -57,8 +57,7 @@ def make_job_config(
     )
 
     # if resources exist in job config, use it here
-    if config.get('resources'):
-        resources = config.get('resources')
+    resources = config.get('resources', {})
 
     # Make our container
     container = make_container_config(
