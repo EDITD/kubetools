@@ -13,7 +13,6 @@ def make_job_config(
     envvars=None,
     job_name=None,
     container_name="upgrade",
-    resources=None,
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -56,9 +55,6 @@ def make_job_config(
         {'KUBE_JOB_ID': job_id},
     )
 
-    # if resources exist in job config, use it here
-    resources = config.get('resources', {})
-
     # Make our container
     container = make_container_config(
         job_id,
@@ -67,7 +63,7 @@ def make_job_config(
             'command': command,
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
-            'resources': resources,
+            'resources': config.get('resources', {}),
         },
         envvars=envvars,
         labels=labels,
