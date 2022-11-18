@@ -5,6 +5,7 @@ from kubetools.constants import (
     ROLE_LABEL_KEY,
 )
 from kubetools.exceptions import KubeConfigError
+from kubetools.settings import get_settings
 
 from .cronjob import make_cronjob_config
 from .deployment import make_deployment_config
@@ -271,11 +272,9 @@ def generate_kubernetes_configs_for_project(
         ))
 
     cronjobs = []
+    settings = get_settings()
 
     for name, cronjob in config.get('cronjobs', {}).items():
-        if name == 'batch-api-version':
-            continue
-
         cronjob_labels = copy_and_update(base_labels, {
             ROLE_LABEL_KEY: 'cronjob',
             NAME_LABEL_KEY: name,
@@ -290,11 +289,13 @@ def generate_kubernetes_configs_for_project(
         app_annotations = copy_and_update(base_annotations)
         schedule = cronjob['schedule']
         concurrency_policy = cronjob['concurrency_policy']
+        batch_api_version = cronjob.get('batch-api-version', settings.CRONJOBS_BATCH_API_VERSION)
 
         cronjobs.append(make_cronjob_config(
             config,
             name,
             schedule,
+            batch_api_version,
             concurrency_policy,
             containers,
             labels=cronjob_labels,

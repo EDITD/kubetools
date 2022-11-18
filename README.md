@@ -62,8 +62,8 @@ dependencies:
         image: mariadb:v10.4.1
 
 cronjobs:
-  batch-api-version: 'batch/v1beta1'  # Must add if k8s version < 1.21+
   my-cronjob:
+    batch-api-version: 'batch/v1beta1'  # Must add if k8s version < 1.21+
     schedule: "*/1 * * * *"
     concurrency_policy: "Replace"
     containers:

@@ -151,9 +151,8 @@ def _check_min_version(config):
 
 def _filter_config_data(key, items_or_object, env, namespace, dev):
     def is_match(item):
-        conditions = None if 'batch/v1' in item else item.get('conditions')
         return _conditions_match(
-            conditions,
+            item.get('conditions'),
             env=env,
             namespace=namespace,
             dev=dev,

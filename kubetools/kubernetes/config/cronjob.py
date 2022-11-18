@@ -1,7 +1,5 @@
 import shlex
 
-from kubetools.settings import get_settings
-
 from .container import make_container_config
 from .util import copy_and_update
 
@@ -10,6 +8,7 @@ def make_cronjob_config(
     config,
     cronjob_name,
     schedule,
+    batch_api_version,
     concurrency_policy,
     containers,
     labels=None,
@@ -19,10 +18,6 @@ def make_cronjob_config(
     '''
     Builds a Kubernetes cronjob configuration dict.
     '''
-
-    settings = get_settings()
-    cronjobs_conf = config['cronjobs']
-    batch_api_version = cronjobs_conf.get('batch-api-version', settings.CRONJOBS_BATCH_API_VERSION)
 
     labels = labels or {}
     annotations = annotations or {}

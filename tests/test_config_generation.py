@@ -28,12 +28,6 @@ def _test_configs(folder_name, **kwargs):
             kubetools_config,
         )
 
-    batch_api_version = None
-    for cronjob in cronjobs:
-        batch_api_version = cronjob.get('batch-api-version', {})
-        break
-
-
     k8s_files = listdir(app_dir)
 
     if services or 'k8s_services.yml' in k8s_files:
@@ -42,11 +36,9 @@ def _test_configs(folder_name, **kwargs):
         _assert_yaml_objects(deployments, path.join(app_dir, 'k8s_deployments.yml'))
     if jobs or 'k8s_jobs.yml' in k8s_files:
         _assert_yaml_objects(jobs, path.join(app_dir, 'k8s_jobs.yml'))
-    if (cronjobs and batch_api_version == 'batch/v1') or \
-            'k8s_cronjobs.yml' in k8s_files:
+    if cronjobs and 'k8s_cronjobs.yml' in k8s_files:
         _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs.yml'))
-    if (cronjobs and batch_api_version == 'batch/v1beta1') or \
-            'k8s_cronjobs_beta.yml' in k8s_files:
+    if cronjobs and 'k8s_cronjobs_beta.yml' in k8s_files:
         _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs_beta.yml'))
 
 
