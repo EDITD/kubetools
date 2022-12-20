@@ -47,3 +47,14 @@ class TestMakeJobConfig(TestCase):
         job_config = make_job_config(load_job_spec())
         resource_config = job_config['spec']['template']['spec']['containers'][0]['resources']
         self.assertEqual(expected_resources, resource_config)
+
+    def test_ttl_is_set_if_provided_in_config(self):
+        job_spec = load_job_spec()
+        ttl_option = {'ttl_seconds_after_finished': 100}
+        job_spec.update(ttl_option)
+        job_config = make_job_config(job_spec)
+        self.assertIn('ttlSecondsAfterFinished', job_config['spec'])
+        self.assertEqual(
+                job_config['spec']['ttlSecondsAfterFinished'],
+                ttl_option['ttl_seconds_after_finished'],
+        )
