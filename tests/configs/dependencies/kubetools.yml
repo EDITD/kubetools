@@ -29,6 +29,7 @@ dependencies:
         ports:
           - 9200
         probes:
+          timeoutSeconds: 5
           exec:
             command: [curl, 'wardrobe-elasticsearch:9200']
 
@@ -41,5 +42,6 @@ dependencies:
         ports:
           - 8098
         probes:
+          timeoutSeconds: 5
           exec:
             command: [riak-admin, test]

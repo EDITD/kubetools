@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.9.3
+- Ensure compatibility with Kubernetes 1.20+ by adding a long enough timeout
+for the liveness probes
+
 # v13.9.2
 - Ensure Resources within Job containers are parsed correctly, optimise
 passing resources through `job_spec`
