@@ -63,6 +63,7 @@ def make_job_config(
             'command': command,
             'image': config['image'],
             'chdir': config.get('chdir', '/'),
+            'resources': config.get('resources', {}),
         },
         envvars=envvars,
         labels=labels,

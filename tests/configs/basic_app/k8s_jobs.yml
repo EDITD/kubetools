@@ -24,4 +24,7 @@ spec:
         image: generic-image
         imagePullPolicy: Always
         name: upgrade
+        resources:
+          requests:
+            memory: "1Gi"
       restartPolicy: Never

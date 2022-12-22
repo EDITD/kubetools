@@ -13,6 +13,9 @@ upgrades:
   - name: Upgrade the database
     containerContext: generic-context
     command: [generic-command, generic-arg]
+    resources:
+      requests:
+        memory: "1Gi"
 
 
 deployments:
