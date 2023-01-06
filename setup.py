@@ -56,7 +56,7 @@ if __name__ == '__main__':
             'requests>=2,<3',
             'pyretry',
             'setuptools',
-            'kubernetes>=21.7.0',
+            'kubernetes>=21.7.0,<25.0.0', # To support CronJob api versions 'batch/v1beta1' & 'batch/v1'
             'tabulate<1',
             # compose v2 has broken container naming
             'docker-compose<2',
