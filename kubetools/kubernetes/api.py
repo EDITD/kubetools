@@ -76,14 +76,14 @@ def check_if_cronjob_batch_v1_compatible(env, batch_api_version):
     return False
 
 
-def get_cronjob_api_version(obj):
-    if obj is not None:
-        if isinstance(obj, dict):
-            if obj['apiVersion'] is not None:
-                return obj['apiVersion']
+def get_cronjob_api_version(cronjob_obj):
+    if cronjob_obj is not None:
+        if isinstance(cronjob_obj, dict):
+            if cronjob_obj['apiVersion'] is not None:
+                return cronjob_obj['apiVersion']
         else:
-            if obj.api_version is not None:
-                return obj.api_version
+            if cronjob_obj.api_version is not None:
+                return cronjob_obj.api_version
 
 
 # Specific for list_cronjob and delete_cronjob functions
