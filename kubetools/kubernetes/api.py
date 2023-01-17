@@ -2,10 +2,14 @@ from time import sleep
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from packaging import version
 
 from kubetools.constants import MANAGED_BY_ANNOTATION_KEY
 from kubetools.exceptions import KubeBuildError
 from kubetools.settings import get_settings
+
+
+CRONJOBS_BATCH_API_VERSION = get_settings().CRONJOBS_BATCH_API_VERSION
 
 
 def get_object_labels_dict(obj):
@@ -41,9 +45,79 @@ def _get_k8s_apps_api(env):
     return client.AppsV1Api(api_client=api_client)
 
 
-def _get_k8s_batch_api(env):
+def check_if_cronjob_batch_v1_compatible(env, batch_api_version):
+    api_core = _get_k8s_core_api(env)
+    list_node = api_core.list_node().items
+    required_k8s_version = version.parse("1.21.0")
+    supported_beta_version = version.parse("1.25.0")
+
+    nodes_versions = [
+        node.status.node_info.kubelet_version.replace('v', '')
+        for node in list_node
+    ]
+    parsed_versions = map(version.parse, nodes_versions)
+    lowest_version = min(parsed_versions)
+
+    if lowest_version >= required_k8s_version:
+        # k8s >= v1.21 && 'batch/v1'
+        if batch_api_version == CRONJOBS_BATCH_API_VERSION:
+            return True
+        else:
+            # v1.21 <= k8s < v1.25  && 'batch/v1beta1'
+            if lowest_version < supported_beta_version:
+                return False
+            else:
+                # k8s >= v1.25 && 'batch/v1beta1'
+                raise ApiException(
+                    'Kubernetes {0} does not support Cronjob with '
+                    '"batch-api-version: {1}", you will need to use "batch-api-version: {2}"'
+                    .format(lowest_version, batch_api_version, CRONJOBS_BATCH_API_VERSION))
+
+    return False
+
+
+def get_cronjob_api_version(cronjob_obj):
+    if cronjob_obj is not None:
+        if isinstance(cronjob_obj, dict):
+            if cronjob_obj['apiVersion'] is not None:
+                return cronjob_obj['apiVersion']
+        else:
+            if cronjob_obj.api_version is not None:
+                return cronjob_obj.api_version
+
+
+# Specific for list_cronjob and delete_cronjob functions
+# Because apiVersion not found in Cronjob object
+def get_compatible_cronjob_api_version(env):
+    if check_if_cronjob_batch_v1_compatible(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
+        return CRONJOBS_BATCH_API_VERSION
+    else:
+        return 'batch/v1beta1'
+
+
+def _get_k8s_jobs_batch_api(env):
     api_client = _get_api_client(env)
     return client.BatchV1Api(api_client=api_client)
+
+
+def _get_k8s_cronjobs_batch_api(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
+    api_client = _get_api_client(env)
+
+    is_batch_v1_compatible = check_if_cronjob_batch_v1_compatible(
+        env,
+        batch_api_version=batch_api_version,
+    )
+
+    if is_batch_v1_compatible:
+        return client.BatchV1Api(api_client=api_client)
+    elif not is_batch_v1_compatible and batch_api_version == CRONJOBS_BATCH_API_VERSION:
+        # k8s < v1.21 && 'batch/v1'
+        raise ApiException(
+            'Kubernetes version < 1.21 does not support Cronjob with'
+            '"batch-api-version: {0}", you will need to use '
+            '"batch-api-version: batch/v1beta1"'.format(batch_api_version))
+    else:
+        return client.BatchV1beta1Api(api_client=api_client)
 
 
 def _object_exists(api, method, namespace, obj):
@@ -257,12 +331,14 @@ def wait_for_deployment(env, namespace, deployment):
 
 
 def list_cronjobs(env, namespace):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_compatible_cronjob_api_version(env)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
 
 
 def delete_cronjob(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_compatible_cronjob_api_version(env)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_batch_api.delete_namespaced_cron_job(
         name=get_object_name(cronjob),
         namespace=namespace,
@@ -272,12 +348,14 @@ def delete_cronjob(env, namespace, cronjob):
 
 
 def cronjob_exists(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_cronjob_api_version(cronjob)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
 
 
 def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_cronjob_api_version(cronjob)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
         body=cronjob,
         namespace=namespace,
@@ -289,7 +367,8 @@ def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
 
 
 def update_cronjob(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_cronjob_api_version(cronjob)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_cronjob = k8s_batch_api.patch_namespaced_cron_job(
         name=get_object_name(cronjob),
         body=cronjob,
@@ -301,7 +380,8 @@ def update_cronjob(env, namespace, cronjob):
 
 
 def wait_for_cron_job(env, namespace, cronjob):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    batch_api_version = get_cronjob_api_version(cronjob)
+    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
 
     def check_cronjob():
         cj = k8s_batch_api.read_namespaced_cron_job(
@@ -309,15 +389,18 @@ def wait_for_cron_job(env, namespace, cronjob):
             namespace=namespace,
         )
 
-        if cj.status.last_schedule_time is not None and cj.status.last_successful_time is not None:
-            if cj.status.last_schedule_time <= cj.status.last_successful_time:
-                return True
+        if batch_api_version == CRONJOBS_BATCH_API_VERSION:
+            if cj.status.last_schedule_time and cj.status.last_successful_time:
+                if cj.status.last_schedule_time <= cj.status.last_successful_time:
+                    return True
+        elif cj.status.last_schedule_time is not None and cj.status.active is None:
+            return True
 
     _wait_for(check_cronjob, get_object_name(cronjob))
 
 
 def list_jobs(env, namespace):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items
 
 
@@ -348,7 +431,7 @@ def delete_job(env, namespace, job, propagation_policy=None):
     args = {}
     if propagation_policy:
         args['propagation_policy'] = propagation_policy
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     k8s_batch_api.delete_namespaced_job(
         name=get_object_name(job),
         namespace=namespace,
@@ -359,7 +442,7 @@ def delete_job(env, namespace, job, propagation_policy=None):
 
 
 def create_job(env, namespace, job, wait_for_completion=True):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
     k8s_job = k8s_batch_api.create_namespaced_job(
         body=job,
         namespace=namespace,
@@ -371,7 +454,7 @@ def create_job(env, namespace, job, wait_for_completion=True):
 
 
 def wait_for_job(env, namespace, job):
-    k8s_batch_api = _get_k8s_batch_api(env)
+    k8s_batch_api = _get_k8s_jobs_batch_api(env)
 
     def check_job():
         j = k8s_batch_api.read_namespaced_job(

@@ -1,0 +1,85 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: generic-cronjob-1
+  labels: {
+    kubetools/name: generic-cronjob-1,
+    kubetools/project_name: generic-app,
+    kubetools/role: cronjob
+  }
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    description: 'Run: [''generic-command'']'
+  }
+spec:
+  schedule: "*/1 * * * *"
+  startingDeadlineSeconds: 10
+  concurrencyPolicy: "Allow"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: generic-cronjob-1
+          labels: {
+            kubetools/name: generic-cronjob-1,
+            kubetools/project_name: generic-app,
+            kubetools/role: cronjob
+          }
+          annotations: {
+            app.kubernetes.io/managed-by: kubetools,
+            description: 'Run: [''generic-command'']'
+          }
+        spec:
+          containers:
+          - command: [generic-command]
+            containerContext: generic-context
+            env:
+            - {name: KUBE, value: 'true'}
+            image: generic-image
+            imagePullPolicy: 'Always'
+            name: generic-container
+          restartPolicy: OnFailure
+
+---
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: generic-cronjob-2
+  labels: {
+    kubetools/name: generic-cronjob-2,
+    kubetools/project_name: generic-app,
+    kubetools/role: cronjob
+  }
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    description: 'Run: [''generic-command'']'
+  }
+spec:
+  schedule: "0 0 * * *"
+  startingDeadlineSeconds: 10
+  concurrencyPolicy: "Replace"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: generic-cronjob-2
+          labels: {
+            kubetools/name: generic-cronjob-2,
+            kubetools/project_name: generic-app,
+            kubetools/role: cronjob
+          }
+          annotations: {
+            app.kubernetes.io/managed-by: kubetools,
+            description: 'Run: [''generic-command'']'
+          }
+        spec:
+          containers:
+          - command: [generic-command]
+            containerContext: generic-context
+            env:
+            - {name: KUBE, value: 'true'}
+            image: generic-image
+            imagePullPolicy: 'Always'
+            name: generic-container
+          restartPolicy: OnFailure

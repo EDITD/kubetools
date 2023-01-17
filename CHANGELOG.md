@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.9.3
+- Add support for CronJob api version `batch/v1beta1`
+
 # v13.9.2
 - Ensure Resources within Job containers are parsed correctly, optimise
 passing resources through `job_spec`

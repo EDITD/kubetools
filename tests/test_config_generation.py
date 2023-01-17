@@ -36,8 +36,10 @@ def _test_configs(folder_name, **kwargs):
         _assert_yaml_objects(deployments, path.join(app_dir, 'k8s_deployments.yml'))
     if jobs or 'k8s_jobs.yml' in k8s_files:
         _assert_yaml_objects(jobs, path.join(app_dir, 'k8s_jobs.yml'))
-    if cronjobs or 'k8s_cronjobs.yml' in k8s_files:
+    if cronjobs and 'k8s_cronjobs.yml' in k8s_files:
         _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs.yml'))
+    if cronjobs and 'k8s_cronjobs_beta.yml' in k8s_files:
+        _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs_beta.yml'))
 
 
 class TestKubernetesConfigGeneration(TestCase):
@@ -52,6 +54,9 @@ class TestKubernetesConfigGeneration(TestCase):
 
     def test_k8s_container_passthrough_configs(self):
         _test_configs('k8s_container_passthrough')
+
+    def test_k8s_cronjobs_beta_api_version_configs(self):
+        _test_configs('k8s_cronjobs_beta_api_version')
 
     def test_multiple_deployments_configs(self):
         _test_configs('multiple_deployments')

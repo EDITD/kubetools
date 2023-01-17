@@ -63,6 +63,7 @@ dependencies:
 
 cronjobs:
   my-cronjob:
+    batch-api-version: 'batch/v1beta1'  # Must add if k8s version < 1.21+
     schedule: "*/1 * * * *"
     concurrency_policy: "Replace"
     containers:

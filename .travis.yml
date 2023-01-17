@@ -14,7 +14,7 @@ python:
 install:
   # upgrade importlib_metadata due to bug in TravisCI
   # https://travis-ci.community/t/build-error-for-python-3-7-on-two-different-projects/12895
-  - 'pip install --upgrade importlib_metadata'
+  - 'pip install --upgrade "importlib_metadata<5"'
   - 'pip install -e .[dev]'
 
 script:
