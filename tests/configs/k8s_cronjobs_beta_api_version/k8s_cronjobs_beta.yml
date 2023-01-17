@@ -56,9 +56,9 @@ metadata:
     description: 'Run: [''generic-command'']'
   }
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "0 0 * * *"
   startingDeadlineSeconds: 10
-  concurrencyPolicy: "Allow"
+  concurrencyPolicy: "Replace"
   jobTemplate:
     spec:
       template:

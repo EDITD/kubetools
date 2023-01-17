@@ -20,8 +20,8 @@ cronjobs:
 
   generic-cronjob-2:
     batch-api-version: 'batch/v1beta1'
-    schedule: "*/1 * * * *"
-    concurrency_policy: "Allow"
+    schedule: "0 0 * * *"
+    concurrency_policy: "Replace"
     containers:
       generic-container:
         containerContext: generic-context
