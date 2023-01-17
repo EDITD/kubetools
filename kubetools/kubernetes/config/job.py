@@ -75,7 +75,7 @@ def make_job_config(
     # Parallelism defaults to completions, also as Kubernetes
     parallelism = config.get('parallelism', completions)
 
-    return {
+    job_config = {
         # Normal Kubernetes job config
         'apiVersion': 'batch/v1',
         'kind': 'Job',
@@ -99,3 +99,8 @@ def make_job_config(
             },
         },
     }
+
+    if 'ttl_seconds_after_finished' in config:
+        job_config['spec']['ttlSecondsAfterFinished'] = config.get('ttl_seconds_after_finished')
+
+    return job_config
