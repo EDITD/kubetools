@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.9.4
+- Added support job time to live
+
 # v13.9.3
 - Add support for CronJob api version `batch/v1beta1`
 
