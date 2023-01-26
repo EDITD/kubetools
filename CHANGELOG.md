@@ -2,6 +2,14 @@
 
 ### Unreleased
 
+# v13.9.5
+- Updated optional default_registry to be command line argument for the following commands:
+  - kubetools deploy
+  - kubetools config
+  - kubetools push
+- Updated kubetools to use the default_registry argument as the prefix of images specified in `kubetools.yml` file, rather than expecting the registry name to be in the image name
+
+
 # v13.9.4
 - Added support job time to live
 
