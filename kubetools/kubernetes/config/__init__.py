@@ -33,10 +33,17 @@ def make_context_name(app_name, container_name):
 
 def _ensure_image(
     container, context_name_to_image,
+    default_registry,
     deployment_name=None,
     container_name=None,
 ):
     if 'image' in container:
+        registry_image = container['image'].split('/')
+        image = registry_image[0]   # If registry not specified in the kubetools.yml file
+        if len(registry_image) == 2:
+            image = registry_image[1]
+
+        container['image'] = f'{default_registry}/{image}'
         return
 
     if 'containerContext' in container:
@@ -53,7 +60,12 @@ def _ensure_image(
     container['image'] = context_name_to_image[context_name]
 
 
-def _get_containers_data(containers, context_name_to_image, deployment_name):
+def _get_containers_data(
+        containers,
+        context_name_to_image,
+        deployment_name,
+        default_registry,
+    ):
     # Setup top level app service mapping all ports from all top level containers
     all_container_ports = []
     all_containers = {}
@@ -61,7 +73,7 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
     for container_name, data in containers.items():
         all_container_ports.extend(data.pop('ports', []))
         _ensure_image(
-            data, context_name_to_image,
+            data, context_name_to_image, default_registry,
             deployment_name, container_name,
         )
         all_containers[container_name] = data
@@ -104,6 +116,7 @@ def generate_namespace_config(name, base_labels=None, base_annotations=None):
 
 def generate_kubernetes_configs_for_project(
     config,  # a kubetools config object
+    default_registry,
     replicas=1,  # number of replicas for each deployment
     envvars=None,  # global environment variables to inject to all containers
 
@@ -163,6 +176,7 @@ def generate_kubernetes_configs_for_project(
             dependency['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
         app_annotations = copy_and_update(base_annotations)
 
@@ -196,6 +210,7 @@ def generate_kubernetes_configs_for_project(
             deployment['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
         app_annotations = copy_and_update(
             base_annotations,
@@ -233,7 +248,7 @@ def generate_kubernetes_configs_for_project(
         job_specs = config.get('upgrades', []) + job_specs
 
     for job_spec in job_specs:
-        _ensure_image(job_spec, context_name_to_image)
+        _ensure_image(job_spec, context_name_to_image, default_registry)
 
         # Stil no image? Let's pull the first container we have available - this
         # maintains backwards compatability where one can ask for a job without
@@ -284,6 +299,7 @@ def generate_kubernetes_configs_for_project(
             cronjob['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
 
         app_annotations = copy_and_update(base_annotations)

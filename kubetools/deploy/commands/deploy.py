@@ -38,8 +38,8 @@ from kubetools.kubernetes.config import (
 def get_deploy_objects(
     build,
     app_dirs,
+    default_registry,
     replicas=None,
-    default_registry=None,
     extra_envvars=None,
     extra_annotations=None,
     ignore_git_changes=False,
@@ -86,6 +86,7 @@ def get_deploy_objects(
 
         services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
+            default_registry,
             envvars=envvars,
             context_name_to_image=context_to_image,
             base_annotations=annotations,

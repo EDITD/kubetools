@@ -161,8 +161,8 @@ def deploy(
 
     namespace, services, deployments, jobs, cronjobs = get_deploy_objects(
         build, app_dirs,
+        default_registry,
         replicas=replicas,
-        default_registry=default_registry,
         extra_envvars=envvars,
         extra_annotations=annotations,
         ignore_git_changes=ignore_git_changes,

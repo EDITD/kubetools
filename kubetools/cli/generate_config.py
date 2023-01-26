@@ -54,6 +54,7 @@ def config(ctx, replicas, file, app_dir, formatter, default_registry):
     context_to_image = defaultdict(lambda: 'IMAGE')
     services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
         kubetools_config,
+        default_registry,
         replicas=replicas,
         context_name_to_image=context_to_image,
     )
