@@ -85,10 +85,6 @@ def _validate_key_value_argument(ctx, param, value):
     help='Default number of replicas for each app.',
 )
 @click.option(
-    '--default-registry',
-    help='Default registry for apps that do not specify.',
-)
-@click.option(
     '-y', '--yes',
     is_flag=True,
     default=False,
@@ -130,6 +126,7 @@ def _validate_key_value_argument(ctx, param, value):
     nargs=-1,
     type=click.Path(exists=True, file_okay=False),
 )
+@click.argument('default_registry')
 @click.pass_context
 def deploy(
     ctx,

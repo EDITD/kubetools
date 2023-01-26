@@ -43,8 +43,9 @@ FORMATTERS = {
     'app_dir',
     type=click.Path(exists=True, file_okay=False),
 )
+@click.argument('default_registry')
 @click.pass_context
-def config(ctx, replicas, file, app_dir, formatter):
+def config(ctx, replicas, file, app_dir, formatter, default_registry):
     '''
     Generate and write out Kubernetes configs for a project.
     '''
