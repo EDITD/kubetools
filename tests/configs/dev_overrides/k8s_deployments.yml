@@ -21,13 +21,13 @@ spec:
         containerContext: generic-context
         env:
         - {name: KUBE, value: 'true'}
-        image: generic-image
+        image: generic-registry/generic-image
         imagePullPolicy: Always
         name: webserver
       - command: [generic-dev-command]
         containerContext: generic-context
         env:
         - {name: KUBE, value: 'true'}
-        image: generic-image
+        image: generic-registry/generic-image
         imagePullPolicy: Always
         name: worker

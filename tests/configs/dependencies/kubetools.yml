@@ -3,7 +3,7 @@ name: dependencies
 
 containerContexts:
   memcache:
-    image: memcache:1.4.33
+    image: generic-registry/memcache:1.4.33
     command: [memcached, -u, root, -I, 10m]
     ports:
       - 11211
@@ -25,7 +25,7 @@ dependencies:
       dev: true
     containers:
       elasticsearch:
-        image: elasticsearch:v6.2
+        image: generic-registry/elasticsearch:v6.2
         ports:
           - 9200
         probes:
@@ -37,7 +37,7 @@ dependencies:
       dev: true
     containers:
       riak:
-        image: basho/riak-kv:2.1.4
+        image: generic-registry/basho/riak-kv:2.1.4
         ports:
           - 8098
         probes:

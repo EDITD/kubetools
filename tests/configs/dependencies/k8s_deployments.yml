@@ -21,7 +21,7 @@ spec:
         containerContext: memcache
         env:
         - {name: KUBE, value: 'true'}
-        image: memcache:1.4.33
+        image: generic-registry/memcache:1.4.33
         imagePullPolicy: Always
         name: memcache-1
 
@@ -50,6 +50,6 @@ spec:
         containerContext: memcache
         env:
         - {name: KUBE, value: 'true'}
-        image: memcache:1.4.33
+        image: generic-registry/memcache:1.4.33
         imagePullPolicy: Always
         name: memcache-2

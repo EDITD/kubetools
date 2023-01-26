@@ -26,6 +26,7 @@ def _test_configs(folder_name, **kwargs):
     with mock.patch('kubetools.kubernetes.config.job.uuid4', lambda: 'UUID'):
         services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
+            "generic-registry",
         )
 
     k8s_files = listdir(app_dir)

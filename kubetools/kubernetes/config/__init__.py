@@ -65,7 +65,7 @@ def _get_containers_data(
         context_name_to_image,
         deployment_name,
         default_registry,
-    ):
+):
     # Setup top level app service mapping all ports from all top level containers
     all_container_ports = []
     all_containers = {}

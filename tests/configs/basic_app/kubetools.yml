@@ -3,7 +3,7 @@ name: generic-app
 
 containerContexts:
   generic-context:
-    image: generic-image
+    image: generic-registry/generic-image
     command: [generic-command]
     ports:
       - 80

@@ -21,7 +21,7 @@ spec:
         env:
         - {name: KUBE, value: 'true'}
         - {name: KUBE_JOB_ID, value: UUID}
-        image: generic-image
+        image: generic-registry/generic-image
         imagePullPolicy: Always
         name: upgrade
         resources:
