@@ -39,15 +39,9 @@ def _ensure_image(
 ):
     if 'image' in container:
         registry_image = container['image'].split('/')
-        if len(registry_image) == 1:
-            # If the image is commonly available from DockerHub
-            if default_registry is None:
-                container['image'] = registry_image[0]
-
-            # If registry not specified in the kubetools.yml file
-            else:
-                image = container['image']
-                container['image'] = f'{default_registry}/{image}'
+        if len(registry_image) == 1 and default_registry is not None:
+            # If registry is not specified but a default was provided
+            container['image'] = f'{default_registry}/{container["image"]}'
         return
 
     if 'containerContext' in container:
