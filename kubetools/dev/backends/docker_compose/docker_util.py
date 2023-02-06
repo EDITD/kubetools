@@ -40,7 +40,11 @@ def ensure_docker_dev_network():
     docker_client = get_docker_client()
 
     try:
-        new_network = docker_client.networks.create(name='dev', check_duplicate=True)
+        new_network = docker_client.networks.create(
+            name='dev',
+            check_duplicate=True,
+            enable_ipv6=True
+        )
     except docker.errors.APIError as e:
         if e.status_code != 409:
             raise
