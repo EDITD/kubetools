@@ -15,16 +15,15 @@ spec:
       labels: {kubetools/name: generic-app, kubetools/project_name: generic-app, kubetools/role: app}
     spec:
       containers:
-      - command: [generic-command]
-        containerContext: generic-context
+      - command: [uwsgi, --ini, /etc/uwsgi.conf]
         env:
         - {name: KUBE, value: 'true'}
         image: generic-registry/generic-image
         imagePullPolicy: Always
-        name: with-default-registry
+        name: with-generic-registry
       - command: [uwsgi, --ini, /etc/uwsgi.conf]
         env:
         - {name: KUBE, value: 'true'}
         image: default-registry/generic-image
         imagePullPolicy: Always
-        name: without-default-registry
+        name: with-default-registry

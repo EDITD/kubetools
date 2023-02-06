@@ -62,5 +62,5 @@ class TestKubernetesConfigGeneration(TestCase):
     def test_multiple_deployments_configs(self):
         _test_configs('multiple_deployments')
 
-    def test_registry_configs(self):
-        _test_configs('docker_registry', 'default-registry')
+    def test_docker_registry_configs(self):
+        _test_configs('docker_registry', default_registry='default-registry')
