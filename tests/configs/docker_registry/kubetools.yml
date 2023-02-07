@@ -15,4 +15,3 @@ deployments:
         command: [uwsgi, --ini, /etc/uwsgi.conf]
         ports:
           - 9090
-
