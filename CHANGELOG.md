@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.9.5
+- Allow adding a default registry in command line instead of
+  specifying the registry in kubetools.yml file.
+
 # v13.9.4
 - Added support job time to live
 

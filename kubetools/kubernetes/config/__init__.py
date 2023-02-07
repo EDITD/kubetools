@@ -35,8 +35,13 @@ def _ensure_image(
     container, context_name_to_image,
     deployment_name=None,
     container_name=None,
+    default_registry=None,
 ):
     if 'image' in container:
+        registry_image = container['image'].split('/')
+        if len(registry_image) == 1 and default_registry is not None:
+            # If registry is not specified but a default was provided
+            container['image'] = f'{default_registry}/{container["image"]}'
         return
 
     if 'containerContext' in container:
@@ -53,7 +58,12 @@ def _ensure_image(
     container['image'] = context_name_to_image[context_name]
 
 
-def _get_containers_data(containers, context_name_to_image, deployment_name):
+def _get_containers_data(
+    containers,
+    context_name_to_image,
+    deployment_name,
+    default_registry=None,
+):
     # Setup top level app service mapping all ports from all top level containers
     all_container_ports = []
     all_containers = {}
@@ -63,6 +73,7 @@ def _get_containers_data(containers, context_name_to_image, deployment_name):
         _ensure_image(
             data, context_name_to_image,
             deployment_name, container_name,
+            default_registry=default_registry,
         )
         all_containers[container_name] = data
 
@@ -119,6 +130,7 @@ def generate_kubernetes_configs_for_project(
     # Map of context name -> docker image - images are expected to be built by
     # something else (normally the kubetools server or ktd client).
     context_name_to_image=None,
+    default_registry=None,
 ):
     '''
     Builds service & deployment definitions based on the app config provided. We have
@@ -163,6 +175,7 @@ def generate_kubernetes_configs_for_project(
             dependency['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
         app_annotations = copy_and_update(base_annotations)
 
@@ -196,6 +209,7 @@ def generate_kubernetes_configs_for_project(
             deployment['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
         app_annotations = copy_and_update(
             base_annotations,
@@ -233,7 +247,7 @@ def generate_kubernetes_configs_for_project(
         job_specs = config.get('upgrades', []) + job_specs
 
     for job_spec in job_specs:
-        _ensure_image(job_spec, context_name_to_image)
+        _ensure_image(job_spec, context_name_to_image, default_registry=default_registry)
 
         # Stil no image? Let's pull the first container we have available - this
         # maintains backwards compatability where one can ask for a job without
@@ -284,6 +298,7 @@ def generate_kubernetes_configs_for_project(
             cronjob['containers'],
             context_name_to_image=context_name_to_image,
             deployment_name=name,
+            default_registry=default_registry,
         )
 
         app_annotations = copy_and_update(base_annotations)
