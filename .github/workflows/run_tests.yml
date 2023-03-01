@@ -9,6 +9,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-latest]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
         exclude:
+          # Python 3.6 is not available in GitHub Actions Ubuntu 22.04
           - os: ubuntu-latest
             python-version: '3.6'
     runs-on: ${{ matrix.os }}
