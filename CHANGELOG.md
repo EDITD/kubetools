@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.9.5.0
+- No functional change, this is just validating the change of CI to Github Actions
+
 # v13.9.5
 - Allow adding a default registry in command line instead of
   specifying the registry in kubetools.yml file.
