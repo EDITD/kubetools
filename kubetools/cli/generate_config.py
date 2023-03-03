@@ -43,8 +43,12 @@ FORMATTERS = {
     'app_dir',
     type=click.Path(exists=True, file_okay=False),
 )
+@click.option(
+    '--default-registry',
+    help='Default registry for apps that do not specify.',
+)
 @click.pass_context
-def config(ctx, replicas, file, app_dir, formatter):
+def config(ctx, replicas, file, app_dir, formatter, default_registry):
     '''
     Generate and write out Kubernetes configs for a project.
     '''
@@ -55,6 +59,7 @@ def config(ctx, replicas, file, app_dir, formatter):
         kubetools_config,
         replicas=replicas,
         context_name_to_image=context_to_image,
+        default_registry=default_registry,
     )
 
     writer = FORMATTERS[formatter]

@@ -63,6 +63,7 @@ dependencies:
 
 cronjobs:
   my-cronjob:
+    batch-api-version: 'batch/v1beta1'  # Must add if k8s version < 1.21+
     schedule: "*/1 * * * *"
     concurrency_policy: "Replace"
     containers:
@@ -95,11 +96,11 @@ Install the package in editable mode, with the dev extras:
 pip install -e .[dev]
 ```
 
-## Releasing
+## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it
 * In GitHub, create a new release
   * Name the release `v<version>` (for example `v1.2.3`)
   * Title the release with a highlight of the changes
   * Copy changes in the release from `CHANGELOG.md` into the release description
- [TravisCI](https://travis-ci.com/EDITD/kubetools) will package the release and publish it to
- [Pypi](https://pypi.org/project/kubetools/)
+  * [GitHub Actions](https://github.com/EDITD/kubetools/actions) will package the release and
+    publish it to [Pypi](https://pypi.org/project/kubetools/)

@@ -8,6 +8,7 @@ def make_cronjob_config(
     config,
     cronjob_name,
     schedule,
+    batch_api_version,
     concurrency_policy,
     containers,
     labels=None,
@@ -46,7 +47,7 @@ def make_cronjob_config(
 
     # The actual cronjob spec
     cronjob = {
-        'apiVersion': 'batch/v1',
+        'apiVersion': batch_api_version,
         'kind': 'CronJob',
         'metadata': {
             'name': cronjob_name,

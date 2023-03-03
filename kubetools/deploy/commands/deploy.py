@@ -90,6 +90,7 @@ def get_deploy_objects(
             context_name_to_image=context_to_image,
             base_annotations=annotations,
             replicas=replicas or 1,
+            default_registry=default_registry,
         )
 
         all_services.extend(services)

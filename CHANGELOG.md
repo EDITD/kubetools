@@ -2,9 +2,22 @@
 
 ### Unreleased
 
-# v13.9.3
+# v13.9.6
 - Ensure compatibility with Kubernetes 1.20+ by adding a long enough timeout
 for the liveness probes
+
+# v13.9.5.0
+- No functional change, this is just validating the change of CI to Github Actions
+
+# v13.9.5
+- Allow adding a default registry in command line instead of
+  specifying the registry in kubetools.yml file.
+
+# v13.9.4
+- Added support job time to live
+
+# v13.9.3
+- Add support for CronJob api version `batch/v1beta1`
 
 # v13.9.2
 - Ensure Resources within Job containers are parsed correctly, optimise

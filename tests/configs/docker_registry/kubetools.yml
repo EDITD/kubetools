@@ -1,0 +1,17 @@
+name: generic-app
+
+
+deployments:
+  generic-app:
+    containers:
+      with-generic-registry:
+        image: generic-registry/generic-image
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        ports:
+          - 80
+
+      with-default-registry:
+        image: generic-image
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        ports:
+          - 9090

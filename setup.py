@@ -56,19 +56,21 @@ if __name__ == '__main__':
             'requests>=2,<3',
             'pyretry',
             'setuptools',
-            'kubernetes',
+            # To support CronJob api versions 'batch/v1beta1' & 'batch/v1'
+            'kubernetes>=21.7.0,<25.0.0',
             'tabulate<1',
             # compose v2 has broken container naming
             'docker-compose<2',
+            'packaging',
         ),
         extras_require={
             'dev': (
                 'ipdb',
                 'pytest~=6.0',
                 'pytest-cov~=2.10',
-                'flake8~=3.8',
-                'flake8-import-order~=0.18',
-                'flake8-commas~=2.0',
+                'flake8',
+                'flake8-import-order',
+                'flake8-commas',
             ),
         },
         classifiers=[
