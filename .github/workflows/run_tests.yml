@@ -27,6 +27,7 @@ jobs:
         run: "pytest --cov"
 
   all-tests:
+    # Single step that will succeed iff all test steps succeed. To used for branch protection
     runs-on: ubuntu-latest
     needs: [tests]
     if: always()
