@@ -38,10 +38,6 @@ def _ensure_image(
     default_registry=None,
 ):
     if 'image' in container:
-        registry_image = container['image'].split('/')
-        if len(registry_image) == 1 and default_registry is not None:
-            # If registry is not specified but a default was provided
-            container['image'] = f'{default_registry}/{container["image"]}'
         return
 
     if 'containerContext' in container:
@@ -56,6 +52,11 @@ def _ensure_image(
         raise KubeConfigError('No image for container: {0}'.format(container))
 
     container['image'] = context_name_to_image[context_name]
+
+    registry_image = container['image'].split('/')
+    if len(registry_image) == 1 and default_registry is not None:
+        # If registry is not specified but a default was provided
+        container['image'] = f'{default_registry}/{container["image"]}'
 
 
 def _get_containers_data(
