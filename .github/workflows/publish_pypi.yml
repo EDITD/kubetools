@@ -12,11 +12,10 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install build dependencies
-        run: |
-          pip install build
+        run: pip install build
       - name: Build package
         run: python -m build
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@v1.5.1
+        uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
