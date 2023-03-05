@@ -4,9 +4,9 @@ from unittest import mock, TestCase
 import yaml
 
 from kubetools.config import load_kubetools_config
+from kubetools.deploy.image import get_container_contexts_from_config, get_docker_tag_for_commit
 from kubetools.kubernetes.api import get_object_name
 from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
-from kubetools.deploy.image import get_container_contexts_from_config, get_docker_tag_for_commit
 
 
 def _assert_yaml_objects(objects, yaml_filename):
