@@ -6,6 +6,7 @@ import yaml
 from kubetools.config import load_kubetools_config
 from kubetools.kubernetes.api import get_object_name
 from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
+from kubetools.deploy.image import get_container_contexts_from_config, get_docker_tag_for_commit
 
 
 def _assert_yaml_objects(objects, yaml_filename):
@@ -23,10 +24,29 @@ def _test_configs(folder_name, default_registry=None, **kwargs):
 
     kubetools_config = load_kubetools_config(app_dir, **kwargs)
 
+    # TODO: refactor deploy.image._ensure_docker_images to extract the logic to a function and
+    #  de-duplicate it from here
+    build_contexts = get_container_contexts_from_config(kubetools_config)
+    context_name_to_registry = {
+        context_name: build_context.get('registry', default_registry)
+        for context_name, build_context in build_contexts.items()
+    }
+    context_images = {
+        # Build the context name -> image dict
+        context_name: get_docker_tag_for_commit(
+            context_name_to_registry[context_name],
+            kubetools_config['name'],
+            context_name,
+            'thisisacommithash',
+        )
+        for context_name in build_contexts.keys()
+    }
+
     with mock.patch('kubetools.kubernetes.config.job.uuid4', lambda: 'UUID'):
         services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
             kubetools_config,
             default_registry=default_registry,
+            context_name_to_image=context_images,
         )
 
     k8s_files = listdir(app_dir)
