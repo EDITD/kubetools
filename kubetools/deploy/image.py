@@ -103,7 +103,7 @@ def _ensure_docker_images(
     build_context_keys = list(context_name_to_build.keys())
 
     # Check if the image already exists in the registry
-    if not build_context_keys or all(
+    if all(
         has_app_commit_image(
             context_name_to_registry[context_name],
             project_name,
