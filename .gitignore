@@ -4,5 +4,6 @@
 dist/
 build/
 
-docs/_html
-docs/build
+/docs/_html
+/docs/build
+/.coverage
