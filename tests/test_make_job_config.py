@@ -40,9 +40,9 @@ class TestMakeJobConfig(TestCase):
 
     def test_resources_being_passed(self):
         expected_resources = {
-                "requests": {
-                    "memory": "1Gi",
-                },
+            "requests": {
+                "memory": "1Gi",
+            },
         }
         job_config = make_job_config(load_job_spec())
         resource_config = job_config['spec']['template']['spec']['containers'][0]['resources']
@@ -55,6 +55,6 @@ class TestMakeJobConfig(TestCase):
         job_config = make_job_config(job_spec)
         self.assertIn('ttlSecondsAfterFinished', job_config['spec'])
         self.assertEqual(
-                job_config['spec']['ttlSecondsAfterFinished'],
-                ttl_option['ttl_seconds_after_finished'],
+            job_config['spec']['ttlSecondsAfterFinished'],
+            ttl_option['ttl_seconds_after_finished'],
         )

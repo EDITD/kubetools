@@ -9,14 +9,27 @@ from kubetools.kubernetes.api import get_object_name
 from kubetools.kubernetes.config import generate_kubernetes_configs_for_project
 
 
-def _assert_yaml_objects(objects, yaml_filename):
-    with open(yaml_filename, 'r') as f:
-        desired_objects = list(yaml.safe_load_all(f))
+class TestKubernetesConfigGeneration(TestCase):
+    def test_basic_app_configs(self):
+        _test_configs('basic_app')
 
-    objects.sort(key=get_object_name)
-    desired_objects.sort(key=get_object_name)
+    def test_dependencies_configs(self):
+        _test_configs('dependencies')
 
-    assert objects == desired_objects
+    def test_dev_overrides_configs(self):
+        _test_configs('dev_overrides', dev=True)
+
+    def test_k8s_container_passthrough_configs(self):
+        _test_configs('k8s_container_passthrough')
+
+    def test_k8s_cronjobs_beta_api_version_configs(self):
+        _test_configs('k8s_cronjobs_beta_api_version')
+
+    def test_multiple_deployments_configs(self):
+        _test_configs('multiple_deployments')
+
+    def test_docker_registry_configs(self):
+        _test_configs('docker_registry', default_registry='default-registry')
 
 
 def _test_configs(folder_name, default_registry=None, **kwargs):
@@ -63,24 +76,11 @@ def _test_configs(folder_name, default_registry=None, **kwargs):
         _assert_yaml_objects(cronjobs, path.join(app_dir, 'k8s_cronjobs_beta.yml'))
 
 
-class TestKubernetesConfigGeneration(TestCase):
-    def test_basic_app_configs(self):
-        _test_configs('basic_app')
+def _assert_yaml_objects(objects, yaml_filename):
+    with open(yaml_filename, 'r') as f:
+        desired_objects = list(yaml.safe_load_all(f))
 
-    def test_dependencies_configs(self):
-        _test_configs('dependencies')
+    objects.sort(key=get_object_name)
+    desired_objects.sort(key=get_object_name)
 
-    def test_dev_overrides_configs(self):
-        _test_configs('dev_overrides', dev=True)
-
-    def test_k8s_container_passthrough_configs(self):
-        _test_configs('k8s_container_passthrough')
-
-    def test_k8s_cronjobs_beta_api_version_configs(self):
-        _test_configs('k8s_cronjobs_beta_api_version')
-
-    def test_multiple_deployments_configs(self):
-        _test_configs('multiple_deployments')
-
-    def test_docker_registry_configs(self):
-        _test_configs('docker_registry', default_registry='default-registry')
+    assert objects == desired_objects
