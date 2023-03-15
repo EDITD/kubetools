@@ -3,10 +3,10 @@ name: generic-app
 containerContexts:
   generic-containerContext:
     build:
-      dockerfile: Dockerfile-context
+      dockerfile: Dockerfile
   registry-containerContext:
     build:
-      dockerfile: Dockerfile-context
+      dockerfile: Dockerfile
       registry: specific-registry
 
 deployments:
@@ -28,7 +28,7 @@ deployments:
 
       build-dockerfile:
         build:
-          dockerfile: Dockerfile-direct
+          dockerfile: Dockerfile
         command: [ uwsgi, --ini, /etc/uwsgi.conf ]
 
       build-containerContext:
@@ -37,7 +37,7 @@ deployments:
 
       build-dockerfile-specify-registry:
         build:
-          dockerfile: Dockerfile-direct
+          dockerfile: Dockerfile
           registry: specific-registry
         command: [ uwsgi, --ini, /etc/uwsgi.conf ]
 
