@@ -20,10 +20,40 @@ spec:
         - {name: KUBE, value: 'true'}
         image: generic-registry/generic-image
         imagePullPolicy: Always
-        name: with-generic-registry
+        name: image-with-embedded-registry
+#      - command: [uwsgi, --ini, /etc/uwsgi.conf]
+#        env:
+#        - {name: KUBE, value: 'true'}
+#        image: specific-registry/generic-image
+#        imagePullPolicy: Always
+#        name: image-with-specify-registry
       - command: [uwsgi, --ini, /etc/uwsgi.conf]
         env:
         - {name: KUBE, value: 'true'}
-        image: default-registry/generic-image
+        image: generic-image
         imagePullPolicy: Always
-        name: with-default-registry
+        name: image-without-registry
+      - command: [uwsgi, --ini, /etc/uwsgi.conf]
+        env:
+        - {name: KUBE, value: 'true'}
+        image: default-registry/generic-app:generic-app-build-dockerfile-commit-thisisacommithash
+        imagePullPolicy: Always
+        name: build-dockerfile
+      - command: [uwsgi, --ini, /etc/uwsgi.conf]
+        env:
+        - {name: KUBE, value: 'true'}
+        image: default-registry/generic-app:generic-containerContext-commit-thisisacommithash
+        imagePullPolicy: Always
+        name: build-containerContext
+      - command: [uwsgi, --ini, /etc/uwsgi.conf]
+        env:
+        - {name: KUBE, value: 'true'}
+        image: specific-registry/generic-app:generic-app-build-dockerfile-specify-registry-commit-thisisacommithash
+        imagePullPolicy: Always
+        name: build-dockerfile-specify-registry
+      - command: [uwsgi, --ini, /etc/uwsgi.conf]
+        env:
+        - {name: KUBE, value: 'true'}
+        image: specific-registry/generic-app:registry-containerContext-commit-thisisacommithash
+        imagePullPolicy: Always
+        name: build-containerContext-specify-registry

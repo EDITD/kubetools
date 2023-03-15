@@ -1,17 +1,46 @@
 name: generic-app
 
+containerContexts:
+  generic-containerContext:
+    build:
+      dockerfile: Dockerfile
+  registry-containerContext:
+    build:
+      dockerfile: Dockerfile
+      registry: specific-registry
 
 deployments:
   generic-app:
     containers:
-      with-generic-registry:
+      image-with-embedded-registry:
         image: generic-registry/generic-image
         command: [uwsgi, --ini, /etc/uwsgi.conf]
-        ports:
-          - 80
 
-      with-default-registry:
+# Not supported. Do we want to support this? I think it's covered by ^this^
+#      image-with-specify-registry:
+#        image: generic-image
+#        registry: specific-registry
+#        command: [uwsgi, --ini, /etc/uwsgi.conf]
+
+      image-without-registry:
         image: generic-image
         command: [uwsgi, --ini, /etc/uwsgi.conf]
-        ports:
-          - 9090
+
+      build-dockerfile:
+        build:
+          dockerfile: Dockerfile
+        command: [ uwsgi, --ini, /etc/uwsgi.conf ]
+
+      build-containerContext:
+        containerContext: generic-containerContext
+        command: [ uwsgi, --ini, /etc/uwsgi.conf ]
+
+      build-dockerfile-specify-registry:
+        build:
+          dockerfile: Dockerfile
+          registry: specific-registry
+        command: [ uwsgi, --ini, /etc/uwsgi.conf ]
+
+      build-containerContext-specify-registry:
+        containerContext: registry-containerContext
+        command: [ uwsgi, --ini, /etc/uwsgi.conf ]

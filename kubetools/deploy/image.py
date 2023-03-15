@@ -48,7 +48,7 @@ def has_app_commit_image(registry, app_name, context_name, commit_hash):
     return True
 
 
-def _get_container_contexts_from_config(app_config):
+def get_container_contexts_from_config(app_config):
     context_name_to_build = {}
     container_contexts = app_config.get('containerContexts', {})
     for deployment, data in app_config.get('deployments', {}).items():
@@ -95,7 +95,7 @@ def _ensure_docker_images(
         additional_tags = []
     project_name = kubetools_config['name']
 
-    context_name_to_build = _get_container_contexts_from_config(kubetools_config)
+    context_name_to_build = get_container_contexts_from_config(kubetools_config)
     context_name_to_registry = {
         context_name: build_context.get('registry', default_registry)
         for context_name, build_context in context_name_to_build.items()
@@ -103,7 +103,7 @@ def _ensure_docker_images(
     build_context_keys = list(context_name_to_build.keys())
 
     # Check if the image already exists in the registry
-    if not build_context_keys or all(
+    if all(
         has_app_commit_image(
             context_name_to_registry[context_name],
             project_name,
