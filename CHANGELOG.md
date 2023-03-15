@@ -2,10 +2,15 @@
 
 ### Unreleased
 
+# v13.9.6
+- Fix default registry option to not override registry for images specified
+  directly, so they keep using the docker server default registry (dockerhub)
+
 # v13.9.5.1
 - No functional change, this is just validating the change of CI to Github Actions
 
 # v13.9.5
+DO NOT USE: This has a bug fixed in v13.9.6
 - Allow adding a default registry in command line instead of
   specifying the registry in kubetools.yml file.
 
