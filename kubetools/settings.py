@@ -23,6 +23,8 @@ class KubetoolsSettings(object):
 
     CRONJOBS_BATCH_API_VERSION = 'batch/v1'  # if k8s version < 1.21+ should be 'batch/v1beta1'
 
+    REGISTRY_CHECK_SCRIPT = None
+
     WAIT_SLEEP_TIME = 3
     WAIT_MAX_TIME = int(environ.get('KUBETOOLS_WAIT_MAX_TIME', 300))
     WAIT_MAX_SLEEPS = WAIT_MAX_TIME / WAIT_SLEEP_TIME
