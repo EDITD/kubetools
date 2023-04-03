@@ -2,7 +2,6 @@ from time import sleep
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
-from packaging import version
 
 from kubetools.constants import MANAGED_BY_ANNOTATION_KEY
 from kubetools.exceptions import KubeBuildError
@@ -45,35 +44,19 @@ def _get_k8s_apps_api(env):
     return client.AppsV1Api(api_client=api_client)
 
 
+def _get_batch_api(env):
+    api_client = _get_api_client(env)
+    return client.BatchApi(api_client=api_client)
+
+
 def check_if_cronjob_batch_v1_compatible(env, batch_api_version):
-    api_core = _get_k8s_core_api(env)
-    list_node = api_core.list_node().items
-    required_k8s_version = version.parse("1.21.0")
-    supported_beta_version = version.parse("1.25.0")
-
-    nodes_versions = [
-        node.status.node_info.kubelet_version.replace('v', '')
-        for node in list_node
-    ]
-    parsed_versions = map(version.parse, nodes_versions)
-    lowest_version = min(parsed_versions)
-
-    if lowest_version >= required_k8s_version:
-        # k8s >= v1.21 && 'batch/v1'
-        if batch_api_version == CRONJOBS_BATCH_API_VERSION:
-            return True
-        else:
-            # v1.21 <= k8s < v1.25  && 'batch/v1beta1'
-            if lowest_version < supported_beta_version:
-                return False
-            else:
-                # k8s >= v1.25 && 'batch/v1beta1'
-                raise ApiException(
-                    'Kubernetes {0} does not support Cronjob with '
-                    '"batch-api-version: {1}", you will need to use "batch-api-version: {2}"'
-                    .format(lowest_version, batch_api_version, CRONJOBS_BATCH_API_VERSION))
-
-    return False
+    try:
+        api_group = _get_batch_api(env).get_api_group()
+        return any([v.group_version == batch_api_version for v in api_group.versions])
+    except ApiException as e:
+        if e.status == 404:
+            return False
+        raise e
 
 
 def get_cronjob_api_version(cronjob_obj):
