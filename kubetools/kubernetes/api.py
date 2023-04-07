@@ -61,6 +61,9 @@ def get_cronjob_api_version(cronjob_obj):
         return cronjob_obj['apiVersion']
     elif hasattr(cronjob_obj, 'api_version') and cronjob_obj.api_version is not None:
         return cronjob_obj.api_version
+    else:
+        default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
+        return default_cronjob_batch_api_version
 
 
 # Specific for list_cronjob and delete_cronjob functions
@@ -79,25 +82,22 @@ def _get_k8s_jobs_batch_api(env):
 
 
 def _get_k8s_cronjobs_batch_api(env, batch_api_version):
-    default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
-
-    api_client = _get_api_client(env)
-
-    is_batch_v1_compatible = check_if_batch_api_compatible(
-        env,
-        batch_api_version=batch_api_version,
-    )
-
-    if is_batch_v1_compatible:
-        return client.BatchV1Api(api_client=api_client)
-    elif batch_api_version == default_cronjob_batch_api_version:
-        # k8s < v1.21 && 'batch/v1'
-        raise ApiException(
-            'Kubernetes version < 1.21 does not support Cronjob with'
-            '"batch-api-version: {0}", you will need to use '
-            '"batch-api-version: batch/v1beta1"'.format(batch_api_version))
+    if check_if_batch_api_compatible(env, batch_api_version):
+        api_client = _get_api_client(env)
+        if batch_api_version == 'batch/v1':
+            return client.BatchV1Api(api_client=api_client)
+        elif batch_api_version == 'batch/v1beta1':
+            return client.BatchV1beta1Api(api_client=api_client)
+        else:
+            raise ApiException(
+                'Kubetools does not yet handle Cronjob with "batch-api-version: {0}".'
+                .format(batch_api_version),
+            )
     else:
-        return client.BatchV1beta1Api(api_client=api_client)
+        raise ApiException(
+            'The target cluster does not support Cronjob with "batch-api-version: {0}".'
+            .format(batch_api_version),
+        )
 
 
 def _object_exists(api, method, namespace, obj):
