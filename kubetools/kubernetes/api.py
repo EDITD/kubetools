@@ -57,11 +57,10 @@ def check_if_batch_api_compatible(env, batch_api_version):
 
 
 def get_cronjob_api_version(cronjob_obj):
-    if cronjob_obj is not None:
-        if isinstance(cronjob_obj, dict) and cronjob_obj.get('apiVersion') is not None:
-            return cronjob_obj['apiVersion']
-        elif hasattr(cronjob_obj, 'api_version') and cronjob_obj.api_version is not None:
-            return cronjob_obj.api_version
+    if isinstance(cronjob_obj, dict) and cronjob_obj.get('apiVersion') is not None:
+        return cronjob_obj['apiVersion']
+    elif hasattr(cronjob_obj, 'api_version') and cronjob_obj.api_version is not None:
+        return cronjob_obj.api_version
 
 
 # Specific for list_cronjob and delete_cronjob functions
@@ -91,7 +90,7 @@ def _get_k8s_cronjobs_batch_api(env, batch_api_version):
 
     if is_batch_v1_compatible:
         return client.BatchV1Api(api_client=api_client)
-    elif not is_batch_v1_compatible and batch_api_version == default_cronjob_batch_api_version:
+    elif batch_api_version == default_cronjob_batch_api_version:
         # k8s < v1.21 && 'batch/v1'
         raise ApiException(
             'Kubernetes version < 1.21 does not support Cronjob with'
