@@ -8,9 +8,6 @@ from kubetools.exceptions import KubeBuildError
 from kubetools.settings import get_settings
 
 
-CRONJOBS_BATCH_API_VERSION = get_settings().CRONJOBS_BATCH_API_VERSION
-
-
 def get_object_labels_dict(obj):
     return obj.metadata.labels or {}
 
@@ -70,8 +67,9 @@ def get_cronjob_api_version(cronjob_obj):
 # Specific for list_cronjob and delete_cronjob functions
 # Because apiVersion not found in Cronjob object
 def get_compatible_cronjob_api_version(env):
-    if check_if_batch_api_compatible(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
-        return CRONJOBS_BATCH_API_VERSION
+    default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
+    if check_if_batch_api_compatible(env, batch_api_version=default_cronjob_batch_api_version):
+        return default_cronjob_batch_api_version
     else:
         return 'batch/v1beta1'
 
@@ -81,7 +79,11 @@ def _get_k8s_jobs_batch_api(env):
     return client.BatchV1Api(api_client=api_client)
 
 
-def _get_k8s_cronjobs_batch_api(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
+def _get_k8s_cronjobs_batch_api(env, batch_api_version=None):
+    default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
+    if batch_api_version is None:
+        batch_api_version = default_cronjob_batch_api_version
+
     api_client = _get_api_client(env)
 
     is_batch_v1_compatible = check_if_batch_api_compatible(
@@ -91,7 +93,7 @@ def _get_k8s_cronjobs_batch_api(env, batch_api_version=CRONJOBS_BATCH_API_VERSIO
 
     if is_batch_v1_compatible:
         return client.BatchV1Api(api_client=api_client)
-    elif not is_batch_v1_compatible and batch_api_version == CRONJOBS_BATCH_API_VERSION:
+    elif not is_batch_v1_compatible and batch_api_version == default_cronjob_batch_api_version:
         # k8s < v1.21 && 'batch/v1'
         raise ApiException(
             'Kubernetes version < 1.21 does not support Cronjob with'
