@@ -10,7 +10,7 @@ containerContexts:
 
 
 cronjobs:
-  generic-cronjob-1:
+  cronjob-v1-apiversion:
     batch-api-version: 'batch/v1'
     schedule: "*/1 * * * *"
     concurrency_policy: "Allow"
@@ -18,8 +18,15 @@ cronjobs:
       generic-container:
         containerContext: generic-context
 
-  generic-cronjob-2:
+  cronjob-beta-apiversion:
     batch-api-version: 'batch/v1beta1'
+    schedule: "0 0 * * *"
+    concurrency_policy: "Replace"
+    containers:
+      generic-container:
+        containerContext: generic-context
+
+  cronjob-default-apiversion:
     schedule: "0 0 * * *"
     concurrency_policy: "Replace"
     containers:

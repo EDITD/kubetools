@@ -49,7 +49,7 @@ def _get_batch_api(env):
     return client.BatchApi(api_client=api_client)
 
 
-def check_if_cronjob_batch_v1_compatible(env, batch_api_version):
+def check_if_batch_api_compatible(env, batch_api_version):
     try:
         api_group = _get_batch_api(env).get_api_group()
         return any([v.group_version == batch_api_version for v in api_group.versions])
@@ -61,18 +61,16 @@ def check_if_cronjob_batch_v1_compatible(env, batch_api_version):
 
 def get_cronjob_api_version(cronjob_obj):
     if cronjob_obj is not None:
-        if isinstance(cronjob_obj, dict):
-            if cronjob_obj['apiVersion'] is not None:
-                return cronjob_obj['apiVersion']
-        else:
-            if cronjob_obj.api_version is not None:
-                return cronjob_obj.api_version
+        if isinstance(cronjob_obj, dict) and cronjob_obj.get('apiVersion') is not None:
+            return cronjob_obj['apiVersion']
+        elif hasattr(cronjob_obj, 'api_version') and cronjob_obj.api_version is not None:
+            return cronjob_obj.api_version
 
 
 # Specific for list_cronjob and delete_cronjob functions
 # Because apiVersion not found in Cronjob object
 def get_compatible_cronjob_api_version(env):
-    if check_if_cronjob_batch_v1_compatible(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
+    if check_if_batch_api_compatible(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
         return CRONJOBS_BATCH_API_VERSION
     else:
         return 'batch/v1beta1'
@@ -86,7 +84,7 @@ def _get_k8s_jobs_batch_api(env):
 def _get_k8s_cronjobs_batch_api(env, batch_api_version=CRONJOBS_BATCH_API_VERSION):
     api_client = _get_api_client(env)
 
-    is_batch_v1_compatible = check_if_cronjob_batch_v1_compatible(
+    is_batch_v1_compatible = check_if_batch_api_compatible(
         env,
         batch_api_version=batch_api_version,
     )
