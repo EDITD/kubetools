@@ -363,10 +363,18 @@ def _get_cronjob_api_version(cronjob_obj):
 
 def _get_compatible_cronjob_api_version(env):
     default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
-    if _is_batch_api_compatible(env, default_cronjob_batch_api_version):
-        return default_cronjob_batch_api_version
-    else:
-        return 'batch/v1beta1'
+    possible_versions = [
+        default_cronjob_batch_api_version,
+        'batch/v1',
+        'batch/v1beta1',
+    ]
+    for version in possible_versions:
+        if _is_batch_api_compatible(env, version):
+            return version
+
+    raise ApiException(
+        'The target cluster does not support any Cronjob version handled by kubetools',
+    )
 
 
 def _get_k8s_jobs_batch_api(env):
