@@ -79,10 +79,8 @@ def _get_k8s_jobs_batch_api(env):
     return client.BatchV1Api(api_client=api_client)
 
 
-def _get_k8s_cronjobs_batch_api(env, batch_api_version=None):
+def _get_k8s_cronjobs_batch_api(env, batch_api_version):
     default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
-    if batch_api_version is None:
-        batch_api_version = default_cronjob_batch_api_version
 
     api_client = _get_api_client(env)
 
