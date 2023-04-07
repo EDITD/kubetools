@@ -24,10 +24,6 @@ class KubeCLIError(KubeError):
     type = 'cli'
 
 
-class KubeAuthError(KubeError):
-    type = 'auth'
-
-
 # Build errors
 #
 
