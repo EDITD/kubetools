@@ -46,7 +46,7 @@ def _get_batch_api(env):
     return client.BatchApi(api_client=api_client)
 
 
-def check_if_batch_api_compatible(env, batch_api_version):
+def _is_batch_api_compatible(env, batch_api_version):
     try:
         api_group = _get_batch_api(env).get_api_group()
         return any([v.group_version == batch_api_version for v in api_group.versions])
@@ -56,7 +56,7 @@ def check_if_batch_api_compatible(env, batch_api_version):
         raise e
 
 
-def get_cronjob_api_version(cronjob_obj):
+def _get_cronjob_api_version(cronjob_obj):
     if isinstance(cronjob_obj, dict) and cronjob_obj.get('apiVersion') is not None:
         return cronjob_obj['apiVersion']
     elif hasattr(cronjob_obj, 'api_version') and cronjob_obj.api_version is not None:
@@ -66,11 +66,9 @@ def get_cronjob_api_version(cronjob_obj):
         return default_cronjob_batch_api_version
 
 
-# Specific for list_cronjob and delete_cronjob functions
-# Because apiVersion not found in Cronjob object
-def get_compatible_cronjob_api_version(env):
+def _get_compatible_cronjob_api_version(env):
     default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
-    if check_if_batch_api_compatible(env, batch_api_version=default_cronjob_batch_api_version):
+    if _is_batch_api_compatible(env, default_cronjob_batch_api_version):
         return default_cronjob_batch_api_version
     else:
         return 'batch/v1beta1'
@@ -82,7 +80,7 @@ def _get_k8s_jobs_batch_api(env):
 
 
 def _get_k8s_cronjobs_batch_api(env, batch_api_version):
-    if check_if_batch_api_compatible(env, batch_api_version):
+    if _is_batch_api_compatible(env, batch_api_version):
         api_client = _get_api_client(env)
         if batch_api_version == 'batch/v1':
             return client.BatchV1Api(api_client=api_client)
@@ -311,13 +309,13 @@ def wait_for_deployment(env, namespace, deployment):
 
 
 def list_cronjobs(env, namespace):
-    batch_api_version = get_compatible_cronjob_api_version(env)
+    batch_api_version = _get_compatible_cronjob_api_version(env)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
 
 
 def delete_cronjob(env, namespace, cronjob):
-    batch_api_version = get_compatible_cronjob_api_version(env)
+    batch_api_version = _get_compatible_cronjob_api_version(env)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_batch_api.delete_namespaced_cron_job(
         name=get_object_name(cronjob),
@@ -328,13 +326,13 @@ def delete_cronjob(env, namespace, cronjob):
 
 
 def cronjob_exists(env, namespace, cronjob):
-    batch_api_version = get_cronjob_api_version(cronjob)
+    batch_api_version = _get_cronjob_api_version(cronjob)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
 
 
 def create_cronjob(env, namespace, cronjob):
-    batch_api_version = get_cronjob_api_version(cronjob)
+    batch_api_version = _get_cronjob_api_version(cronjob)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
         body=cronjob,
@@ -345,7 +343,7 @@ def create_cronjob(env, namespace, cronjob):
 
 
 def update_cronjob(env, namespace, cronjob):
-    batch_api_version = get_cronjob_api_version(cronjob)
+    batch_api_version = _get_cronjob_api_version(cronjob)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_cronjob = k8s_batch_api.patch_namespaced_cron_job(
         name=get_object_name(cronjob),
@@ -361,7 +359,7 @@ def list_jobs(env, namespace):
     return k8s_batch_api.list_namespaced_job(namespace=namespace).items
 
 
-def is_running(job):
+def _is_job_running(job):
     conditions = job.status.conditions
     if conditions is None:
         return True
@@ -371,12 +369,12 @@ def is_running(job):
 
 def list_running_jobs(env, namespace):
     jobs = list_jobs(env, namespace)
-    return [job for job in jobs if is_running(job)]
+    return [job for job in jobs if _is_job_running(job)]
 
 
 def list_complete_jobs(env, namespace):
     jobs = list_jobs(env, namespace)
-    return [job for job in jobs if not is_running(job)]
+    return [job for job in jobs if not _is_job_running(job)]
 
 
 valid_propagation_policies = ["Orphan", "Background", "Foreground"]
