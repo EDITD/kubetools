@@ -62,28 +62,16 @@ def config(ctx, replicas, file, app_dir, output_format, default_registry):
         default_registry=default_registry,
     )
 
+    echo_resources(services, 'Service', output_format)
+    echo_resources(deployments, 'Deployment', output_format)
+    echo_resources(jobs, 'Job', output_format)
+    echo_resources(cronjobs, 'Cronjob', output_format)
+
+
+def echo_resources(resources, resource_kind, output_format):
     formatter = FORMATTERS[output_format]
-
-    for service in services:
-        name = get_object_name(service)
-        click.echo(f'Service: {click.style(name, bold=True)}')
-        click.echo(formatter(service))
-        click.echo()
-
-    for deployment in deployments:
-        name = get_object_name(deployment)
-        click.echo(f'Deployment: {click.style(name, bold=True)}')
-        click.echo(formatter(deployment))
-        click.echo()
-
-    for job in jobs:
-        name = get_object_name(job)
-        click.echo(f'Job: {click.style(name, bold=True)}')
-        click.echo(formatter(job))
-        click.echo()
-
-    for cronjob in cronjobs:
-        name = get_object_name(cronjob)
-        click.echo(f'Cronjob: {click.style(name, bold=True)}')
-        click.echo(formatter(cronjob))
+    for resource in resources:
+        name = get_object_name(resource)
+        click.echo(f'{resource_kind}: {click.style(name, bold=True)}')
+        click.echo(formatter(resource))
         click.echo()
