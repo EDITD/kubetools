@@ -353,7 +353,7 @@ def cronjob_exists(env, namespace, cronjob):
     return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
 
 
-def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
+def create_cronjob(env, namespace, cronjob):
     batch_api_version = get_cronjob_api_version(cronjob)
     k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
     k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
@@ -361,8 +361,6 @@ def create_cronjob(env, namespace, cronjob, wait_for_completion=True):
         namespace=namespace,
     )
 
-    if wait_for_completion:
-        wait_for_cron_job(env, namespace, k8s_cronjob)
     return k8s_cronjob
 
 
@@ -375,28 +373,7 @@ def update_cronjob(env, namespace, cronjob):
         namespace=namespace,
     )
 
-    wait_for_cron_job(env, namespace, k8s_cronjob)
     return k8s_cronjob
-
-
-def wait_for_cron_job(env, namespace, cronjob):
-    batch_api_version = get_cronjob_api_version(cronjob)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
-
-    def check_cronjob():
-        cj = k8s_batch_api.read_namespaced_cron_job(
-            name=get_object_name(cronjob),
-            namespace=namespace,
-        )
-
-        if batch_api_version == CRONJOBS_BATCH_API_VERSION:
-            if cj.status.last_schedule_time and cj.status.last_successful_time:
-                if cj.status.last_schedule_time <= cj.status.last_successful_time:
-                    return True
-        elif cj.status.last_schedule_time is not None and cj.status.active is None:
-            return True
-
-    _wait_for(check_cronjob, get_object_name(cronjob))
 
 
 def list_jobs(env, namespace):
