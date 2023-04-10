@@ -197,14 +197,12 @@ def wait_for_deployment(env, namespace, deployment):
 
 
 def list_cronjobs(env, namespace):
-    batch_api_version = _get_compatible_cronjob_api_version(env)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
+    k8s_batch_api = _get_compatible_cronjob_api(env)
     return k8s_batch_api.list_namespaced_cron_job(namespace=namespace).items
 
 
 def delete_cronjob(env, namespace, cronjob):
-    batch_api_version = _get_compatible_cronjob_api_version(env)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
+    k8s_batch_api = _get_compatible_cronjob_api(env)
     k8s_batch_api.delete_namespaced_cron_job(
         name=get_object_name(cronjob),
         namespace=namespace,
@@ -215,13 +213,13 @@ def delete_cronjob(env, namespace, cronjob):
 
 def cronjob_exists(env, namespace, cronjob):
     batch_api_version = _get_cronjob_api_version(cronjob)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
+    k8s_batch_api = _get_compatible_cronjob_api(env, batch_api_version)
     return _object_exists(k8s_batch_api, 'read_namespaced_cron_job', namespace, cronjob)
 
 
 def create_cronjob(env, namespace, cronjob):
     batch_api_version = _get_cronjob_api_version(cronjob)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
+    k8s_batch_api = _get_compatible_cronjob_api(env, batch_api_version)
     k8s_cronjob = k8s_batch_api.create_namespaced_cron_job(
         body=cronjob,
         namespace=namespace,
@@ -232,7 +230,7 @@ def create_cronjob(env, namespace, cronjob):
 
 def update_cronjob(env, namespace, cronjob):
     batch_api_version = _get_cronjob_api_version(cronjob)
-    k8s_batch_api = _get_k8s_cronjobs_batch_api(env, batch_api_version=batch_api_version)
+    k8s_batch_api = _get_compatible_cronjob_api(env, batch_api_version)
     k8s_cronjob = k8s_batch_api.patch_namespaced_cron_job(
         name=get_object_name(cronjob),
         body=cronjob,
@@ -361,16 +359,19 @@ def _get_cronjob_api_version(cronjob_obj):
         return default_cronjob_batch_api_version
 
 
-def _get_compatible_cronjob_api_version(env):
-    default_cronjob_batch_api_version = get_settings().CRONJOBS_BATCH_API_VERSION
+def _get_compatible_cronjob_api(env, default_version=None):
     possible_versions = [
-        default_cronjob_batch_api_version,
         'batch/v1',
         'batch/v1beta1',
     ]
+    if default_version:
+        possible_versions.insert(0, default_version)
+
     for version in possible_versions:
-        if _is_batch_api_compatible(env, version):
-            return version
+        batch_api = _get_k8s_cronjobs_batch_api(env, version)
+        api_resources = batch_api.get_api_resources()
+        if any([r.name == 'cronjobs' for r in api_resources.resources]):
+            return batch_api
 
     raise ApiException(
         'The target cluster does not support any Cronjob version handled by kubetools',
@@ -383,37 +384,16 @@ def _get_k8s_jobs_batch_api(env):
 
 
 def _get_k8s_cronjobs_batch_api(env, batch_api_version):
-    if _is_batch_api_compatible(env, batch_api_version):
-        api_client = _get_api_client(env)
-        if batch_api_version == 'batch/v1':
-            return client.BatchV1Api(api_client=api_client)
-        elif batch_api_version == 'batch/v1beta1':
-            return client.BatchV1beta1Api(api_client=api_client)
-        else:
-            raise ApiException(
-                'Kubetools does not yet handle Cronjob with "batch-api-version: {0}".'
-                .format(batch_api_version),
-            )
+    api_client = _get_api_client(env)
+    if batch_api_version == 'batch/v1':
+        return client.BatchV1Api(api_client=api_client)
+    elif batch_api_version == 'batch/v1beta1':
+        return client.BatchV1beta1Api(api_client=api_client)
     else:
         raise ApiException(
-            'The target cluster does not support Cronjob with "batch-api-version: {0}".'
+            'Kubetools does not yet handle Cronjob with "batch-api-version: {0}".'
             .format(batch_api_version),
         )
-
-
-def _is_batch_api_compatible(env, batch_api_version):
-    try:
-        api_group = _get_batch_api(env).get_api_group()
-        return any([v.group_version == batch_api_version for v in api_group.versions])
-    except ApiException as e:
-        if e.status == 404:
-            return False
-        raise e
-
-
-def _get_batch_api(env):
-    api_client = _get_api_client(env)
-    return client.BatchApi(api_client=api_client)
 
 
 def _get_k8s_core_api(env):
