@@ -64,19 +64,23 @@ def get_cleanup_objects(build, cleanup_jobs):
             pod_names_already_deleted.add(get_object_name(pod))
 
     namespaces = list_namespaces(build.env)
-    current_namespace = None
     for namespace in namespaces:
         if namespace.metadata.name == build.namespace:
             current_namespace = namespace
+            break
+    else:
+        current_namespace = None
 
     namespace_to_delete = []
-    remaining_pods = pod_names - pod_names_to_delete - pod_names_already_deleted
-    remaining_replicasets = (
-        replica_set_names - replica_set_names_to_delete - replica_set_names_already_deleted
-    )
+    # Namespace must exist. And "default" namespace can't be deleted
+    if current_namespace and current_namespace.metadata.name != "default":
+        remaining_pods = pod_names - pod_names_to_delete - pod_names_already_deleted
+        remaining_replicasets = (
+                replica_set_names - replica_set_names_to_delete - replica_set_names_already_deleted
+        )
 
-    if current_namespace and len(remaining_pods) == 0 and len(remaining_replicasets) == 0:
-        namespace_to_delete = [current_namespace]
+        if len(remaining_pods) == 0 and len(remaining_replicasets) == 0:
+            namespace_to_delete = [current_namespace]
 
     return namespace_to_delete, replica_sets_to_delete, pods_to_delete, jobs_to_delete
 
