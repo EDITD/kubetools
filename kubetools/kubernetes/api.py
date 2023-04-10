@@ -418,15 +418,14 @@ def delete_job(env, namespace, job, propagation_policy=None):
     _wait_for_no_object(k8s_batch_api, 'read_namespaced_job', namespace, job)
 
 
-def create_job(env, namespace, job, wait_for_completion=True):
+def create_job(env, namespace, job):
     k8s_batch_api = _get_k8s_jobs_batch_api(env)
     k8s_job = k8s_batch_api.create_namespaced_job(
         body=job,
         namespace=namespace,
     )
 
-    if wait_for_completion:
-        wait_for_job(env, namespace, k8s_job)
+    wait_for_job(env, namespace, k8s_job)
     return k8s_job
 
 
