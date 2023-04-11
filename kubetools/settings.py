@@ -18,6 +18,24 @@ class KubetoolsSettings(object):
     CRONJOBS_BATCH_API_VERSION = 'batch/v1'  # if k8s version < 1.21+ should be 'batch/v1beta1'
 
     REGISTRY_CHECK_SCRIPT = None
+    ''' Optional external script to check if an image exists in the docker registry.
+
+    For cases when the registry cannot be checked by just using the docker registry V2 API.
+
+    The script will be passed 3 arguments:
+    * the registry IP/hostname and port (in the form `<ip_or_hostname>:<port>`)
+    * the image name, which comes from the app name
+    * the image tag (version), which comes from the build context and commit hash
+    Concretely they could be used in `docker pull <registry>/<image_name>:<image_tag>`
+
+    The script must return one of the following codes:
+    * 0: the image was found in the registry
+    * 1: the image was not found in the registry
+    * 2: the image should be checked with the HTTP Docker V2 API
+    * anything else: the script ran into an error and `kubetools` must abort
+    Note that return code 2 is useful for example if the script is only responsible for checking
+    some combination of registries or images, but not all.
+    '''
 
     WAIT_SLEEP_TIME = 3
     WAIT_MAX_TIME = int(environ.get('KUBETOOLS_WAIT_MAX_TIME', 300))
