@@ -61,7 +61,6 @@ if __name__ == '__main__':
             'tabulate<1',
             # compose v2 has broken container naming
             'docker-compose<2',
-            'packaging',
         ),
         extras_require={
             'dev': (
