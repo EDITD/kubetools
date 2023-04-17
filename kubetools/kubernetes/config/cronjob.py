@@ -47,7 +47,6 @@ def make_cronjob_config(
 
     # The actual cronjob spec
     cronjob = {
-        'apiVersion': batch_api_version,
         'kind': 'CronJob',
         'metadata': {
             'name': cronjob_name,
@@ -75,5 +74,8 @@ def make_cronjob_config(
             },
         },
     }
+    if batch_api_version:
+        # Only set here if user has specified it in the config
+        cronjob['apiVersion'] = batch_api_version
 
     return cronjob
