@@ -34,7 +34,7 @@ FORMATTERS = {
     type=click.Path(exists=True),
 )
 @click.option(
-    '--format', 'formatter',
+    '--format', 'output_format',
     type=click.Choice(('json', 'yaml')),
     default='json',
     help='Specify the output format',
@@ -48,7 +48,7 @@ FORMATTERS = {
     help='Default registry for apps that do not specify.',
 )
 @click.pass_context
-def config(ctx, replicas, file, app_dir, formatter, default_registry):
+def config(ctx, replicas, file, app_dir, output_format, default_registry):
     '''
     Generate and write out Kubernetes configs for a project.
     '''
@@ -62,28 +62,16 @@ def config(ctx, replicas, file, app_dir, formatter, default_registry):
         default_registry=default_registry,
     )
 
-    writer = FORMATTERS[formatter]
+    echo_resources(services, 'Service', output_format)
+    echo_resources(deployments, 'Deployment', output_format)
+    echo_resources(jobs, 'Job', output_format)
+    echo_resources(cronjobs, 'Cronjob', output_format)
 
-    for service in services:
-        name = get_object_name(service)
-        click.echo(f'Service: {click.style(name, bold=True)}')
-        click.echo(writer(service))
-        click.echo()
 
-    for deployment in deployments:
-        name = get_object_name(deployment)
-        click.echo(f'Deployment: {click.style(name, bold=True)}')
-        click.echo(writer(deployment))
-        click.echo()
-
-    for job in jobs:
-        name = get_object_name(job)
-        click.echo(f'Job: {click.style(name, bold=True)}')
-        click.echo(writer(job))
-        click.echo()
-
-    for cronjob in cronjobs:
-        name = get_object_name(cronjob)
-        click.echo(f'Cronjob: {click.style(name, bold=True)}')
-        click.echo(writer(cronjob))
+def echo_resources(resources, resource_kind, output_format):
+    formatter = FORMATTERS[output_format]
+    for resource in resources:
+        name = get_object_name(resource)
+        click.echo(f'{resource_kind}: {click.style(name, bold=True)}')
+        click.echo(formatter(resource))
         click.echo()
