@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/EDITD/kubetools.svg?branch=master)](https://travis-ci.com/EDITD/kubetools)
+![Build Status](https://github.com/EDITD/kubetools/actions/workflows/run_tests.yml/badge.svg?branch=master)
 [![Pypi Version](https://img.shields.io/pypi/v/kubetools.svg)](https://pypi.org/project/kubetools/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/kubetools.svg)](https://pypi.org/project/kubetools/)
 
