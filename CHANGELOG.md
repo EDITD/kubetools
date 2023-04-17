@@ -2,6 +2,13 @@
 
 ### Unreleased
 
+# v13.10.0
+- Add ability to provide a custom script to check the presence of the image on the target registry
+- Re-work checking for CronJob API version compatibility against the target k8s cluster
+- Fix crash where we could try to delete `default` namespace, which is forbidden by k8s
+- Fix crash where we tried to delete a namespace that doesn't exist
+- Fix crash trying to gather annotations from k8s resource that can't have any
+
 # v13.9.6
 - Fix default registry option to not override registry for images specified
   directly, so they keep using the docker server default registry (dockerhub)
