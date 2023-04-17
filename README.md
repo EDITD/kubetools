@@ -109,8 +109,8 @@ pip install -e .[dev]
 ## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it
 * In GitHub, create a new release
-  * Name the release `v<version>` (for example `v1.2.3`)
-  * Title the release with a highlight of the changes
+  * Title the release `v<version>` (for example `v1.2.3`)
+  * Select to create a new tag `v<version>` against `master` branch
   * Copy changes in the release from `CHANGELOG.md` into the release description
   * [GitHub Actions](https://github.com/EDITD/kubetools/actions) will package the release and
     publish it to [Pypi](https://pypi.org/project/kubetools/)
