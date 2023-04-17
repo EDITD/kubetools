@@ -13,7 +13,12 @@ def get_object_labels_dict(obj):
 
 
 def get_object_annotations_dict(obj):
-    return obj.metadata.annotations or obj.spec.template.metadata.annotations or {}
+    if hasattr(obj.metadata, "annotations") and obj.metadata.annotations:
+        return obj.metadata.annotations
+    elif hasattr(obj.metadata, "template"):
+        return get_object_annotations_dict(obj.spec.template)
+    else:
+        return {}
 
 
 def get_object_name(obj):

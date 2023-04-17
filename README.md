@@ -88,6 +88,16 @@ kubetools deploy my-namespace
 pip install kubetools
 ```
 
+## Configuration
+Users can  configure some aspects of `kubetools`. The configuration folder location depends on the
+operating system of the user. See the
+[Click documentation](https://click.palletsprojects.com/en/8.1.x/api/#click.get_app_dir)
+to find the appropriate one for you. Note that we use the "POSIX" version (for example
+`~/.kubetools/` on Unix systems).
+* `kubetools.conf` contains key-value settings, see [`settings.py`](kubetools/settings.py) for the
+  possible settings and their meaning.
+* `scripts/` can contain scripts to be made available to `ktd script` command
+
 ## Developing
 
 Install the package in editable mode, with the dev extras:
