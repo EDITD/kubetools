@@ -1,7 +1,10 @@
+import subprocess
+
 import requests
 
 from kubetools.exceptions import KubeBuildError
 from kubetools.kubernetes.config import make_context_name
+from kubetools.settings import get_settings
 
 from .util import run_shell_command
 
@@ -38,6 +41,25 @@ def has_app_commit_image(registry, app_name, context_name, commit_hash):
         raise KubeBuildError(f'Invalid registry to build {context_name}: {registry}')
 
     commit_version = get_commit_hash_tag(context_name, commit_hash)
+
+    settings = get_settings()
+    if settings.REGISTRY_CHECK_SCRIPT:
+        # We have a REGISTRY_CHECK_SCRIPT config, so use it to check for an image
+        cmd = [settings.REGISTRY_CHECK_SCRIPT, registry, app_name, commit_version]
+        rc = subprocess.call(cmd)
+        if rc == 0:
+            # A return code of 0 means the image was found
+            return True
+        elif rc == 1:
+            # A return code of 1 means the image was not found
+            return False
+        elif rc == 2:
+            # A return code of 2 means that the image should be checked using http
+            pass
+        else:
+            # Any other return code means an error occured and we should not continue
+            raise Exception('Error checking app image status')
+
     url = 'http://{0}/v2/{1}/manifests/{2}'.format(registry, app_name, commit_version)
 
     response = requests.head(url)

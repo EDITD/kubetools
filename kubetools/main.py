@@ -5,8 +5,6 @@ import sys
 import click
 
 from .exceptions import KubeDevCommandError, KubeDevError, KubeError
-from .log import logger
-from .settings import get_settings
 
 
 def run_cli(func):
@@ -31,15 +29,6 @@ def run_cli(func):
         sys.exit(1)
 
     except KubeError as e:
-        if e.type == 'auth':
-            settings = get_settings()
-
-            logger.warning((
-                'You are not logged into Kubetools!\n'
-                'You need to login to your server, download the config '
-                'from the top right and save it to:\n{0}\n'
-            ).format(settings.filename))
-
         click.echo('--> {0} {1}'.format(
             click.style('Kubetools {0} exception:'.format(e.type), 'red', bold=True),
             e,
