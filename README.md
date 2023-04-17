@@ -89,7 +89,7 @@ pip install kubetools
 ```
 
 ## Configuration
-Users can  configure some aspects of `kubetools`. The configuration folder location depends on the
+Users can configure some aspects of `kubetools`. The configuration folder location depends on the
 operating system of the user. See the
 [Click documentation](https://click.palletsprojects.com/en/8.1.x/api/#click.get_app_dir)
 to find the appropriate one for you. Note that we use the "POSIX" version (for example
