@@ -2,6 +2,7 @@ import shlex
 
 from .container import make_container_config
 from .util import copy_and_update
+from .volume import make_volume_config
 
 
 def make_cronjob_config(
@@ -14,6 +15,8 @@ def make_cronjob_config(
     labels=None,
     annotations=None,
     envvars=None,
+    service_account_name=None,
+    secrets=None,
 ):
     '''
     Builds a Kubernetes cronjob configuration dict.
@@ -43,7 +46,21 @@ def make_cronjob_config(
             envvars=envvars,
             labels=labels,
             annotations=annotations,
+            secrets=secrets,
         ))
+
+    kubernetes_spec = {}
+    if service_account_name is not None and secrets is not None:
+        kubernetes_volumes = []
+        for secret_name, secret in secrets.items():
+            kubernetes_volumes.append(make_volume_config(
+                secret_name, secret,
+            ))
+        kubernetes_spec['serviceAccountName'] = service_account_name
+        kubernetes_spec['volumes'] = kubernetes_volumes
+
+    kubernetes_spec['restartPolicy'] = 'OnFailure'
+    kubernetes_spec['containers'] = kubernetes_containers
 
     # The actual cronjob spec
     cronjob = {
@@ -65,10 +82,7 @@ def make_cronjob_config(
                             'labels': labels,
                             'annotations': annotations,
                         },
-                        'spec': {
-                            'restartPolicy': 'OnFailure',
-                            'containers': kubernetes_containers,
-                        },
+                        'spec': kubernetes_spec,
                     },
                 },
             },

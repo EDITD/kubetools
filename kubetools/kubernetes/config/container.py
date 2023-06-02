@@ -28,7 +28,8 @@ def _make_probe_config(config):
 
 def make_container_config(
     name, container,
-    envvars=None, labels=None, annotations=None,
+    envvars=None, labels=None,
+    annotations=None, secrets=None,
 ):
     '''
     Builds the common Kubernetes container config.
@@ -116,6 +117,15 @@ def make_container_config(
             container_data['volumeMounts'].append({
                 'mountPath': volume.split(':')[1],
                 'name': get_hash(volume),
+            })
+
+    if secrets is not None:
+        container_data['volumeMounts'] = container_data.get('volumeMounts', [])
+        for secret_name, secret in secrets.items():
+            container_data['volumeMounts'].append({
+                'name': secret_name,
+                'mountPath': secret.get('mountPath'),
+                'readonly': True,
             })
 
     # Finally, attach all remaining data
