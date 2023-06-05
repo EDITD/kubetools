@@ -28,3 +28,42 @@ spec:
         readinessProbe:
           httpGet: {path: /ping, port: 80}
           timeoutSeconds: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-app-with-secrets, kubetools/project_name: generic-app,
+  kubetools/role: app}
+  name: generic-app-with-secrets
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: generic-app-with-secrets, kubetools/project_name: generic-app,
+      kubetools/role: app}
+  template:
+    metadata:
+      labels: {kubetools/name: generic-app-with-secrets, kubetools/project_name: generic-app,
+        kubetools/role: app}
+    spec:
+      serviceAccountName: web-api
+      containers:
+      - command: [generic-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        name: generic-app-workers
+        volumeMounts:
+        - {name: secret-volume, mountPath: /mnt/secrets-store, readonly: True}
+      volumes:
+      - name: secret-volume
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: aws-secrets
