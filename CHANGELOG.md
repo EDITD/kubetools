@@ -3,7 +3,7 @@
 ### Unreleased
 
 # v13.11.0
-- Add support to specify to access AWS Secret store
+- Add support to specify SecretProviderClass
 - Add support to specify ServiceAccount
 
 # v13.10.0

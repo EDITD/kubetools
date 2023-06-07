@@ -120,6 +120,5 @@ pip install -e .[dev]
   * [GitHub Actions](https://github.com/EDITD/kubetools/actions) will package the release and
     publish it to [Pypi](https://pypi.org/project/kubetools/)
 
-## AWS Secret Store
-Currently kubetools supports secret manager access only for AWS provider.
+## Mounting K8s Secrets
 We assume that `ServiceAccount` and `SecretProviderClass` are already created (if needed), before deploying the project with kubetools.
