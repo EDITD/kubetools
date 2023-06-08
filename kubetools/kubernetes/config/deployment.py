@@ -1,6 +1,6 @@
 from .container import make_container_config
 from .util import get_hash, make_dns_safe_name
-from .volume import make_volume_config
+from .volume import make_secret_volume_config
 
 DEPLOYMENT_REVISION_LIMIT = 5
 
@@ -37,7 +37,7 @@ def make_deployment_config(
     if service_account_name is not None and secrets is not None:
         kubernetes_volumes = []
         for secret_name, secret in secrets.items():
-            kubernetes_volumes.append(make_volume_config(
+            kubernetes_volumes.append(make_secret_volume_config(
                 secret_name, secret,
             ))
         kubernetes_spec['serviceAccountName'] = service_account_name

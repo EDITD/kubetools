@@ -1,4 +1,4 @@
-def make_volume_config(name, secret):
+def make_secret_volume_config(name, secret):
     volume_data = {
         'name': name,
         'csi': {
