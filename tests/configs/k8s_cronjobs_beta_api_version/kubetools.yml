@@ -22,11 +22,6 @@ cronjobs:
     batch-api-version: 'batch/v1beta1'
     schedule: "0 0 * * *"
     concurrency_policy: "Replace"
-    serviceAccountName: generic-account
-    secrets:
-      secret-volume:
-        mountPath: /mnt/cronjobs-secrets-store
-        secretProviderClass: secrets
     containers:
       generic-container:
         containerContext: generic-context

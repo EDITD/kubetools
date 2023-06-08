@@ -11,11 +11,6 @@ containerContexts:
 
 dependencies:
   memcache-1:
-    serviceAccountName: web-api
-    secrets:
-      secret-volume:
-        mountPath: /mnt/secrets-store
-        secretProviderClass: secrets
     containers:
       memcache-1:
         containerContext: memcache

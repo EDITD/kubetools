@@ -16,7 +16,6 @@ spec:
       labels: {kubetools/name: dependencies-memcache-1, kubetools/project_name: dependencies,
         kubetools/role: dependency}
     spec:
-      serviceAccountName: web-api
       containers:
       - command: [memcached, -u, root, -I, 10m]
         containerContext: memcache
@@ -25,15 +24,6 @@ spec:
         image: memcache:1.4.33
         imagePullPolicy: Always
         name: memcache-1
-        volumeMounts:
-        - {name: secret-volume, mountPath: /mnt/secrets-store, readonly: True}
-      volumes:
-      - name: secret-volume
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: secrets
 
 ---
 

@@ -29,7 +29,6 @@ spec:
             description: 'Run: [''generic-command'']'
           }
         spec:
-          serviceAccountName: generic-account
           containers:
           - command: [generic-command]
             containerContext: generic-context
@@ -38,13 +37,4 @@ spec:
             image: generic-image
             imagePullPolicy: 'Always'
             name: generic-container
-            volumeMounts:
-            - {name: secret-volume, mountPath: /mnt/cronjobs-secrets-store, readonly: True}
           restartPolicy: OnFailure
-          volumes:
-          - name: secret-volume
-            csi:
-              driver: secrets-store.csi.k8s.io
-              readOnly: true
-              volumeAttributes:
-                secretProviderClass: secrets

@@ -29,26 +29,11 @@ deployments:
           httpGet:
             path: /ping
 
-  generic-app-with-secrets:
-    serviceAccountName: web-api
-    secrets:
-      secret-volume:
-        mountPath: /mnt/secrets-store
-        secretProviderClass: secrets
-    containers:
-      generic-app-workers:
-        containerContext: generic-context
-
 
 cronjobs:
   generic-cronjob:
     schedule: "*/1 * * * *"
     concurrency_policy: "Allow"
-    serviceAccountName: generic-account
-    secrets:
-      secret-volume:
-        mountPath: /mnt/cronjobs-secrets-store
-        secretProviderClass: secrets
     containers:
       generic-container:
         containerContext: generic-context
