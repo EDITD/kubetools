@@ -34,7 +34,7 @@ deployments:
     secrets:
       secret-volume:
         mountPath: /mnt/secrets-store
-        secretProviderClass: aws-secrets
+        secretProviderClass: secrets
     containers:
       generic-app-workers:
         containerContext: generic-context
@@ -48,7 +48,7 @@ cronjobs:
     secrets:
       secret-volume:
         mountPath: /mnt/cronjobs-secrets-store
-        secretProviderClass: aws-secrets
+        secretProviderClass: secrets
     containers:
       generic-container:
         containerContext: generic-context

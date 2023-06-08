@@ -50,7 +50,7 @@ deployments:
     secrets:
       secret-volume:
         mountPath: /mnt/secrets-store
-        secretProviderClass: aws-webserver-secrets
+        secretProviderClass: webserver-secrets
     containers:
       uwsgi:
         command: [uwsgi, --ini, /etc/uwsgi.conf]

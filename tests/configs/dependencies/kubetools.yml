@@ -15,7 +15,7 @@ dependencies:
     secrets:
       secret-volume:
         mountPath: /mnt/secrets-store
-        secretProviderClass: aws-secrets
+        secretProviderClass: secrets
     containers:
       memcache-1:
         containerContext: memcache

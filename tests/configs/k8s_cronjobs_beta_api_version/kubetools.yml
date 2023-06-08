@@ -26,7 +26,7 @@ cronjobs:
     secrets:
       secret-volume:
         mountPath: /mnt/cronjobs-secrets-store
-        secretProviderClass: aws-secrets
+        secretProviderClass: secrets
     containers:
       generic-container:
         containerContext: generic-context
