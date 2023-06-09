@@ -1,0 +1,47 @@
+name: generic-app-with-secrets
+
+
+containerContexts:
+  generic-context:
+    image: generic-image
+    command: [generic-command]
+    ports:
+      - 80
+
+
+dependencies:
+  generic-dependency-with-secrets:
+    serviceAccountName: web-api
+    secrets:
+      secret-volume:
+        mountPath: /mnt/secrets-store
+        secretProviderClass: secrets
+    containers:
+      generic-dependency:
+        containerContext: generic-context
+
+
+deployments:
+  generic-deployment-with-secrets:
+    serviceAccountName: web-api
+    secrets:
+      secret-volume:
+        mountPath: /mnt/secrets-store
+        secretProviderClass: secrets
+    containers:
+      generic-deployment-workers:
+        containerContext: generic-context
+
+
+cronjobs:
+  generic-cronjob:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    serviceAccountName: generic-account
+    secrets:
+      secret-volume:
+        mountPath: /mnt/cronjobs-secrets-store
+        secretProviderClass: secrets
+    containers:
+      generic-container:
+        containerContext: generic-context

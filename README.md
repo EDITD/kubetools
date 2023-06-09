@@ -46,6 +46,11 @@ tests:
 
 deployments:
   my-app-webserver:
+    serviceAccountName: webserver
+    secrets:
+      secret-volume:
+        mountPath: /mnt/secrets-store
+        secretProviderClass: webserver-secrets
     containers:
       uwsgi:
         command: [uwsgi, --ini, /etc/uwsgi.conf]
@@ -114,3 +119,6 @@ pip install -e .[dev]
   * Copy changes in the release from `CHANGELOG.md` into the release description
   * [GitHub Actions](https://github.com/EDITD/kubetools/actions) will package the release and
     publish it to [Pypi](https://pypi.org/project/kubetools/)
+
+## Mounting K8s Secrets
+We assume that `ServiceAccount` and `SecretProviderClass` are already created (if needed), before deploying the project with kubetools.

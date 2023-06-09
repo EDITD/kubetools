@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v13.11.0
+- Add support to specify SecretProviderClass
+- Add support to specify ServiceAccount
+
 # v13.10.0
 - Add ability to provide a custom script to check the presence of the image on the target registry
 - Re-work checking for CronJob API version compatibility against the target k8s cluster

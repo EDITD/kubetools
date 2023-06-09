@@ -171,6 +171,9 @@ def generate_kubernetes_configs_for_project(
             NAME_LABEL_KEY: dependency_name,
         })
 
+        service_account_name = dependency.get('serviceAccountName', None)
+        secrets = dependency.get('secrets', None)
+
         containers, container_ports = _get_containers_data(
             dependency['containers'],
             context_name_to_image=context_name_to_image,
@@ -196,6 +199,8 @@ def generate_kubernetes_configs_for_project(
             annotations=app_annotations,
             envvars=envvars,
             update_strategy=dependency.get('updateStrategy'),
+            service_account_name=service_account_name,
+            secrets=secrets,
         ))
 
     for name, deployment in config.get('deployments', {}).items():
@@ -204,6 +209,9 @@ def generate_kubernetes_configs_for_project(
             ROLE_LABEL_KEY: 'app',
             NAME_LABEL_KEY: deployment_name,
         })
+
+        service_account_name = deployment.get('serviceAccountName', None)
+        secrets = deployment.get('secrets', None)
 
         containers, container_ports = _get_containers_data(
             deployment['containers'],
@@ -234,6 +242,8 @@ def generate_kubernetes_configs_for_project(
             annotations=app_annotations,
             envvars=envvars,
             update_strategy=deployment.get('updateStrategy'),
+            service_account_name=service_account_name,
+            secrets=secrets,
         ))
 
     # Jobs can be upgrades and/or passed in as part of the build spec
@@ -293,6 +303,9 @@ def generate_kubernetes_configs_for_project(
             NAME_LABEL_KEY: name,
         })
 
+        service_account_name = cronjob.get('serviceAccountName', None)
+        secrets = cronjob.get('secrets', None)
+
         containers, container_ports = _get_containers_data(
             cronjob['containers'],
             context_name_to_image=context_name_to_image,
@@ -315,6 +328,8 @@ def generate_kubernetes_configs_for_project(
             labels=cronjob_labels,
             annotations=app_annotations,
             envvars=envvars,
+            service_account_name=service_account_name,
+            secrets=secrets,
         ))
 
     return services, deployments, jobs, cronjobs

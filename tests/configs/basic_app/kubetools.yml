@@ -29,6 +29,7 @@ deployments:
           httpGet:
             path: /ping
 
+
 cronjobs:
   generic-cronjob:
     schedule: "*/1 * * * *"

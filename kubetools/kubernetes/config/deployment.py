@@ -1,5 +1,6 @@
 from .container import make_container_config
 from .util import get_hash, make_dns_safe_name
+from .volume import make_secret_volume_config
 
 DEPLOYMENT_REVISION_LIMIT = 5
 
@@ -11,6 +12,8 @@ def make_deployment_config(
     annotations=None,
     envvars=None,
     update_strategy=None,
+    service_account_name=None,
+    secrets=None,
 ):
     '''
     Builds a Kubernetes deployment configuration dict.
@@ -27,7 +30,20 @@ def make_deployment_config(
             envvars=envvars,
             labels=labels,
             annotations=annotations,
+            secrets=secrets,
         ))
+
+    kubernetes_spec = {}
+    if service_account_name is not None and secrets is not None:
+        kubernetes_volumes = []
+        for secret_name, secret in secrets.items():
+            kubernetes_volumes.append(make_secret_volume_config(
+                secret_name, secret,
+            ))
+        kubernetes_spec['serviceAccountName'] = service_account_name
+        kubernetes_spec['volumes'] = kubernetes_volumes
+
+    kubernetes_spec['containers'] = kubernetes_containers
 
     # The actual controller Kubernetes config
     controller = {
@@ -48,9 +64,7 @@ def make_deployment_config(
                 'metadata': {
                     'labels': labels,
                 },
-                'spec': {
-                    'containers': kubernetes_containers,
-                },
+                'spec': kubernetes_spec,
             },
         },
     }
