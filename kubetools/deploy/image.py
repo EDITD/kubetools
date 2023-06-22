@@ -110,11 +110,11 @@ def ensure_docker_images(kubetools_config, build, *args, **kwargs):
 def _ensure_docker_images(
     kubetools_config, build, app_dir, commit_hash,
     default_registry=None,
-    check_build_control=lambda build: None,
     additional_tags=None,
 ):
     if additional_tags is None:
         additional_tags = []
+
     project_name = kubetools_config['name']
 
     context_name_to_build = get_container_contexts_from_config(kubetools_config)
@@ -182,27 +182,18 @@ def _ensure_docker_images(
         elif i >= 100:
             break
 
-    # Check/abort as requested
-    check_build_control(build)
-
     build.log_info(f'Building {project_name} @ commit {commit_hash}')
 
     # Now actually build the images
     context_images = {}
 
     for context_name, build_context in context_name_to_build.items():
-        # Check/abort as requested
-        check_build_control(build)
-
         registry = build_context.get('registry', default_registry)
 
         # Run pre docker commands?
         pre_build_commands = build_context.get('preBuildCommands', [])
 
         for command in pre_build_commands:
-            # Check/abort as requested
-            check_build_control(build)
-
             build.log_info(f'Executing pre-build command: {command}')
 
             # Run it, passing in the commit hashes as ENVars
