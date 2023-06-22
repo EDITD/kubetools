@@ -118,38 +118,45 @@ def _ensure_docker_images(
     project_name = kubetools_config['name']
 
     context_name_to_build = get_container_contexts_from_config(kubetools_config)
-    context_name_to_registry = {
-        context_name: build_context.get('registry', default_registry)
-        for context_name, build_context in context_name_to_build.items()
-    }
-    build_context_keys = list(context_name_to_build.keys())
 
-    # Check if the image already exists in the registry
-    if all(
-        has_app_commit_image(
-            context_name_to_registry[context_name],
+    context_registries = {}
+    context_images = {}
+    context_tags = {}
+    for context_name, build_context in context_name_to_build.items():
+        registry = build_context.get('registry', default_registry)
+
+        docker_tag_for_commit = get_docker_tag_for_commit(
+            registry,
             project_name,
             context_name,
             commit_hash,
         )
-        for context_name in build_context_keys
+
+        additional_docker_tags = [
+            get_docker_tag(registry, project_name, additional_tag)
+            for additional_tag in additional_tags
+        ]
+        docker_tags = [docker_tag_for_commit]
+        docker_tags.extend(additional_docker_tags)
+
+        context_registries[context_name] = registry
+        context_images[context_name] = docker_tag_for_commit
+        context_tags[context_name] = docker_tags
+
+    # Check if the image already exists in the registry
+    if all(
+        has_app_commit_image(
+            registry,
+            project_name,
+            context_name,
+            commit_hash,
+        )
+        for context_name, registry in context_registries.items()
     ):
         build.log_info((
             f'All Docker images for {project_name} commit {commit_hash} exists, '
             'skipping build'
         ))
-
-        context_images = {
-            # Build the context name -> image dict
-            context_name: get_docker_tag_for_commit(
-                context_name_to_registry[context_name],
-                project_name,
-                context_name,
-                commit_hash,
-            )
-            for context_name in build_context_keys
-        }
-
         return context_images
 
     # We're building something - let's find the previous commit we built
@@ -165,8 +172,10 @@ def _ensure_docker_images(
 
     # Figure out the previous commit we built an image for
     previous_commit = None
+    build_context_keys = list(context_name_to_build.keys())
+
     first_build_context = build_context_keys[0]
-    first_build_registry = context_name_to_registry[first_build_context]
+    first_build_registry = context_registries[first_build_context]
     for i, commit in enumerate(commit_history):
         if has_app_commit_image(
             first_build_registry,
@@ -185,11 +194,7 @@ def _ensure_docker_images(
     build.log_info(f'Building {project_name} @ commit {commit_hash}')
 
     # Now actually build the images
-    context_images = {}
-
     for context_name, build_context in context_name_to_build.items():
-        registry = build_context.get('registry', default_registry)
-
         # Run pre docker commands?
         pre_build_commands = build_context.get('preBuildCommands', [])
 
@@ -206,21 +211,8 @@ def _ensure_docker_images(
 
             run_shell_command(*command, cwd=app_dir, env=env)
 
-        # The full docker tag
-        docker_tag_for_commit = get_docker_tag_for_commit(
-            registry,
-            project_name,
-            context_name,
-            commit_hash,
-        )
-        additional_docker_tags = [
-            get_docker_tag(registry, project_name, additional_tag)
-            for additional_tag in additional_tags
-        ]
-        docker_tags = [docker_tag_for_commit]
-        docker_tags.extend(additional_docker_tags)
         tag_arguments = []
-        for docker_tag in docker_tags:
+        for docker_tag in context_tags[context_name]:
             tag_arguments.extend(['-t', docker_tag])
 
         # Build the image
@@ -238,10 +230,8 @@ def _ensure_docker_images(
         )
 
         # Push the image and additional tags
-        for docker_tag in docker_tags:
+        for docker_tag in context_tags[context_name]:
             build.log_info(f'Pushing docker image: {docker_tag}')
             run_shell_command('docker', 'push', docker_tag)
-
-        context_images[context_name] = docker_tag_for_commit
 
     return context_images
