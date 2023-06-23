@@ -159,37 +159,8 @@ def _ensure_docker_images(
         ))
         return context_images
 
-    # We're building something - let's find the previous commit we built
-    commit_history = run_shell_command(
-        'git', 'log', '--pretty=format:"%h"',
-        cwd=app_dir,
-    ).decode()
-
-    commit_history = [
-        commit.strip('"')
-        for commit in commit_history.split()
-    ]
-
-    # Figure out the previous commit we built an image for
-    previous_commit = None
-    build_context_keys = list(context_name_to_build.keys())
-
-    first_build_context = build_context_keys[0]
-    first_build_registry = context_registries[first_build_context]
-    for i, commit in enumerate(commit_history):
-        if has_app_commit_image(
-            first_build_registry,
-            project_name,
-            first_build_context,
-            commit,
-        ):
-            previous_commit = commit
-            break
-
-        # We only search the most recent 100 commits before giving up, so as not
-        # to overload the registry server.
-        elif i >= 100:
-            break
+    first_context, first_registry = list(context_name_to_build.items())[0]
+    previous_commit = _find_last_pushed_commit(app_dir, first_context, first_registry, project_name)
 
     build.log_info(f'Building {project_name} @ commit {commit_hash}')
 
@@ -235,3 +206,26 @@ def _ensure_docker_images(
             run_shell_command('docker', 'push', docker_tag)
 
     return context_images
+
+
+def _find_last_pushed_commit(app_dir, context_name, registry, project_name, max_commits=100):
+    commit_history = run_shell_command(
+        'git', 'log', '--pretty=format:"%h"', '--max-count', str(max_commits),
+        cwd=app_dir,
+    ).decode()
+
+    commit_history = [
+        commit.strip('"')
+        for commit in commit_history.split()
+    ]
+
+    for i, commit in enumerate(commit_history):
+        if has_app_commit_image(
+                registry,
+                project_name,
+                context_name,
+                commit,
+        ):
+            return commit
+    else:
+        return None
