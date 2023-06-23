@@ -119,9 +119,7 @@ def _ensure_docker_images(
 
     context_name_to_build = get_container_contexts_from_config(kubetools_config)
 
-    context_registries = {}
-    context_images = {}
-    context_tags = {}
+    build_inputs = {}
     for context_name, build_context in context_name_to_build.items():
         registry = build_context.get('registry', default_registry)
 
@@ -139,19 +137,27 @@ def _ensure_docker_images(
         docker_tags = [docker_tag_for_commit]
         docker_tags.extend(additional_docker_tags)
 
-        context_registries[context_name] = registry
-        context_images[context_name] = docker_tag_for_commit
-        context_tags[context_name] = docker_tags
+        build_inputs[context_name] = {
+            'context': build_context,
+            'registry': registry,
+            'image': docker_tag_for_commit,
+            'tags': docker_tags,
+        }
+
+    context_images = {
+        context_name: build_input['image']
+        for context_name, build_input in build_inputs.items()
+    }
 
     # Check if the image already exists in the registry
     if all(
         has_app_commit_image(
-            registry,
+            build_input['registry'],
             project_name,
             context_name,
             commit_hash,
         )
-        for context_name, registry in context_registries.items()
+        for context_name, build_input in build_inputs.items()
     ):
         build.log_info((
             f'All Docker images for {project_name} commit {commit_hash} exists, '
@@ -165,7 +171,9 @@ def _ensure_docker_images(
     build.log_info(f'Building {project_name} @ commit {commit_hash}')
 
     # Now actually build the images
-    for context_name, build_context in context_name_to_build.items():
+    for context_name, build_input in build_inputs.items():
+        build_context = build_input['context']
+
         # Run pre docker commands?
         pre_build_commands = build_context.get('preBuildCommands', [])
 
@@ -183,7 +191,7 @@ def _ensure_docker_images(
             run_shell_command(*command, cwd=app_dir, env=env)
 
         tag_arguments = []
-        for docker_tag in context_tags[context_name]:
+        for docker_tag in build_input['tags']:
             tag_arguments.extend(['-t', docker_tag])
 
         # Build the image
@@ -196,12 +204,13 @@ def _ensure_docker_images(
             'docker', 'build', '--pull',
             '-f', build_context['dockerfile'],
             *tag_arguments,
+            *build_arg_arguments,
             '.',
             cwd=app_dir,
         )
 
         # Push the image and additional tags
-        for docker_tag in context_tags[context_name]:
+        for docker_tag in build_input['tags']:
             build.log_info(f'Pushing docker image: {docker_tag}')
             run_shell_command('docker', 'push', docker_tag)
 
