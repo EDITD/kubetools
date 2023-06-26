@@ -147,7 +147,8 @@ def _ensure_docker_images(
             'tags': docker_tags,
         }
 
-    first_context, first_registry = list(context_name_to_build.items())[0]
+    first_context, first_build_input = list(build_inputs.items())[0]
+    first_registry = first_build_input["registry"]
     previous_commit = _find_last_pushed_commit(app_dir, first_context, first_registry, project_name)
 
     build.log_info(f'Building {project_name} @ commit {commit_hash}')
