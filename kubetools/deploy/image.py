@@ -111,9 +111,12 @@ def _ensure_docker_images(
     kubetools_config, build, app_dir, commit_hash,
     default_registry=None,
     additional_tags=None,
+    build_args=None,
 ):
     if additional_tags is None:
         additional_tags = []
+    if build_args is None:
+        build_args = []
 
     project_name = kubetools_config['name']
 
@@ -144,27 +147,6 @@ def _ensure_docker_images(
             'tags': docker_tags,
         }
 
-    context_images = {
-        context_name: build_input['image']
-        for context_name, build_input in build_inputs.items()
-    }
-
-    # Check if the image already exists in the registry
-    if all(
-        has_app_commit_image(
-            build_input['registry'],
-            project_name,
-            context_name,
-            commit_hash,
-        )
-        for context_name, build_input in build_inputs.items()
-    ):
-        build.log_info((
-            f'All Docker images for {project_name} commit {commit_hash} exists, '
-            'skipping build'
-        ))
-        return context_images
-
     first_context, first_registry = list(context_name_to_build.items())[0]
     previous_commit = _find_last_pushed_commit(app_dir, first_context, first_registry, project_name)
 
@@ -172,6 +154,18 @@ def _ensure_docker_images(
 
     # Now actually build the images
     for context_name, build_input in build_inputs.items():
+        if has_app_commit_image(
+            build_input['registry'],
+            project_name,
+            context_name,
+            commit_hash,
+        ):
+            build.log_info((
+                f'Docker image for {project_name}/{context_name} commit {commit_hash} exists, '
+                'skipping build'
+            ))
+            continue
+
         build_context = build_input['context']
 
         # Run pre docker commands?
@@ -194,6 +188,10 @@ def _ensure_docker_images(
         for docker_tag in build_input['tags']:
             tag_arguments.extend(['-t', docker_tag])
 
+        build_arg_arguments = []
+        for build_arg in build_args:
+            build_arg_arguments.extend(['--build-arg', build_arg])
+
         # Build the image
         build.log_info((
             f'Building {project_name}/{context_name} '
@@ -214,7 +212,10 @@ def _ensure_docker_images(
             build.log_info(f'Pushing docker image: {docker_tag}')
             run_shell_command('docker', 'push', docker_tag)
 
-    return context_images
+    return {
+        context_name: build_input['image']
+        for context_name, build_input in build_inputs.items()
+    }
 
 
 def _find_last_pushed_commit(app_dir, context_name, registry, project_name, max_commits=100):
