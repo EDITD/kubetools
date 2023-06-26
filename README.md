@@ -111,6 +111,27 @@ Install the package in editable mode, with the dev extras:
 pip install -e .[dev]
 ```
 
+## Local deployment testing
+
+For deployment testing, you will need a kubernetes cluster and a docker registry. You can get both
+easily using `minikube`:
+```shell
+minikube start --addons registry --insecure-registry ${MINIKUBE_IP}:5000
+```
+Then you can deploy to that environment:
+```shell
+kubetools --context minikube deploy --default-registry ${MINIKUBE_IP}:5000 default .
+```
+
+`MINIKUBE_IP` value can vary depending on your local environment. The easiest way to get the correct
+value is to start minikube once then reset it:
+```shell
+minikube start
+MINIKUBE_IP=$(minikube ip)
+minikube delete
+...
+```
+
 ## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it
 * In GitHub, create a new release
