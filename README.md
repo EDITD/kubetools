@@ -143,3 +143,15 @@ minikube delete
 
 ## Mounting K8s Secrets
 We assume that `ServiceAccount` and `SecretProviderClass` are already created (if needed), before deploying the project with kubetools.
+
+## Docker build args
+`kubetools` now supports passing values for `ARG` parameters used in Dockerfiles, using
+`--build-args`. This has a couple of caveats though:
+* it is NOT supported in `ktd`. A workaround for this is to use the default value of the `ARG`
+  instruction.
+* this doesn't affect the image tag pushed to the docker registry, which is based only on the git
+  commit hash. This means that these arguments cannot be used to generate multiple images from the
+  same Dockerfile. So their main usage should be to pass secrets that should not be recorded in the
+  git repository but are needed at build time, to access external resources for example.
+* these values could be recorded in the docker image layer history. To prevent leaking secrets, you
+  should consider using multi-stage builds where the secrets are only used in a "builder" image.
