@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.12.0
+- Add support for docker build arguments
+
 # v13.11.0
 - Add support to specify SecretProviderClass
 - Add support to specify ServiceAccount
