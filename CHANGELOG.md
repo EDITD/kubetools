@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.12.1
+- De-couple serviceAccountName and secrets
+
 # v13.12.0
 - Add support for docker build arguments
 
