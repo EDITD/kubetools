@@ -112,7 +112,7 @@ def make_container_config(
         ])
 
     if 'volumes' in container:
-        container_data['volumeMounts'] = []
+        container_data.setdefault('volumeMounts', [])
         for volume in container.pop('volumes'):
             container_data['volumeMounts'].append({
                 'mountPath': volume.split(':')[1],
@@ -120,7 +120,7 @@ def make_container_config(
             })
 
     if secrets is not None:
-        container_data['volumeMounts'] = container_data.get('volumeMounts', [])
+        container_data.setdefault('volumeMounts', [])
         for secret_name, secret in secrets.items():
             container_data['volumeMounts'].append({
                 'name': secret_name,
