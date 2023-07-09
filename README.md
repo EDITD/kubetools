@@ -111,6 +111,27 @@ Install the package in editable mode, with the dev extras:
 pip install -e .[dev]
 ```
 
+## Local deployment testing
+
+For deployment testing, you will need a kubernetes cluster and a docker registry. You can get both
+easily using `minikube`:
+```shell
+minikube start --addons registry --insecure-registry ${MINIKUBE_IP}:5000
+```
+Then you can deploy to that environment:
+```shell
+kubetools --context minikube deploy --default-registry ${MINIKUBE_IP}:5000 default .
+```
+
+`MINIKUBE_IP` value can vary depending on your local environment. The easiest way to get the correct
+value is to start minikube once then reset it:
+```shell
+minikube start
+MINIKUBE_IP=$(minikube ip)
+minikube delete
+...
+```
+
 ## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it
 * In GitHub, create a new release
@@ -122,3 +143,15 @@ pip install -e .[dev]
 
 ## Mounting K8s Secrets
 We assume that `ServiceAccount` and `SecretProviderClass` are already created (if needed), before deploying the project with kubetools.
+
+## Docker build args
+`kubetools` now supports passing values for `ARG` parameters used in Dockerfiles, using
+`--build-args`. This has a couple of caveats though:
+* it is NOT supported in `ktd`. A workaround for this is to use the default value of the `ARG`
+  instruction.
+* this doesn't affect the image tag pushed to the docker registry, which is based only on the git
+  commit hash. This means that these arguments cannot be used to generate multiple images from the
+  same Dockerfile. So their main usage should be to pass secrets that should not be recorded in the
+  git repository but are needed at build time, to access external resources for example.
+* these values could be recorded in the docker image layer history. To prevent leaking secrets, you
+  should consider using multi-stage builds where the secrets are only used in a "builder" image.

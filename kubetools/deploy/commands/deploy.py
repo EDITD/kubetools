@@ -40,6 +40,7 @@ def get_deploy_objects(
     app_dirs,
     replicas=None,
     default_registry=None,
+    build_args=None,
     extra_envvars=None,
     extra_annotations=None,
     ignore_git_changes=False,
@@ -82,6 +83,7 @@ def get_deploy_objects(
             kubetools_config, build, app_dir,
             commit_hash=commit_hash,
             default_registry=default_registry,
+            build_args=build_args,
         )
 
         services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(

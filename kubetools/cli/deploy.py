@@ -95,6 +95,11 @@ def _validate_key_value_argument(ctx, param, value):
     help='Flag to auto-yes remove confirmation step.',
 )
 @click.option(
+    'build_args', '-b', '--build-arg',
+    multiple=True,
+    help='Arguments to pass to docker build (Dockerfile ARG) as ARG=VALUE',
+)
+@click.option(
     'envvars', '-e', '--envvar',
     multiple=True,
     callback=_validate_key_value_argument,
@@ -137,6 +142,7 @@ def deploy(
     replicas,
     default_registry,
     yes,
+    build_args,
     envvars,
     annotations,
     file,
@@ -166,6 +172,7 @@ def deploy(
         build, app_dirs,
         replicas=replicas,
         default_registry=default_registry,
+        build_args=build_args,
         extra_envvars=envvars,
         extra_annotations=annotations,
         ignore_git_changes=ignore_git_changes,

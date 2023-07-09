@@ -19,8 +19,13 @@ from kubetools.deploy.image import ensure_docker_images
     multiple=True,
     help='Extra tags to apply to built image',
 )
+@click.option(
+    'build_args', '-b', '--build-arg',
+    multiple=True,
+    help='Arguments to pass to docker build (Dockerfile ARG) as ARG=VALUE',
+)
 @click.pass_context
-def push(ctx, default_registry, additional_tags):
+def push(ctx, default_registry, additional_tags, build_args):
     '''
     Push app images to docker repo
     '''
@@ -42,4 +47,5 @@ def push(ctx, default_registry, additional_tags):
         commit_hash=commit_hash,
         default_registry=default_registry,
         additional_tags=additional_tags,
+        build_args=build_args,
     )
