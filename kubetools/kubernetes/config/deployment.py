@@ -33,17 +33,20 @@ def make_deployment_config(
             secrets=secrets,
         ))
 
-    kubernetes_spec = {}
-    if service_account_name is not None and secrets is not None:
+    template_spec = {
+        'containers': kubernetes_containers,
+    }
+
+    if service_account_name is not None:
+        template_spec['serviceAccountName'] = service_account_name
+
+    if secrets is not None:
         kubernetes_volumes = []
         for secret_name, secret in secrets.items():
             kubernetes_volumes.append(make_secret_volume_config(
                 secret_name, secret,
             ))
-        kubernetes_spec['serviceAccountName'] = service_account_name
-        kubernetes_spec['volumes'] = kubernetes_volumes
-
-    kubernetes_spec['containers'] = kubernetes_containers
+        template_spec['volumes'] = kubernetes_volumes
 
     # The actual controller Kubernetes config
     controller = {
@@ -64,7 +67,7 @@ def make_deployment_config(
                 'metadata': {
                     'labels': labels,
                 },
-                'spec': kubernetes_spec,
+                'spec': template_spec,
             },
         },
     }
