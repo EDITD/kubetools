@@ -60,12 +60,12 @@ if __name__ == '__main__':
             'kubernetes>=21.7.0,<25.0.0',
             'tabulate<1',
             # compose v2 has broken container naming
-            'docker-compose<2',
+            # 'docker-compose<2',
         ),
         extras_require={
             'dev': (
                 'ipdb',
-                'pytest~=6.0',
+                'pytest~=7.0',
                 'pytest-cov~=2.10',
                 'flake8',
                 'flake8-import-order',

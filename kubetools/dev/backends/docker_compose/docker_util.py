@@ -6,7 +6,6 @@ import requests
 from kubetools.dev.process_util import run_process
 from kubetools.exceptions import KubeDevError
 from kubetools.log import logger
-
 from .config import (
     create_compose_config,
     dockerise_label,
@@ -80,6 +79,13 @@ def get_all_docker_dev_network_containers():
     return docker_containers
 
 
+def extract_container_name(full_name):
+    if "_" in full_name:
+        return full_name.split('_')[1]
+    else:
+        return "-".join(full_name.split('-')[1:-1])
+
+
 def get_containers_status(
     kubetools_config,
     container_name=None,
@@ -136,8 +142,9 @@ def get_containers_status(
         if not env:
             env = compose_project.replace(docker_name, '')
 
-        # Where the name is compose-name_container_N, get container
-        name = container.name.split('_')[1]
+        # Where the name is compose-name_container_N, get container if docker-compose v1
+        # composeName-container-N if docker-compose v2
+        name = extract_container_name(container.name)
 
         status = container.status == 'running'
         ports = []
