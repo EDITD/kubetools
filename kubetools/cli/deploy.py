@@ -37,7 +37,7 @@ def _dry_deploy_object_loop(object_type, objects):
     while True:
         object_name = click.prompt(
             f'Print {object_type}?',
-            type=click.Choice(name_to_object),
+            type=click.Choice(list(name_to_object.keys()) + ['exit']),
             default='exit',
         )
 

@@ -50,9 +50,9 @@ if __name__ == '__main__':
         },
         python_requires='>=3.6',
         install_requires=(
-            'click>=7,<8',
-            'docker>=3,<5',
-            'pyyaml>=3,<6',
+            'click>=7,<9',
+            'docker>=3,<7',
+            'pyyaml>=3,<7,!=5.4.1,!=5.4',
             'requests>=2,<3',
             'pyretry',
             'setuptools',
