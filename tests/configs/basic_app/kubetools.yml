@@ -8,7 +8,6 @@ containerContexts:
     ports:
       - 80
 
-
 upgrades:
   - name: Upgrade the database
     containerContext: generic-context

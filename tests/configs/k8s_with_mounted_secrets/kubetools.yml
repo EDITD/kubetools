@@ -8,6 +8,18 @@ containerContexts:
     ports:
       - 80
 
+upgrades:
+  - name: Upgrade the database
+    containerContext: generic-context
+    command: [generic-command, generic-arg]
+    serviceAccountName: generic-account
+    secrets:
+      secret-volume:
+        mountPath: /mnt/upgrades-secrets-store
+        secretProviderClass: secrets
+    resources:
+      requests:
+        memory: "1Gi"
 
 dependencies:
   generic-dependency-with-secrets:
