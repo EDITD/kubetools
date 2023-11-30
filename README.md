@@ -93,6 +93,11 @@ kubetools deploy my-namespace
 pip install kubetools
 ```
 
+**NOTE**: Since Cython 3.0 was released, the installation of `kubetools` dependencies will fail
+ due to compatibility issues between Cython 3 and PyYaml (see
+ [this issue](https://github.com/yaml/pyyaml/issues/601)). This can be worked around for example
+ with `pip` by using a "constraints" file containing `cython<3`.
+
 ## Configuration
 Users can configure some aspects of `kubetools`. The configuration folder location depends on the
 operating system of the user. See the
