@@ -1,6 +1,7 @@
 # Changelog
 
 ### Unreleased
+- Cython 3.0 release is preventing this package to be released. A constraint of `cython<3` needs to be added to install this.
 
 # v13.12.1
 - De-couple serviceAccountName and secrets

@@ -53,7 +53,7 @@ if __name__ == '__main__':
             'click>=7,<8',
             'docker>=3,<5',
             'pyyaml>=3,<6',
-            'requests>=2,<3',
+            'requests>=2,<2.29.0',  # https://github.com/docker/docker-py/issues/3113
             'pyretry',
             'setuptools',
             # To support CronJob api versions 'batch/v1beta1' & 'batch/v1'
