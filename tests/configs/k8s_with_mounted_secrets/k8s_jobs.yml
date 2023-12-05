@@ -15,7 +15,7 @@ spec:
       labels: {job-id: UUID, kubetools/project_name: generic-app-with-secrets,
         kubetools/role: job}
     spec:
-      serviceAccountName: generic-account
+      serviceAccountName: upgrade-account
       containers:
       - chdir: /
         command: [generic-command]
@@ -25,9 +25,7 @@ spec:
         image: generic-image
         imagePullPolicy: Always
         name: upgrade
-        resources:
-          requests:
-            memory: "1Gi"
+        resources: {}
         volumeMounts:
         - {name: secret-volume, mountPath: /mnt/upgrades-secrets-store, readonly: True}
       restartPolicy: Never
@@ -37,4 +35,4 @@ spec:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: secrets
+            secretProviderClass: upgrade-secrets
