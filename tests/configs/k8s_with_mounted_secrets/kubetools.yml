@@ -1,21 +1,26 @@
 name: generic-app-with-secrets
 
-
 containerContexts:
   generic-context:
     image: generic-image
     command: [generic-command]
-    ports:
-      - 80
 
+upgrades:
+  - name: Upgrade the database
+    containerContext: generic-context
+    serviceAccountName: upgrade-account
+    secrets:
+      secret-volume:
+        mountPath: /mnt/upgrades-secrets-store
+        secretProviderClass: upgrade-secrets
 
 dependencies:
   generic-dependency-with-secrets:
-    serviceAccountName: web-api
+    serviceAccountName: dependency-account
     secrets:
       secret-volume:
         mountPath: /mnt/secrets-store
-        secretProviderClass: secrets
+        secretProviderClass: dependency-secrets
     containers:
       generic-dependency:
         containerContext: generic-context
@@ -23,11 +28,11 @@ dependencies:
 
 deployments:
   generic-deployment-with-secrets:
-    serviceAccountName: web-api
+    serviceAccountName: deployment-account
     secrets:
       secret-volume:
         mountPath: /mnt/secrets-store
-        secretProviderClass: secrets
+        secretProviderClass: deployment-secrets
     containers:
       generic-deployment-workers:
         containerContext: generic-context
@@ -37,11 +42,11 @@ cronjobs:
   generic-cronjob:
     schedule: "*/1 * * * *"
     concurrency_policy: "Allow"
-    serviceAccountName: generic-account
+    serviceAccountName: cronjob-account
     secrets:
       secret-volume:
         mountPath: /mnt/cronjobs-secrets-store
-        secretProviderClass: secrets
+        secretProviderClass: cronjob-secrets
     containers:
       generic-container:
         containerContext: generic-context

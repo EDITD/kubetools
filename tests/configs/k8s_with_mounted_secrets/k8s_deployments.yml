@@ -16,7 +16,7 @@ spec:
       labels: {kubetools/name: generic-app-with-secrets-generic-deployment-with-secrets, kubetools/project_name: generic-app-with-secrets,
         kubetools/role: app}
     spec:
-      serviceAccountName: web-api
+      serviceAccountName: deployment-account
       containers:
       - command: [generic-command]
         containerContext: generic-context
@@ -33,7 +33,7 @@ spec:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: secrets
+            secretProviderClass: deployment-secrets
 
 ---
 
@@ -55,7 +55,7 @@ spec:
       labels: {kubetools/name: generic-app-with-secrets-generic-dependency-with-secrets, kubetools/project_name: generic-app-with-secrets,
         kubetools/role: dependency}
     spec:
-      serviceAccountName: web-api
+      serviceAccountName: dependency-account
       containers:
       - command: [generic-command]
         containerContext: generic-context
@@ -72,4 +72,4 @@ spec:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: secrets
+            secretProviderClass: dependency-secrets

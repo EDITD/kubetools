@@ -287,12 +287,17 @@ def generate_kubernetes_configs_for_project(
             job_spec.get('envvars'),
         )
 
+        service_account_name = job_spec.get('serviceAccountName', None)
+        secrets = job_spec.get('secrets', None)
+
         jobs.append(make_job_config(
             job_spec,
             app_name=project_name,
             labels=job_labels,
             annotations=base_annotations,
             envvars=job_envvars,
+            service_account_name=service_account_name,
+            secrets=secrets,
         ))
 
     cronjobs = []

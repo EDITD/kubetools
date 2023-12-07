@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from .container import make_container_config
 from .util import copy_and_update
+from .volume import make_secret_volume_config
 
 
 def make_job_config(
@@ -13,6 +14,8 @@ def make_job_config(
     envvars=None,
     job_name=None,
     container_name="upgrade",
+    service_account_name=None,
+    secrets=None,
 ):
     '''
     Builds a Kubernetes job configuration dict.
@@ -68,12 +71,29 @@ def make_job_config(
         envvars=envvars,
         labels=labels,
         annotations=annotations,
+        secrets=secrets,
     )
 
     # Completions default to 1, same as Kubernetes
     completions = config.get('completions', 1)
     # Parallelism defaults to completions, also as Kubernetes
     parallelism = config.get('parallelism', completions)
+
+    template_spec = {
+        'restartPolicy': 'Never',
+        'containers': [container],
+    }
+
+    if service_account_name is not None:
+        template_spec['serviceAccountName'] = service_account_name
+
+    if secrets is not None:
+        kubernetes_volumes = []
+        for secret_name, secret in secrets.items():
+            kubernetes_volumes.append(make_secret_volume_config(
+                secret_name, secret,
+            ))
+        template_spec['volumes'] = kubernetes_volumes
 
     job_config = {
         # Normal Kubernetes job config
@@ -92,10 +112,7 @@ def make_job_config(
                 'metadata': {
                     'labels': labels,
                 },
-                'spec': {
-                    'restartPolicy': 'Never',
-                    'containers': [container],
-                },
+                'spec': template_spec,
             },
         },
     }

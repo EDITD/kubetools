@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools, description: 'Run: [''generic-command'']'}
+  labels: {job-id: UUID, kubetools/project_name: generic-app-with-secrets,
+    kubetools/role: job}
+  name: UUID
+spec:
+  completions: 1
+  parallelism: 1
+  selector: {job-id: UUID, kubetools/project_name: generic-app-with-secrets,
+    kubetools/role: job}
+  template:
+    metadata:
+      labels: {job-id: UUID, kubetools/project_name: generic-app-with-secrets,
+        kubetools/role: job}
+    spec:
+      serviceAccountName: upgrade-account
+      containers:
+      - chdir: /
+        command: [generic-command]
+        env:
+        - {name: KUBE, value: 'true'}
+        - {name: KUBE_JOB_ID, value: UUID}
+        image: generic-image
+        imagePullPolicy: Always
+        name: upgrade
+        resources: {}
+        volumeMounts:
+        - {name: secret-volume, mountPath: /mnt/upgrades-secrets-store, readonly: True}
+      restartPolicy: Never
+      volumes:
+      - name: secret-volume
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: upgrade-secrets
