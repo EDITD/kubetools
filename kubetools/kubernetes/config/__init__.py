@@ -212,6 +212,7 @@ def generate_kubernetes_configs_for_project(
 
         service_account_name = deployment.get('serviceAccountName', None)
         secrets = deployment.get('secrets', None)
+        dns_config = deployment.get('dnsConfig', None)
 
         containers, container_ports = _get_containers_data(
             deployment['containers'],
@@ -244,6 +245,7 @@ def generate_kubernetes_configs_for_project(
             update_strategy=deployment.get('updateStrategy'),
             service_account_name=service_account_name,
             secrets=secrets,
+            dns_config=dns_config,
         ))
 
     # Jobs can be upgrades and/or passed in as part of the build spec

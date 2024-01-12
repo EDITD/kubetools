@@ -14,6 +14,7 @@ def make_deployment_config(
     update_strategy=None,
     service_account_name=None,
     secrets=None,
+    dns_config=None,
 ):
     '''
     Builds a Kubernetes deployment configuration dict.
@@ -47,6 +48,9 @@ def make_deployment_config(
                 secret_name, secret,
             ))
         template_spec['volumes'] = kubernetes_volumes
+
+    if dns_config is not None:
+        template_spec['dnsConfig'] = dns_config
 
     # The actual controller Kubernetes config
     controller = {

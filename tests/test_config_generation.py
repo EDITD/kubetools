@@ -34,6 +34,9 @@ class TestKubernetesConfigGeneration(TestCase):
     def test_k8s_with_mounted_secrets_configs(self):
         _test_configs('k8s_with_mounted_secrets')
 
+    def test_k8s_with_dns_config(self):
+        _test_configs('k8s_with_dns_config')
+
 
 def _test_configs(folder_name, default_registry=None, **kwargs):
     app_dir = path.join('tests', 'configs', folder_name)

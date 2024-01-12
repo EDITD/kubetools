@@ -1,0 +1,16 @@
+name: generic-app-with-dnsConfig
+
+containerContexts:
+  generic-context:
+    image: generic-image
+    command: [generic-command]
+
+deployments:
+  generic-deployment-with-dnsConfig:
+    dnsConfig:
+      options:
+        - name: ndots
+          value: "1"
+    containers:
+      generic-deployment-workers:
+        containerContext: generic-context
