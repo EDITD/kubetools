@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-app-with-node-selectors-generic-deployment-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+  kubetools/role: app}
+  name: generic-app-with-node-selectors-generic-deployment-with-node-selectors
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: generic-app-with-node-selectors-generic-deployment-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+      kubetools/role: app}
+  template:
+    metadata:
+      labels: {kubetools/name: generic-app-with-node-selectors-generic-deployment-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+        kubetools/role: app}
+    spec:
+      containers:
+      - command: [generic-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        name: generic-deployment-workers
+      nodeSelector:
+      - nodeLabel: generic-label-value
+        nodeLabelName: generic-node-name 
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {app.kubernetes.io/managed-by: kubetools}
+  labels: {kubetools/name: generic-app-with-node-selectors-generic-dependency-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+    kubetools/role: dependency}
+  name: generic-app-with-node-selectors-generic-dependency-with-node-selectors
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: generic-app-with-node-selectors-generic-dependency-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+      kubetools/role: dependency}
+  template:
+    metadata:
+      labels: {kubetools/name: generic-app-with-node-selectors-generic-dependency-with-node-selectors, kubetools/project_name: generic-app-with-node-selectors,
+        kubetools/role: dependency}
+    spec:
+      containers:
+      - command: [generic-command]
+        containerContext: generic-context
+        env:
+        - {name: KUBE, value: 'true'}
+        image: generic-image
+        imagePullPolicy: Always
+        name: generic-dependency
+      nodeSelector:
+      - nodeLabel: generic-label-value
+        nodeLabelName: generic-node-name 

@@ -1,0 +1,44 @@
+name: generic-app-with-node-selectors
+
+containerContexts:
+  generic-context:
+    image: generic-image
+    command: [generic-command]
+
+upgrades:
+  - name: Upgrade the database
+    containerContext: generic-context
+    nodeSelector:
+      nodeLabel: generic-label-value
+      nodeLabelName: generic-node-name
+
+dependencies:
+  generic-dependency-with-node-selectors:
+    nodeSelector:
+      nodeLabel: generic-label-value
+      nodeLabelName: generic-node-name
+    containers:
+      generic-dependency:
+        containerContext: generic-context
+
+
+deployments:
+  generic-deployment-with-node-selectors:
+    nodeSelector:
+      nodeLabel: generic-label-value
+      nodeLabelName: generic-node-name
+    containers:
+      generic-deployment-workers:
+        containerContext: generic-context
+
+
+cronjobs:
+  generic-cronjob-with-node-selectors:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    nodeSelector:
+      nodeLabel: generic-label-value
+      nodeLabelName: generic-node-name
+    containers:
+      generic-container:
+        containerContext: generic-context
