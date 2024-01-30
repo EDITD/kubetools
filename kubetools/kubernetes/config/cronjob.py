@@ -15,6 +15,7 @@ def make_cronjob_config(
     labels=None,
     annotations=None,
     envvars=None,
+    node_selector_labels=None,
     service_account_name=None,
     secrets=None,
 ):
@@ -53,6 +54,12 @@ def make_cronjob_config(
         'restartPolicy': 'OnFailure',
         'containers': kubernetes_containers,
     }
+
+    if node_selector_labels is not None:
+        selector_labels = []
+        for label, value in node_selector_labels.items():
+            selector_labels.append({label: value})
+        template_spec['nodeSelector'] = selector_labels
 
     if service_account_name is not None:
         template_spec['serviceAccountName'] = service_account_name

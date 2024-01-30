@@ -12,6 +12,7 @@ def make_deployment_config(
     annotations=None,
     envvars=None,
     update_strategy=None,
+    node_selector_labels=None,
     service_account_name=None,
     secrets=None,
 ):
@@ -36,6 +37,12 @@ def make_deployment_config(
     template_spec = {
         'containers': kubernetes_containers,
     }
+
+    if node_selector_labels is not None:
+        selector_labels = []
+        for label, value in node_selector_labels.items():
+            selector_labels.append({label: value})
+        template_spec['nodeSelector'] = selector_labels
 
     if service_account_name is not None:
         template_spec['serviceAccountName'] = service_account_name
