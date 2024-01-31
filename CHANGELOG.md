@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.13.1
+- Add nodeSelector config to kubetools file
+
 # v13.13.0
 - Cython 3.0 release is preventing this package to be released. A constraint of `cython<3` needs to be added to install this
 - Add ability to use secrets in "migration" jobs

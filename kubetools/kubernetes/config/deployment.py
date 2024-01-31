@@ -39,9 +39,9 @@ def make_deployment_config(
     }
 
     if node_selector_labels is not None:
-        selector_labels = []
+        selector_labels = {}
         for label, value in node_selector_labels.items():
-            selector_labels.append({label: value})
+            selector_labels[label] = value
         template_spec['nodeSelector'] = selector_labels
 
     if service_account_name is not None:
