@@ -1,6 +1,7 @@
 # Changelog
 
 ### Unreleased
+- Fix bug where `config` command was not printing the actual `k8s` configs used by `deploy` because it did not take into account the kube-context, whether default or given with `--context`.
 
 # v13.13.1
 - Add nodeSelector config to kubetools file
