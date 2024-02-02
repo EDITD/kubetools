@@ -28,4 +28,4 @@ spec:
       restartPolicy: Never
       nodeSelector:
       - nodeLabelName: node-upgrades
-        nodeLabelOS: amd64
+        nodeLabelOS: ubuntu22

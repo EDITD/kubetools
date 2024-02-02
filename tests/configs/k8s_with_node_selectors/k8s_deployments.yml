@@ -26,7 +26,7 @@ spec:
         name: generic-deployment-workers
       nodeSelector:
       - nodeLabelName: node-deployments
-        nodeLabelOS: amd64
+        nodeLabelOS: ubuntu22
 
 ---
 
@@ -58,4 +58,4 @@ spec:
         name: generic-dependency
       nodeSelector:
       - nodeLabelName: node-dependencies
-        nodeLabelOS: amd64 
+        nodeLabelOS: ubuntu22
