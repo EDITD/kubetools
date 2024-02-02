@@ -1,12 +1,13 @@
+import subprocess
 from functools import lru_cache
 
 import docker
 import requests
+from pkg_resources import parse_version
 
 from kubetools.dev.process_util import run_process
 from kubetools.exceptions import KubeDevError
 from kubetools.log import logger
-
 from .config import (
     create_compose_config,
     dockerise_label,
@@ -211,6 +212,25 @@ def run_compose_process(kubetools_config, command_args, **kwargs):
         # Filename of the YAML file to load
         '--file', get_compose_filename(kubetools_config),
     ]
+
+    if _get_docker_compose_version() < parse_version('2'):
+        compose_command.append("--compatibility")
+
     compose_command.extend(command_args)
 
     return run_process(compose_command, **kwargs)
+
+def _get_docker_compose_version():
+    compose_command = [
+        'docker-compose',
+        'version',
+        '--short',
+    ]
+
+    try:
+        completed_result = subprocess.run(compose_command, capture_output=True, check=True,
+                                          encoding='utf-8')
+    except FileNotFoundError:
+        raise KubeDevError("docker-compose is not installed on your system or not in PATH.")
+
+    return parse_version(completed_result.stdout.strip())
