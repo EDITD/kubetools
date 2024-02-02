@@ -39,6 +39,5 @@ spec:
             name: generic-container
           restartPolicy: OnFailure
           nodeSelector:
-          - nodeLabel: generic-label-value
-            nodeLabelName: generic-node-name 
-          
+          - nodeLabelName: node-upgrades
+            nodeLabelOS: amd64

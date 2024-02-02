@@ -25,8 +25,8 @@ spec:
         imagePullPolicy: Always
         name: generic-deployment-workers
       nodeSelector:
-      - nodeLabel: generic-label-value
-        nodeLabelName: generic-node-name 
+      - nodeLabelName: node-deployments
+        nodeLabelOS: amd64
 
 ---
 
@@ -57,5 +57,5 @@ spec:
         imagePullPolicy: Always
         name: generic-dependency
       nodeSelector:
-      - nodeLabel: generic-label-value
-        nodeLabelName: generic-node-name 
+      - nodeLabelName: node-dependencies
+        nodeLabelOS: amd64 
