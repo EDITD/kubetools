@@ -14,6 +14,7 @@ def make_job_config(
     envvars=None,
     job_name=None,
     container_name="upgrade",
+    node_selector_labels=None,
     service_account_name=None,
     secrets=None,
 ):
@@ -83,6 +84,9 @@ def make_job_config(
         'restartPolicy': 'Never',
         'containers': [container],
     }
+
+    if node_selector_labels is not None:
+        template_spec['nodeSelector'] = node_selector_labels
 
     if service_account_name is not None:
         template_spec['serviceAccountName'] = service_account_name

@@ -171,6 +171,7 @@ def generate_kubernetes_configs_for_project(
             NAME_LABEL_KEY: dependency_name,
         })
 
+        node_selector_labels = dependency.get('nodeSelector', None)
         service_account_name = dependency.get('serviceAccountName', None)
         secrets = dependency.get('secrets', None)
 
@@ -199,6 +200,7 @@ def generate_kubernetes_configs_for_project(
             annotations=app_annotations,
             envvars=envvars,
             update_strategy=dependency.get('updateStrategy'),
+            node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
         ))
@@ -210,6 +212,7 @@ def generate_kubernetes_configs_for_project(
             NAME_LABEL_KEY: deployment_name,
         })
 
+        node_selector_labels = deployment.get('nodeSelector', None)
         service_account_name = deployment.get('serviceAccountName', None)
         secrets = deployment.get('secrets', None)
 
@@ -242,6 +245,7 @@ def generate_kubernetes_configs_for_project(
             annotations=app_annotations,
             envvars=envvars,
             update_strategy=deployment.get('updateStrategy'),
+            node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
         ))
@@ -287,6 +291,7 @@ def generate_kubernetes_configs_for_project(
             job_spec.get('envvars'),
         )
 
+        node_selector_labels = job_spec.get('nodeSelector', None)
         service_account_name = job_spec.get('serviceAccountName', None)
         secrets = job_spec.get('secrets', None)
 
@@ -296,6 +301,7 @@ def generate_kubernetes_configs_for_project(
             labels=job_labels,
             annotations=base_annotations,
             envvars=job_envvars,
+            node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
         ))
@@ -308,6 +314,7 @@ def generate_kubernetes_configs_for_project(
             NAME_LABEL_KEY: name,
         })
 
+        node_selector_labels = cronjob.get('nodeSelector', None)
         service_account_name = cronjob.get('serviceAccountName', None)
         secrets = cronjob.get('secrets', None)
 
@@ -333,6 +340,7 @@ def generate_kubernetes_configs_for_project(
             labels=cronjob_labels,
             annotations=app_annotations,
             envvars=envvars,
+            node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
         ))
