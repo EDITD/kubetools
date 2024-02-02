@@ -53,7 +53,8 @@ def config(ctx, replicas, file, app_dir, output_format, default_registry):
     Generate and write out Kubernetes configs for a project.
     '''
 
-    kubetools_config = load_kubetools_config(app_dir, custom_config_file=file)
+    env = ctx.meta['kube_context']
+    kubetools_config = load_kubetools_config(app_dir, env=env, custom_config_file=file)
     context_to_image = defaultdict(lambda: 'IMAGE')
     services, deployments, jobs, cronjobs = generate_kubernetes_configs_for_project(
         kubetools_config,
