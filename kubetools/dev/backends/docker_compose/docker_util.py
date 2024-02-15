@@ -136,8 +136,10 @@ def get_containers_status(
         if not env:
             env = compose_project.replace(docker_name, '')
 
-        # Where the name is compose-name_container_N, get container
-        name = container.name.split('-')[1]
+        # if the container was made in v1, it will be compose_name_container_N
+        converted_name = container.name.replace('_', '-')
+        # if the container is called compose-name-container-N, get `container`
+        name = converted_name.split('-')[1]
 
         status = container.status == 'running'
         ports = []
