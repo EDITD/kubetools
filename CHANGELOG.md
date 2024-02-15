@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v20.0.0
+- use `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
+
 # v13.13.1
 - Add nodeSelector config to kubetools file
 - Fix bug where `config` command was not printing the actual `k8s` configs used by `deploy` because it did not take into account the kube-context, whether default or given with `--context`.

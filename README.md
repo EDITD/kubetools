@@ -17,7 +17,7 @@ And you would like:
 
 Kubetools provides the tooling required to achieve this, by way of two CLI tools:
 
-+ **`ktd`**: generates _100% local_ development environments using Docker/docker-compose
++ **`ktd`**: generates _100% local_ development environments using docker compose
 + **`kubetools`**: deploys projects to Kubernetes, handling any changes/jobs as required
 
 Both of these use a single configuration file, `kubetools.yml`, for example a basic `django` app:
@@ -80,7 +80,7 @@ cronjobs:
 With this in your current directory, you can now:
 
 ```sh
-# Bring up a local development environment using docker-compose
+# Bring up a local development environment using docker compose
 ktd up
 
 # Deploy the project to a Kubernetes namespace

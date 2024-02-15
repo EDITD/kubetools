@@ -6,6 +6,7 @@ import requests
 from kubetools.dev.process_util import run_process
 from kubetools.exceptions import KubeDevError
 from kubetools.log import logger
+from kubetools import __version__
 
 from .config import (
     create_compose_config,
@@ -137,7 +138,13 @@ def get_containers_status(
             env = compose_project.replace(docker_name, '')
 
         # Where the name is compose-name_container_N, get container
-        name = container.name.split('_')[1]
+        print(container.name)
+        print(container.labels.get('kubetools.project.env'))
+        if int(__version__.split('.')[0]) < 20:
+            name = container.name.split('_')[1]
+        else:
+            name = container.name.split('-')[1]
+
 
         status = container.status == 'running'
         ports = []
@@ -202,7 +209,7 @@ def run_compose_process(kubetools_config, command_args, **kwargs):
     create_compose_config(kubetools_config)
 
     compose_command = [
-        'docker-compose',
+        'docker', 'compose',
         # Force us to look at the current directory, not relative to the compose
         # filename (ie .kubetools/compose-name.yml).
         '--project-directory', '.',
