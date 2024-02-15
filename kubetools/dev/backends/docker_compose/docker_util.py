@@ -3,10 +3,10 @@ from functools import lru_cache
 import docker
 import requests
 
+from kubetools import __version__
 from kubetools.dev.process_util import run_process
 from kubetools.exceptions import KubeDevError
 from kubetools.log import logger
-from kubetools import __version__
 
 from .config import (
     create_compose_config,
@@ -144,7 +144,6 @@ def get_containers_status(
             name = container.name.split('_')[1]
         else:
             name = container.name.split('-')[1]
-
 
         status = container.status == 'running'
         ports = []
