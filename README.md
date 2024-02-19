@@ -82,12 +82,23 @@ With this in your current directory, you can now:
 ```sh
 # Bring up a local development environment using docker compose
 ktd up
+```
 
+**NOTE**: there is a bug in the Docker BuildKit that ignores "insecure-registries". 
+as `docker compose` V2 uses BuildKit by default, the only way to currently get around this 
+is to append `DOCKER_BUILDKIT=0` in front of the `ktd` command,
+e.g: `DOCKER_BUILDKIT=0 ktd up`.
+This applies to all `Dockerfile`s where an insecure registry is specified.
+ 
+```sh
 # Deploy the project to a Kubernetes namespace
 kubetools deploy my-namespace
 ```
 
 ## Installing
+
+**NOTE**: before upgrading to version 14.0 or above, you _must_ run `ktd destroy` for all existing 
+local Kubetools projects.
 
 ```sh
 pip install kubetools

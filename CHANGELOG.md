@@ -2,8 +2,9 @@
 
 ### Unreleased
 
-# v20.0.0
-- use `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
+# v14.0.0
+- this **BREAKS COMPATIBILITY** with previous versions of `ktd` (see README)
+- uses `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
 
 # v13.13.1
 - Add nodeSelector config to kubetools file
