@@ -3,7 +3,7 @@ metadata:
   name: generic-cronjob
   labels: {
     kubetools/name: generic-cronjob,
-    kubetools/project_name: generic-app,
+    kubetools/project_name: complex-named-app,
     kubetools/role: cronjob
   }
   annotations: {
@@ -21,7 +21,7 @@ spec:
           name: generic-cronjob
           labels: {
             kubetools/name: generic-cronjob,
-            kubetools/project_name: generic-app,
+            kubetools/project_name: complex-named-app,
             kubetools/role: cronjob
           }
           annotations: {
