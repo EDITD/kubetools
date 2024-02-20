@@ -85,11 +85,13 @@ ktd up
 ```
 
 **NOTE**: there is a bug in the Docker BuildKit that ignores "insecure-registries". 
-as `docker compose` V2 uses BuildKit by default, the only way to currently get around this 
+As `docker compose` V2 uses BuildKit by default, the only way to currently get around this 
 is to append `DOCKER_BUILDKIT=0` in front of the `ktd` command,
+
 e.g: `DOCKER_BUILDKIT=0 ktd up`.
+
 This applies to all `Dockerfile`s where an insecure registry is specified.
- 
+
 ```sh
 # Deploy the project to a Kubernetes namespace
 kubetools deploy my-namespace
