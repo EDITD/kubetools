@@ -13,6 +13,9 @@ class TestKubernetesConfigGeneration(TestCase):
     def test_basic_app_configs(self):
         _test_configs('basic_app')
 
+    def test_complex_named_app_configs(self):
+        _test_configs('complex_named_app')
+
     def test_dependencies_configs(self):
         _test_configs('dependencies')
 
