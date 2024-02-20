@@ -24,7 +24,7 @@ spec:
         livenessProbe:
           httpGet: {path: /ping, port: 80}
           timeoutSeconds: 5
-        name: webserver
+        name: complex-webserver
         readinessProbe:
           httpGet: {path: /ping, port: 80}
           timeoutSeconds: 5
