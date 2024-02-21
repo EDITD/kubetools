@@ -84,14 +84,6 @@ With this in your current directory, you can now:
 ktd up
 ```
 
-**NOTE**: there is a bug in the Docker BuildKit that ignores "insecure-registries". 
-As `docker compose` V2 uses BuildKit by default, the only way to currently get around this 
-is to append `DOCKER_BUILDKIT=0` in front of the `ktd` command,
-
-e.g: `DOCKER_BUILDKIT=0 ktd up`.
-
-This applies to all `Dockerfile`s where an insecure registry is specified.
-
 ```sh
 # Deploy the project to a Kubernetes namespace
 kubetools deploy my-namespace
@@ -101,7 +93,14 @@ kubetools deploy my-namespace
 
 **NOTE**: before upgrading to version 14.0 or above, you _must_ run `ktd destroy` for all existing 
 local Kubetools projects.
+There is also a bug on the latest version of Docker Desktop that prevents the new Buildkit working with 
+insecure registries. This has been patched but the patch has yet to make its way to the latest release
+of Docker Desktop - [issue here](https://github.com/docker/buildx/issues/2030). 
+There are a couple of workarounds:
+  *  Downgrade to Docker Desktop v4.26.0 or below and append `http://` to each of your `insecure_registries`' URLs
+  *  Alternatively, use the legacy builder by appending `DOCKER_BUILDKIT=0` in front of every `ktd` command.
 
+To install Kubetools run:
 ```sh
 pip install kubetools
 ```
