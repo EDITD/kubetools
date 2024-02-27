@@ -2,7 +2,7 @@
 
 ### Unreleased
 
-# v14.0.0
+# v14.0.0-dev
 - **DO NOT USE WITH DOCKER DESKTOP v4.27.[0..2]** as this has a bug using `insecure-registries` with `docker compose` - [issue here](https://github.com/docker/buildx/issues/2030)
 - this **BREAKS COMPATIBILITY** with previous versions of `ktd` (see README)
 - uses `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
