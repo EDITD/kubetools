@@ -97,8 +97,9 @@ There is also a bug on the latest version of Docker Desktop that prevents the ne
 insecure registries. This has been patched but the patch has yet to make its way to the latest release
 of Docker Desktop - [issue here](https://github.com/docker/buildx/issues/2030). 
 There are a couple of workarounds:
-  *  Downgrade to Docker Desktop v4.26.0 or below and append `http://` to each of your `insecure_registries`' URLs
-  *  Alternatively, use the legacy builder by appending `DOCKER_BUILDKIT=0` in front of every `ktd` command.
+  * Migrate to secure registries (over HTTPS)
+  * Downgrade to Docker Desktop v4.26.0 or below and prefix with `http://`, each of your `insecure_registries`' URLs.
+  *  Alternatively, use the legacy builder by setting the environment variable `DOCKER_BUILDKIT=0` for `ktd` commands.
 
 To install Kubetools run:
 ```sh
