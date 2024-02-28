@@ -136,14 +136,7 @@ def get_containers_status(
         if not env:
             env = compose_project.replace(docker_name, '')
 
-        # if the container was made in v1, it will be composename_container_N
-        converted_name = container.name.replace('_', '-')
-
-        # we need to keep the middle part of the name
-        # for example if we have a container called `composename-container-1-N`
-        # we want to keep `container-1`
-        middle_names = converted_name.split('-')[1:-1]
-        name = '-'.join(middle_name for middle_name in middle_names)
+        name = _get_container_name_from_full_name(container.name)
 
         status = container.status == 'running'
         ports = []
@@ -196,6 +189,17 @@ def get_containers_status(
     if all_environments:
         return env_to_containers
     return env_to_containers.get(kubetools_config['env'], {})
+
+
+def _get_container_name_from_full_name(full_name):
+    # if the container was made in v1, it will be composename_container_N
+    converted_name = full_name.replace('_', '-')
+
+    # we need to keep the middle part of the name
+    # for example if we have a container called `composename-container-1-N`
+    # we want to keep `container-1`
+    middle_names = converted_name.split('-')[1:-1]
+    return '-'.join(middle_name for middle_name in middle_names)
 
 
 def get_container_status(kubetools_config, name):
