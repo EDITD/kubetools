@@ -90,17 +90,6 @@ kubetools deploy my-namespace
 ```
 
 ## Installing
-
-**NOTE**: before upgrading to version 14.0 or above, you _must_ run `ktd destroy` for all existing 
-local Kubetools projects.
-There is also a bug on the latest version of Docker Desktop that prevents the new Buildkit working with 
-insecure registries. This has been patched but the patch has yet to make its way to the latest release
-of Docker Desktop - [issue here](https://github.com/docker/buildx/issues/2030). 
-There are a couple of workarounds:
-  * Migrate to secure registries (over HTTPS)
-  * Downgrade to Docker Desktop v4.26.0 or below and prefix with `http://`, each of your `insecure_registries`' URLs.
-  *  Alternatively, use the legacy builder by setting the environment variable `DOCKER_BUILDKIT=0` for `ktd` commands.
-
 To install Kubetools run:
 ```sh
 pip install kubetools
@@ -149,6 +138,23 @@ MINIKUBE_IP=$(minikube ip)
 minikube delete
 ...
 ```
+
+
+## Troubleshooting
+There is a bug in `buildx` which is present in Docker Engine v25.0 and up, which is yet to be patched and causes `insecure-registries` to be ignored - [issue here](https://github.com/docker/buildx/issues/2226).
+Versions of Docker Desktop which use versions of Docker Engine lower than 25.0 are unaffected.
+
+If you try and run `ktd up` with reference to an unsecure registry, e.g. `http://docker-registry.example.net` and are affected by this bug, you will get an error message that is
+similar to the following:
+```
+ERROR: failed to do request: Head "https://docker-registry.example.net/3.6_alpine3.13_v0.1-multi": dialing docker-registry.example.net:443 with direct connection: connecting to 1.1.1.1:443: dial tcp 1.1.1.1:443: connect: connection refused
+```
+
+There are a few of workarounds:
+  * Migrate to secure registries (over HTTPS)
+  * Downgrade to Docker Desktop v4.26.1 or below and prefix `http://` to each of your `insecure_registries`' URLs.
+  *  Alternatively, use the legacy builder by setting the environment variable `DOCKER_BUILDKIT=0` for `ktd` commands.
+
 
 ## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it
