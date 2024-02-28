@@ -248,9 +248,8 @@ def create_compose_config(kubetools_config):
     if dev_network:
         compose_config['networks'] = {
             'default': {
-                'external': {
-                    'name': 'dev',
-                },
+                'name': 'dev',
+                'external': True,
             },
         }
 
