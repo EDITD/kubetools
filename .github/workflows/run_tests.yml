@@ -25,6 +25,8 @@ jobs:
       - name: Install package
         run: PIP_CONSTRAINT=/tmp/constraint.txt python -m pip install .[dev]
       - name: Linting
+        # Python 3.12 bug breaks flake8: https://github.com/PyCQA/flake8/issues/1905
+        if: matrix.python-version != '3.12'
         run: "flake8"
       - name: Unit tests
         run: "pytest --cov"
