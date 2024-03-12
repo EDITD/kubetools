@@ -1,3 +1,5 @@
+import sys
+
 from functools import lru_cache
 
 import docker
@@ -202,7 +204,8 @@ def run_compose_process(kubetools_config, command_args, **kwargs):
     create_compose_config(kubetools_config)
 
     compose_command = [
-        'docker-compose',
+        # Use current interpreter to run the docker-compose module installed in the same venv
+        sys.executable, '-m', 'compose',
         # Force us to look at the current directory, not relative to the compose
         # filename (ie .kubetools/compose-name.yml).
         '--project-directory', '.',
