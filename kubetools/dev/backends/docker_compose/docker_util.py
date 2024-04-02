@@ -1,5 +1,3 @@
-import sys
-
 from functools import lru_cache
 
 import docker
