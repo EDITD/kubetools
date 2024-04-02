@@ -9,6 +9,11 @@ local Kubetools projects.
 - this **BREAKS COMPATIBILITY** with previous versions of `ktd` (see README)
 - uses `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
 
+# v13.14.0
+- Fix docker-compose conflict when kubetools commands are called without activating their venv
+- Add Python 3.12 to supported versions, albeit without Flake8 because of CPython bug
+- Upgrade GitHub actions workflow to deal with deprecation warnings
+
 # v13.13.1
 - Add nodeSelector config to kubetools file
 - Fix bug where `config` command was not printing the actual `k8s` configs used by `deploy` because it did not take into account the kube-context, whether default or given with `--context`.
