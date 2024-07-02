@@ -183,7 +183,8 @@ def generate_kubernetes_configs_for_project(
         )
         app_annotations = copy_and_update(base_annotations)
         for container_name, data in containers.items():
-            app_annotations = copy_and_update(data.get('annotations'))
+            if data.get('annotations'):
+                app_annotations.update(data.get('annotations'))
 
         if container_ports:
             services.append(make_service_config(
@@ -229,7 +230,8 @@ def generate_kubernetes_configs_for_project(
             per_deployment_annotations.get(name),
         )
         for container_name, data in containers.items():
-            app_annotations = copy_and_update(data.get('annotations'))
+            if data.get('annotations'):
+                app_annotations.update(data.get('annotations'))
 
         if container_ports:
             services.append(make_service_config(
@@ -331,7 +333,8 @@ def generate_kubernetes_configs_for_project(
 
         app_annotations = copy_and_update(base_annotations)
         for container_name, data in containers.items():
-            app_annotations = copy_and_update(data.get('annotations'))
+            if data.get('annotations'):
+                app_annotations.update(data.get('annotations'))
         schedule = cronjob['schedule']
         concurrency_policy = cronjob['concurrency_policy']
         batch_api_version = cronjob.get('batch-api-version')  # May depend on target cluster
