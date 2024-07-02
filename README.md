@@ -59,6 +59,8 @@ deployments:
           - 80
         dev:
           command: [./manage.py, runserver, '0.0.0.0:80']
+        annotations:
+          app.kubernetes.io/name: "django_app"
 
 dependencies:
   mariadb:
