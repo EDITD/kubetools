@@ -9,3 +9,28 @@ spec:
   - {port: 80, targetPort: 80}
   selector: {kubetools/name: generic-app, kubetools/project_name: generic-app, kubetools/role: app}
   type: NodePort
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    app.kubernetes.io/name: generic-app-with-annotations
+  }
+  labels: {
+    kubetools/name: generic-app-with-annotations,
+    kubetools/project_name: generic-app,
+    kubetools/role: app
+  }
+  name: generic-app-with-annotations
+spec:
+  ports:
+  - {port: 80, targetPort: 80}
+  selector: {
+    kubetools/name: generic-app-with-annotations,
+    kubetools/project_name: generic-app,
+    kubetools/role: app
+  }
+  type: NodePort

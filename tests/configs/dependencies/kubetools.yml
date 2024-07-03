@@ -20,6 +20,13 @@ dependencies:
       memcache-2:
         containerContext: memcache
 
+  memcache-with-annotations:
+    containers:
+      memcache-with-annotations:
+        containerContext: memcache
+        annotations:
+          app.kubernetes.io/name: "memcache-with-annotations"
+
   elasticsearch:
     conditions:
       dev: true

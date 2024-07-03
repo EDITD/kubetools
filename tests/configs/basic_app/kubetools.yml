@@ -27,6 +27,17 @@ deployments:
           timeoutSeconds: 5
           httpGet:
             path: /ping
+  generic-app-with-annotations:
+    containers:
+      webserver:
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        containerContext: generic-context
+        probes:
+          timeoutSeconds: 5
+          httpGet:
+            path: /ping
+        annotations:
+          app.kubernetes.io/name: "generic-app-with-annotations"
 
 
 cronjobs:
@@ -36,3 +47,11 @@ cronjobs:
     containers:
       generic-container:
         containerContext: generic-context
+  generic-cronjob-with-annotations:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
+        annotations:
+          app.kubernetes.io/name: "generic-cronjob-with-annotations"

@@ -53,3 +53,35 @@ spec:
         image: memcache:1.4.33
         imagePullPolicy: Always
         name: memcache-2
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    app.kubernetes.io/name: memcache-with-annotations
+  }
+  labels: {kubetools/name: dependencies-memcache-with-annotations, kubetools/project_name: dependencies,
+    kubetools/role: dependency}
+  name: dependencies-memcache-with-annotations
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {kubetools/name: dependencies-memcache-with-annotations, kubetools/project_name: dependencies,
+      kubetools/role: dependency}
+  template:
+    metadata:
+      labels: {kubetools/name: dependencies-memcache-with-annotations, kubetools/project_name: dependencies,
+        kubetools/role: dependency}
+    spec:
+      containers:
+      - command: [memcached, -u, root, -I, 10m]
+        containerContext: memcache
+        env:
+        - {name: KUBE, value: 'true'}
+        image: memcache:1.4.33
+        imagePullPolicy: Always
+        name: memcache-with-annotations

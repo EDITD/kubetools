@@ -128,6 +128,9 @@ def make_container_config(
                 'readonly': True,
             })
 
+    # Remove annotations from container data
+    if 'annotations' in container:
+        container.pop('annotations')
     # Finally, attach all remaining data
     container_data.update(container)
 
