@@ -51,7 +51,7 @@ metadata:
   }
   annotations: {
     app.kubernetes.io/managed-by: kubetools,
-    app.kubernetes.io/name: generic-cronjob-with-annotations,
+    imageregistry: https://hub.docker.com/,
     description: 'Run: [''generic-command'']'
   }
 spec:
@@ -70,7 +70,7 @@ spec:
           }
           annotations: {
             app.kubernetes.io/managed-by: kubetools,
-            app.kubernetes.io/name: generic-cronjob-with-annotations,
+            imageregistry: https://hub.docker.com/,
             description: 'Run: [''generic-command'']'
           }
         spec:

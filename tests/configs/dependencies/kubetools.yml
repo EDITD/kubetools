@@ -25,7 +25,7 @@ dependencies:
       memcache-with-annotations:
         containerContext: memcache
         annotations:
-          app.kubernetes.io/name: "memcache-with-annotations"
+          imageregistry: https://hub.docker.com/
 
   elasticsearch:
     conditions:

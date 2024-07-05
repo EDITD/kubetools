@@ -37,7 +37,7 @@ deployments:
           httpGet:
             path: /ping
         annotations:
-          app.kubernetes.io/name: "generic-app-with-annotations"
+          imageregistry: "https://hub.docker.com/"
 
 
 cronjobs:
@@ -54,4 +54,4 @@ cronjobs:
       generic-container:
         containerContext: generic-context
         annotations:
-          app.kubernetes.io/name: "generic-cronjob-with-annotations"
+          imageregistry: "https://hub.docker.com/"

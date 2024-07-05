@@ -17,7 +17,7 @@ kind: Service
 metadata:
   annotations: {
     app.kubernetes.io/managed-by: kubetools,
-    app.kubernetes.io/name: generic-app-with-annotations
+    imageregistry: https://hub.docker.com/
   }
   labels: {
     kubetools/name: generic-app-with-annotations,

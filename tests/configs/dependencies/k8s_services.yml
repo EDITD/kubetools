@@ -35,7 +35,7 @@ kind: Service
 metadata:
   annotations: {
     app.kubernetes.io/managed-by: kubetools,
-    app.kubernetes.io/name: memcache-with-annotations
+    imageregistry: https://hub.docker.com/
   }
   labels: {kubetools/name: dependencies-memcache-with-annotations, kubetools/project_name: dependencies,
     kubetools/role: dependency}

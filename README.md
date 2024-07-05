@@ -60,7 +60,7 @@ deployments:
         dev:
           command: [./manage.py, runserver, '0.0.0.0:80']
         annotations:
-          app.kubernetes.io/name: "django_app"
+          imageregistry: "https://hub.docker.com/"
 
 dependencies:
   mariadb:
