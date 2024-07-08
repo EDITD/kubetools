@@ -181,9 +181,10 @@ def generate_kubernetes_configs_for_project(
             deployment_name=name,
             default_registry=default_registry,
         )
-        app_annotations = copy_and_update(base_annotations)
-        for container_name, data in containers.items():
-            app_annotations.update(data.get('annotations', {}))
+        app_annotations = copy_and_update(
+            base_annotations,
+            dependency.get('annotations', {}),
+        )
 
         if container_ports:
             services.append(make_service_config(
@@ -227,9 +228,8 @@ def generate_kubernetes_configs_for_project(
         app_annotations = copy_and_update(
             base_annotations,
             per_deployment_annotations.get(name),
+            deployment.get('annotations', {}),
         )
-        for container_name, data in containers.items():
-            app_annotations.update(data.get('annotations', {}))
 
         if container_ports:
             services.append(make_service_config(
@@ -298,12 +298,16 @@ def generate_kubernetes_configs_for_project(
         node_selector_labels = job_spec.get('nodeSelector', None)
         service_account_name = job_spec.get('serviceAccountName', None)
         secrets = job_spec.get('secrets', None)
+        app_annotations = copy_and_update(
+            base_annotations,
+            job_spec.get('annotations', {}),
+        )
 
         jobs.append(make_job_config(
             job_spec,
             app_name=project_name,
             labels=job_labels,
-            annotations=base_annotations,
+            annotations=app_annotations,
             envvars=job_envvars,
             node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
@@ -329,9 +333,10 @@ def generate_kubernetes_configs_for_project(
             default_registry=default_registry,
         )
 
-        app_annotations = copy_and_update(base_annotations)
-        for container_name, data in containers.items():
-            app_annotations.update(data.get('annotations', {}))
+        app_annotations = copy_and_update(
+            base_annotations,
+            cronjob.get('annotations', {}),
+        )
 
         schedule = cronjob['schedule']
         concurrency_policy = cronjob['concurrency_policy']

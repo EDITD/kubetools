@@ -28,6 +28,8 @@ deployments:
           httpGet:
             path: /ping
   generic-app-with-annotations:
+    annotations:
+      imageregistry: "https://hub.docker.com/"
     containers:
       webserver:
         command: [uwsgi, --ini, /etc/uwsgi.conf]
@@ -36,8 +38,6 @@ deployments:
           timeoutSeconds: 5
           httpGet:
             path: /ping
-        annotations:
-          imageregistry: "https://hub.docker.com/"
 
 
 cronjobs:
@@ -48,10 +48,10 @@ cronjobs:
       generic-container:
         containerContext: generic-context
   generic-cronjob-with-annotations:
+    annotations:
+      imageregistry: "https://hub.docker.com/"
     schedule: "*/1 * * * *"
     concurrency_policy: "Allow"
     containers:
       generic-container:
         containerContext: generic-context
-        annotations:
-          imageregistry: "https://hub.docker.com/"

@@ -21,11 +21,11 @@ dependencies:
         containerContext: memcache
 
   memcache-with-annotations:
+    annotations:
+      imageregistry: https://hub.docker.com/
     containers:
       memcache-with-annotations:
         containerContext: memcache
-        annotations:
-          imageregistry: https://hub.docker.com/
 
   elasticsearch:
     conditions:
