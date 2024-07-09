@@ -166,10 +166,14 @@ def generate_kubernetes_configs_for_project(
 
     for name, dependency in config.get('dependencies', {}).items():
         dependency_name = make_deployment_name(project_name, name)
-        dependency_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'dependency',
-            NAME_LABEL_KEY: dependency_name,
-        })
+        dependency_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'dependency',
+                NAME_LABEL_KEY: dependency_name,
+            },
+            dependency.get('labels', {}),
+        )
 
         node_selector_labels = dependency.get('nodeSelector', None)
         service_account_name = dependency.get('serviceAccountName', None)
@@ -210,10 +214,14 @@ def generate_kubernetes_configs_for_project(
 
     for name, deployment in config.get('deployments', {}).items():
         deployment_name = make_deployment_name(project_name, name)
-        deployment_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'app',
-            NAME_LABEL_KEY: deployment_name,
-        })
+        deployment_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'app',
+                NAME_LABEL_KEY: deployment_name,
+            },
+            deployment.get('labels', {}),
+        )
 
         node_selector_labels = deployment.get('nodeSelector', None)
         service_account_name = deployment.get('serviceAccountName', None)
@@ -317,10 +325,14 @@ def generate_kubernetes_configs_for_project(
     cronjobs = []
 
     for name, cronjob in config.get('cronjobs', {}).items():
-        cronjob_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'cronjob',
-            NAME_LABEL_KEY: name,
-        })
+        cronjob_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'cronjob',
+                NAME_LABEL_KEY: name,
+            },
+            cronjob.get('labels', {}),
+        )
 
         node_selector_labels = cronjob.get('nodeSelector', None)
         service_account_name = cronjob.get('serviceAccountName', None)

@@ -3,7 +3,7 @@
 ### Unreleased
 
 # v13.14.1
-- Add annotations option to resources defined in kubetools.yaml file
+- Add annotations and labels options to resources defined in kubetools.yaml file
 
 # v13.14.0
 - Fix docker-compose conflict when kubetools commands are called without activating their venv
