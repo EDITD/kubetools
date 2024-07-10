@@ -27,10 +27,48 @@ deployments:
           timeoutSeconds: 5
           httpGet:
             path: /ping
+  generic-app-with-annotations:
+    annotations:
+      imageregistry: "https://hub.docker.com/"
+    containers:
+      webserver:
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        containerContext: generic-context
+        probes:
+          timeoutSeconds: 5
+          httpGet:
+            path: /ping
+  generic-app-with-labels:
+    labels:
+      app.kubernetes.io/name: generic-app-with-labels
+    containers:
+      webserver:
+        command: [uwsgi, --ini, /etc/uwsgi.conf]
+        containerContext: generic-context
+        probes:
+          timeoutSeconds: 5
+          httpGet:
+            path: /ping
 
 
 cronjobs:
   generic-cronjob:
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
+  generic-cronjob-with-annotations:
+    annotations:
+      imageregistry: "https://hub.docker.com/"
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
+  generic-cronjob-with-labels:
+    labels:
+      app.kubernetes.io/name: generic-cronjob-with-labels
     schedule: "*/1 * * * *"
     concurrency_policy: "Allow"
     containers:

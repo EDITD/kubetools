@@ -166,10 +166,14 @@ def generate_kubernetes_configs_for_project(
 
     for name, dependency in config.get('dependencies', {}).items():
         dependency_name = make_deployment_name(project_name, name)
-        dependency_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'dependency',
-            NAME_LABEL_KEY: dependency_name,
-        })
+        dependency_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'dependency',
+                NAME_LABEL_KEY: dependency_name,
+            },
+            dependency.get('labels', {}),
+        )
 
         node_selector_labels = dependency.get('nodeSelector', None)
         service_account_name = dependency.get('serviceAccountName', None)
@@ -181,7 +185,10 @@ def generate_kubernetes_configs_for_project(
             deployment_name=name,
             default_registry=default_registry,
         )
-        app_annotations = copy_and_update(base_annotations)
+        app_annotations = copy_and_update(
+            base_annotations,
+            dependency.get('annotations', {}),
+        )
 
         if container_ports:
             services.append(make_service_config(
@@ -207,10 +214,14 @@ def generate_kubernetes_configs_for_project(
 
     for name, deployment in config.get('deployments', {}).items():
         deployment_name = make_deployment_name(project_name, name)
-        deployment_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'app',
-            NAME_LABEL_KEY: deployment_name,
-        })
+        deployment_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'app',
+                NAME_LABEL_KEY: deployment_name,
+            },
+            deployment.get('labels', {}),
+        )
 
         node_selector_labels = deployment.get('nodeSelector', None)
         service_account_name = deployment.get('serviceAccountName', None)
@@ -225,6 +236,7 @@ def generate_kubernetes_configs_for_project(
         app_annotations = copy_and_update(
             base_annotations,
             per_deployment_annotations.get(name),
+            deployment.get('annotations', {}),
         )
 
         if container_ports:
@@ -294,12 +306,16 @@ def generate_kubernetes_configs_for_project(
         node_selector_labels = job_spec.get('nodeSelector', None)
         service_account_name = job_spec.get('serviceAccountName', None)
         secrets = job_spec.get('secrets', None)
+        app_annotations = copy_and_update(
+            base_annotations,
+            job_spec.get('annotations', {}),
+        )
 
         jobs.append(make_job_config(
             job_spec,
             app_name=project_name,
             labels=job_labels,
-            annotations=base_annotations,
+            annotations=app_annotations,
             envvars=job_envvars,
             node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
@@ -309,10 +325,14 @@ def generate_kubernetes_configs_for_project(
     cronjobs = []
 
     for name, cronjob in config.get('cronjobs', {}).items():
-        cronjob_labels = copy_and_update(base_labels, {
-            ROLE_LABEL_KEY: 'cronjob',
-            NAME_LABEL_KEY: name,
-        })
+        cronjob_labels = copy_and_update(
+            base_labels,
+            {
+                ROLE_LABEL_KEY: 'cronjob',
+                NAME_LABEL_KEY: name,
+            },
+            cronjob.get('labels', {}),
+        )
 
         node_selector_labels = cronjob.get('nodeSelector', None)
         service_account_name = cronjob.get('serviceAccountName', None)
@@ -325,7 +345,11 @@ def generate_kubernetes_configs_for_project(
             default_registry=default_registry,
         )
 
-        app_annotations = copy_and_update(base_annotations)
+        app_annotations = copy_and_update(
+            base_annotations,
+            cronjob.get('annotations', {}),
+        )
+
         schedule = cronjob['schedule']
         concurrency_policy = cronjob['concurrency_policy']
         batch_api_version = cronjob.get('batch-api-version')  # May depend on target cluster

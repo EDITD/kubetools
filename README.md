@@ -46,6 +46,10 @@ tests:
 
 deployments:
   my-app-webserver:
+    annotations:
+      imageregistry: "https://hub.docker.com/"
+    labels:
+      app.kubernetes.io/name: my-app-webserver
     serviceAccountName: webserver
     secrets:
       secret-volume:
