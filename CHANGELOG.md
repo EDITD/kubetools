@@ -9,6 +9,9 @@ local Kubetools projects.
 - this **BREAKS COMPATIBILITY** with previous versions of `ktd` (see README)
 - uses `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
 
+# v13.14.1
+- Add annotations and labels options to resources defined in kubetools.yaml file
+
 # v13.14.0
 - Fix docker-compose conflict when kubetools commands are called without activating their venv
 - Add Python 3.12 to supported versions, albeit without Flake8 because of CPython bug
