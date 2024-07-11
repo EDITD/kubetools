@@ -2,6 +2,13 @@
 
 ### Unreleased
 
+# v14.0.0
+- before upgrading to version 14.0 or above, you _must_ run `ktd destroy` for all existing 
+local Kubetools projects.
+- this is a `dev` release because of a bug in `docker/buildx` - there is a workaround for this but we don't want to use workarounds in production (see TROUBLESHOOTING in README)
+- this **BREAKS COMPATIBILITY** with previous versions of `ktd` (see README)
+- uses `docker compose` in place of `docker-compose`, meaning we use Docker compose v2 on the backend
+
 # v13.14.1
 - Add annotations and labels options to resources defined in kubetools.yaml file
 

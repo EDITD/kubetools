@@ -17,7 +17,7 @@ And you would like:
 
 Kubetools provides the tooling required to achieve this, by way of two CLI tools:
 
-+ **`ktd`**: generates _100% local_ development environments using Docker/docker-compose
++ **`ktd`**: generates _100% local_ development environments using docker compose
 + **`kubetools`**: deploys projects to Kubernetes, handling any changes/jobs as required
 
 Both of these use a single configuration file, `kubetools.yml`, for example a basic `django` app:
@@ -84,15 +84,17 @@ cronjobs:
 With this in your current directory, you can now:
 
 ```sh
-# Bring up a local development environment using docker-compose
+# Bring up a local development environment using docker compose
 ktd up
+```
 
+```sh
 # Deploy the project to a Kubernetes namespace
 kubetools deploy my-namespace
 ```
 
 ## Installing
-
+To install Kubetools run:
 ```sh
 pip install kubetools
 ```
@@ -140,6 +142,23 @@ MINIKUBE_IP=$(minikube ip)
 minikube delete
 ...
 ```
+
+
+## Troubleshooting
+There is a bug in `buildx` which is present in Docker Engine v25.0 and up, which is yet to be patched and causes `insecure-registries` to be ignored - [issue here](https://github.com/docker/buildx/issues/2226).
+Versions of Docker Desktop which use versions of Docker Engine lower than 25.0 are unaffected.
+
+If you try and run `ktd up` with reference to an unsecure registry, e.g. `http://docker-registry.example.net` and are affected by this bug, you will get an error message that is
+similar to the following:
+```
+ERROR: failed to do request: Head "https://docker-registry.example.net/3.6_alpine3.13_v0.1-multi": dialing docker-registry.example.net:443 with direct connection: connecting to 1.1.1.1:443: dial tcp 1.1.1.1:443: connect: connection refused
+```
+
+There are a few of workarounds:
+  * Migrate to secure registries (over HTTPS)
+  * Downgrade to Docker Desktop v4.26.1 or below and prefix `http://` to each of your `insecure_registries`' URLs.
+  *  Alternatively, use the legacy builder by setting the environment variable `DOCKER_BUILDKIT=0` for `ktd` commands.
+
 
 ## Releasing (admins/maintainers only)
 * Update [CHANGELOG](CHANGELOG.md) to add new version and document it

@@ -1,5 +1,3 @@
-import sys
-
 from functools import lru_cache
 
 import docker
@@ -138,8 +136,7 @@ def get_containers_status(
         if not env:
             env = compose_project.replace(docker_name, '')
 
-        # Where the name is compose-name_container_N, get container
-        name = container.name.split('_')[1]
+        name = _get_container_name_from_full_name(container.name)
 
         status = container.status == 'running'
         ports = []
@@ -194,6 +191,17 @@ def get_containers_status(
     return env_to_containers.get(kubetools_config['env'], {})
 
 
+def _get_container_name_from_full_name(full_name):
+    # if the container was made in v1, it will be composename_container_N
+    converted_name = full_name.replace('_', '-')
+
+    # we need to keep the middle part of the name
+    # for example if we have a container called `composename-container-1-N`
+    # we want to keep `container-1`
+    middle_names = converted_name.split('-')[1:-1]
+    return '-'.join(middle_name for middle_name in middle_names)
+
+
 def get_container_status(kubetools_config, name):
     containers = get_containers_status(kubetools_config, container_name=name)
     return containers.get(name)
@@ -204,8 +212,7 @@ def run_compose_process(kubetools_config, command_args, **kwargs):
     create_compose_config(kubetools_config)
 
     compose_command = [
-        # Use current interpreter to run the docker-compose module installed in the same venv
-        sys.executable, '-m', 'compose',
+        'docker', 'compose',
         # Force us to look at the current directory, not relative to the compose
         # filename (ie .kubetools/compose-name.yml).
         '--project-directory', '.',
