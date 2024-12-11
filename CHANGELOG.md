@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.14.2
+- Added successfulJobsHistoryLimit and failedJobsHistoryLimit fields for Cronjob resource defined in kubetools.yaml file
+
 # v13.14.1
 - Add annotations and labels options to resources defined in kubetools.yaml file
 

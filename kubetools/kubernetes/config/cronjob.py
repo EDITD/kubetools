@@ -12,6 +12,8 @@ def make_cronjob_config(
     batch_api_version,
     concurrency_policy,
     containers,
+    successfulJobsHistoryLimit,
+    failedJobsHistoryLimit,
     labels=None,
     annotations=None,
     envvars=None,
@@ -81,6 +83,8 @@ def make_cronjob_config(
             'schedule': schedule,
             'startingDeadlineSeconds': 10,
             'concurrencyPolicy': concurrency_policy,
+            'successfulJobsHistoryLimit': successfulJobsHistoryLimit,
+            'failedJobsHistoryLimit': failedJobsHistoryLimit,
             'jobTemplate': {
                 'spec': {
                     'template': {
