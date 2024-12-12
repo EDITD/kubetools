@@ -85,7 +85,7 @@ def _get_cronjob_data(cronjob):
 
     cronjob_spec['schedule'] = cronjob['schedule']
     cronjob_spec['concurrency_policy'] = cronjob['concurrency_policy']
-    cronjob_spec['batch-api-version'] = cronjob.get('batch-api-version')  # May depend on target cluster
+    cronjob_spec['batch-api-version'] = cronjob.get('batch-api-version')
     cronjob_spec['successfulJobsHistoryLimit'] = cronjob.get('successfulJobsHistoryLimit')
     cronjob_spec['failedJobsHistoryLimit'] = cronjob.get('failedJobsHistoryLimit')
 
