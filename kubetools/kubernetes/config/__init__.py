@@ -80,6 +80,18 @@ def _get_containers_data(
     return all_containers, all_container_ports
 
 
+def _get_cronjob_data(cronjob):
+    cronjob_spec = {}
+
+    cronjob_spec['schedule'] = cronjob['schedule']
+    cronjob_spec['concurrency_policy'] = cronjob['concurrency_policy']
+    cronjob_spec['batch-api-version'] = cronjob.get('batch-api-version')  # May depend on target cluster
+    cronjob_spec['successfulJobsHistoryLimit'] = cronjob.get('successfulJobsHistoryLimit')
+    cronjob_spec['failedJobsHistoryLimit'] = cronjob.get('failedJobsHistoryLimit')
+
+    return cronjob_spec
+
+
 def _get_replicas(deployment, default=1):
     replicas = default
 
@@ -350,18 +362,10 @@ def generate_kubernetes_configs_for_project(
             cronjob.get('annotations', {}),
         )
 
-        schedule = cronjob['schedule']
-        concurrency_policy = cronjob['concurrency_policy']
-        batch_api_version = cronjob.get('batch-api-version')  # May depend on target cluster
-        successfulJobsHistoryLimit = cronjob.get('successfulJobsHistoryLimit')
-        failedJobsHistoryLimit = cronjob.get('failedJobsHistoryLimit')
-
         cronjobs.append(make_cronjob_config(
             config,
             name,
-            schedule,
-            batch_api_version,
-            concurrency_policy,
+            _get_cronjob_data(cronjob),
             containers,
             labels=cronjob_labels,
             annotations=app_annotations,
@@ -369,8 +373,6 @@ def generate_kubernetes_configs_for_project(
             node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
-            successfulJobsHistoryLimit=successfulJobsHistoryLimit,
-            failedJobsHistoryLimit=failedJobsHistoryLimit,
         ))
 
     return services, deployments, jobs, cronjobs

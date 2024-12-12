@@ -8,9 +8,7 @@ from .volume import make_secret_volume_config
 def make_cronjob_config(
     config,
     cronjob_name,
-    schedule,
-    batch_api_version,
-    concurrency_policy,
+    cronjob_data,
     containers,
     labels=None,
     annotations=None,
@@ -18,8 +16,6 @@ def make_cronjob_config(
     node_selector_labels=None,
     service_account_name=None,
     secrets=None,
-    successfulJobsHistoryLimit=None,
-    failedJobsHistoryLimit=None,
 ):
     '''
     Builds a Kubernetes cronjob configuration dict.
@@ -80,9 +76,9 @@ def make_cronjob_config(
             'annotations': annotations,
         },
         'spec': {
-            'schedule': schedule,
+            'schedule': cronjob_data['schedule'],
             'startingDeadlineSeconds': 10,
-            'concurrencyPolicy': concurrency_policy,
+            'concurrencyPolicy': cronjob_data['concurrency_policy'],
             'jobTemplate': {
                 'spec': {
                     'template': {
@@ -97,13 +93,13 @@ def make_cronjob_config(
             },
         },
     }
-    if batch_api_version:
+    if cronjob_data['batch-api-version']:
         # Only set here if user has specified it in the config
-        cronjob['apiVersion'] = batch_api_version
+        cronjob['apiVersion'] = cronjob_data['batch-api-version']
 
-    if successfulJobsHistoryLimit is not None:
-        cronjob['spec']['successfulJobsHistoryLimit'] = successfulJobsHistoryLimit
-    if failedJobsHistoryLimit is not None:
-        cronjob['spec']['failedJobsHistoryLimit'] = failedJobsHistoryLimit
+    if cronjob_data['successfulJobsHistoryLimit'] is not None:
+        cronjob['spec']['successfulJobsHistoryLimit'] = cronjob_data['successfulJobsHistoryLimit']
+    if cronjob_data['failedJobsHistoryLimit'] is not None:
+        cronjob['spec']['failedJobsHistoryLimit'] = cronjob_data['failedJobsHistoryLimit']
 
     return cronjob
