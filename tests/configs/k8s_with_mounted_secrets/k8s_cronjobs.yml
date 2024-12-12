@@ -14,8 +14,6 @@ spec:
   schedule: "*/1 * * * *"
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:

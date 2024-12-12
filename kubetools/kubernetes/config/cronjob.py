@@ -12,14 +12,14 @@ def make_cronjob_config(
     batch_api_version,
     concurrency_policy,
     containers,
-    successfulJobsHistoryLimit,
-    failedJobsHistoryLimit,
     labels=None,
     annotations=None,
     envvars=None,
     node_selector_labels=None,
     service_account_name=None,
     secrets=None,
+    successfulJobsHistoryLimit=None,
+    failedJobsHistoryLimit=None,
 ):
     '''
     Builds a Kubernetes cronjob configuration dict.
@@ -83,8 +83,6 @@ def make_cronjob_config(
             'schedule': schedule,
             'startingDeadlineSeconds': 10,
             'concurrencyPolicy': concurrency_policy,
-            'successfulJobsHistoryLimit': successfulJobsHistoryLimit,
-            'failedJobsHistoryLimit': failedJobsHistoryLimit,
             'jobTemplate': {
                 'spec': {
                     'template': {
@@ -102,5 +100,10 @@ def make_cronjob_config(
     if batch_api_version:
         # Only set here if user has specified it in the config
         cronjob['apiVersion'] = batch_api_version
+
+    if successfulJobsHistoryLimit is not None:
+        cronjob['spec']['successfulJobsHistoryLimit'] = successfulJobsHistoryLimit
+    if failedJobsHistoryLimit is not None:
+        cronjob['spec']['failedJobsHistoryLimit'] = failedJobsHistoryLimit
 
     return cronjob

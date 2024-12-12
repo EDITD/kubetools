@@ -14,8 +14,6 @@ spec:
   schedule: "*/1 * * * *"
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -60,8 +58,6 @@ spec:
   schedule: "*/1 * * * *"
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -107,8 +103,6 @@ spec:
   schedule: "*/1 * * * *"
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -154,7 +148,6 @@ spec:
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
   successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -198,7 +191,6 @@ spec:
   schedule: "*/1 * * * *"
   startingDeadlineSeconds: 10
   concurrencyPolicy: "Allow"
-  successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:

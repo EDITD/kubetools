@@ -353,8 +353,8 @@ def generate_kubernetes_configs_for_project(
         schedule = cronjob['schedule']
         concurrency_policy = cronjob['concurrency_policy']
         batch_api_version = cronjob.get('batch-api-version')  # May depend on target cluster
-        successfulJobsHistoryLimit = cronjob.get('successfulJobsHistoryLimit', 3)
-        failedJobsHistoryLimit = cronjob.get('failedJobsHistoryLimit', 1)
+        successfulJobsHistoryLimit = cronjob.get('successfulJobsHistoryLimit')
+        failedJobsHistoryLimit = cronjob.get('failedJobsHistoryLimit')
 
         cronjobs.append(make_cronjob_config(
             config,
@@ -363,14 +363,14 @@ def generate_kubernetes_configs_for_project(
             batch_api_version,
             concurrency_policy,
             containers,
-            successfulJobsHistoryLimit,
-            failedJobsHistoryLimit,
             labels=cronjob_labels,
             annotations=app_annotations,
             envvars=envvars,
             node_selector_labels=node_selector_labels,
             service_account_name=service_account_name,
             secrets=secrets,
+            successfulJobsHistoryLimit=successfulJobsHistoryLimit,
+            failedJobsHistoryLimit=failedJobsHistoryLimit,
         ))
 
     return services, deployments, jobs, cronjobs
