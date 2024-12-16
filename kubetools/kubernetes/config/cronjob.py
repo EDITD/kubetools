@@ -8,14 +8,11 @@ from .volume import make_secret_volume_config
 def make_cronjob_config(
     config,
     cronjob_name,
-    cronjob_data,
+    cronjob_spec,
     containers,
     labels=None,
     annotations=None,
     envvars=None,
-    node_selector_labels=None,
-    service_account_name=None,
-    secrets=None,
 ):
     '''
     Builds a Kubernetes cronjob configuration dict.
@@ -23,6 +20,10 @@ def make_cronjob_config(
 
     labels = labels or {}
     annotations = annotations or {}
+
+    node_selector_labels = cronjob_spec.get('nodeSelector', None)
+    service_account_name = cronjob_spec.get('serviceAccountName', None)
+    secrets = cronjob_spec.get('secrets', None)
 
     # Build our container list
     kubernetes_containers = []
@@ -76,9 +77,9 @@ def make_cronjob_config(
             'annotations': annotations,
         },
         'spec': {
-            'schedule': cronjob_data['schedule'],
+            'schedule': cronjob_spec['schedule'],
             'startingDeadlineSeconds': 10,
-            'concurrencyPolicy': cronjob_data['concurrency_policy'],
+            'concurrencyPolicy': cronjob_spec['concurrency_policy'],
             'jobTemplate': {
                 'spec': {
                     'template': {
@@ -93,13 +94,16 @@ def make_cronjob_config(
             },
         },
     }
-    if cronjob_data['batch-api-version']:
+    batch_api_version = cronjob_spec.get('batch-api-version', None)
+    if batch_api_version is not None:
         # Only set here if user has specified it in the config
-        cronjob['apiVersion'] = cronjob_data['batch-api-version']
+        cronjob['apiVersion'] = batch_api_version
 
-    if cronjob_data['successfulJobsHistoryLimit'] is not None:
-        cronjob['spec']['successfulJobsHistoryLimit'] = cronjob_data['successfulJobsHistoryLimit']
-    if cronjob_data['failedJobsHistoryLimit'] is not None:
-        cronjob['spec']['failedJobsHistoryLimit'] = cronjob_data['failedJobsHistoryLimit']
+    successfulJobsHistoryLimit = cronjob_spec.get('successfulJobsHistoryLimit', None)
+    if successfulJobsHistoryLimit is not None:
+        cronjob['spec']['successfulJobsHistoryLimit'] = successfulJobsHistoryLimit
+    failedJobsHistoryLimit = cronjob_spec.get('failedJobsHistoryLimit', None)
+    if failedJobsHistoryLimit is not None:
+        cronjob['spec']['failedJobsHistoryLimit'] = failedJobsHistoryLimit
 
     return cronjob
