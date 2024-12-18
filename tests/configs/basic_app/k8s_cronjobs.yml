@@ -128,3 +128,91 @@ spec:
             imagePullPolicy: 'Always'
             name: generic-container
           restartPolicy: OnFailure
+
+---
+
+kind: CronJob
+metadata:
+  name: generic-cronjob-with-success-history
+  labels: {
+    kubetools/name: generic-cronjob-with-success-history,
+    kubetools/project_name: generic-app,
+    kubetools/role: cronjob
+  }
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    description: 'Run: [''generic-command'']'
+  }
+spec:
+  schedule: "*/1 * * * *"
+  startingDeadlineSeconds: 10
+  concurrencyPolicy: "Allow"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: generic-cronjob-with-success-history
+          labels: {
+            kubetools/name: generic-cronjob-with-success-history,
+            kubetools/project_name: generic-app,
+            kubetools/role: cronjob
+          }
+          annotations: {
+            app.kubernetes.io/managed-by: kubetools,
+            description: 'Run: [''generic-command'']'
+          }
+        spec:
+          containers:
+          - command: [generic-command]
+            containerContext: generic-context
+            env:
+            - {name: KUBE, value: 'true'}
+            image: generic-image
+            imagePullPolicy: 'Always'
+            name: generic-container
+          restartPolicy: OnFailure
+
+---
+
+kind: CronJob
+metadata:
+  name: generic-cronjob-with-fail-history
+  labels: {
+    kubetools/name: generic-cronjob-with-fail-history,
+    kubetools/project_name: generic-app,
+    kubetools/role: cronjob
+  }
+  annotations: {
+    app.kubernetes.io/managed-by: kubetools,
+    description: 'Run: [''generic-command'']'
+  }
+spec:
+  schedule: "*/1 * * * *"
+  startingDeadlineSeconds: 10
+  concurrencyPolicy: "Allow"
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: generic-cronjob-with-fail-history
+          labels: {
+            kubetools/name: generic-cronjob-with-fail-history,
+            kubetools/project_name: generic-app,
+            kubetools/role: cronjob
+          }
+          annotations: {
+            app.kubernetes.io/managed-by: kubetools,
+            description: 'Run: [''generic-command'']'
+          }
+        spec:
+          containers:
+          - command: [generic-command]
+            containerContext: generic-context
+            env:
+            - {name: KUBE, value: 'true'}
+            image: generic-image
+            imagePullPolicy: 'Always'
+            name: generic-container
+          restartPolicy: OnFailure

@@ -80,6 +80,20 @@ def _get_containers_data(
     return all_containers, all_container_ports
 
 
+def _additional_cronjob_params(cronjob, cronjob_spec):
+    for param, value in cronjob.items():
+        if param != 'containers':
+            cronjob_spec[param] = value
+    return cronjob_spec
+
+
+def _required_cronjob_params(cronjob, cronjob_spec):
+    required_params = ['schedule', 'concurrency_policy']
+    for param in required_params:
+        cronjob_spec[param] = cronjob.pop(param)
+    return cronjob, cronjob_spec
+
+
 def _get_replicas(deployment, default=1):
     replicas = default
 
@@ -334,9 +348,9 @@ def generate_kubernetes_configs_for_project(
             cronjob.get('labels', {}),
         )
 
-        node_selector_labels = cronjob.get('nodeSelector', None)
-        service_account_name = cronjob.get('serviceAccountName', None)
-        secrets = cronjob.get('secrets', None)
+        cronjob_spec = {}
+        cronjob, cronjob_spec = _required_cronjob_params(cronjob, cronjob_spec)
+        cronjob_spec = _additional_cronjob_params(cronjob, cronjob_spec)
 
         containers, container_ports = _get_containers_data(
             cronjob['containers'],
@@ -350,23 +364,14 @@ def generate_kubernetes_configs_for_project(
             cronjob.get('annotations', {}),
         )
 
-        schedule = cronjob['schedule']
-        concurrency_policy = cronjob['concurrency_policy']
-        batch_api_version = cronjob.get('batch-api-version')  # May depend on target cluster
-
         cronjobs.append(make_cronjob_config(
             config,
             name,
-            schedule,
-            batch_api_version,
-            concurrency_policy,
+            cronjob_spec,
             containers,
             labels=cronjob_labels,
             annotations=app_annotations,
             envvars=envvars,
-            node_selector_labels=node_selector_labels,
-            service_account_name=service_account_name,
-            secrets=secrets,
         ))
 
     return services, deployments, jobs, cronjobs

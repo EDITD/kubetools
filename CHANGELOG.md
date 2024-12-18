@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+# v13.14.2
+- Collect additional parameters provided to kubetools cronjob spec and attach to k8s cronjob spec
+
 # v13.14.1
 - Add annotations and labels options to resources defined in kubetools.yaml file
 

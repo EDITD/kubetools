@@ -74,3 +74,17 @@ cronjobs:
     containers:
       generic-container:
         containerContext: generic-context
+  generic-cronjob-with-success-history:
+    successfulJobsHistoryLimit: 1
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
+  generic-cronjob-with-fail-history:
+    failedJobsHistoryLimit: 2
+    schedule: "*/1 * * * *"
+    concurrency_policy: "Allow"
+    containers:
+      generic-container:
+        containerContext: generic-context
