@@ -1,5 +1,3 @@
-import sys
-
 from functools import lru_cache
 
 import docker
@@ -138,8 +136,8 @@ def get_containers_status(
         if not env:
             env = compose_project.replace(docker_name, '')
 
-        # Where the name is compose-name_container_N, get container
-        name = container.name.split('_')[1]
+        # Get the service name from the Docker Compose label (works with both v1 and v2)
+        name = container.labels['com.docker.compose.service']
 
         status = container.status == 'running'
         ports = []
@@ -204,8 +202,7 @@ def run_compose_process(kubetools_config, command_args, **kwargs):
     create_compose_config(kubetools_config)
 
     compose_command = [
-        # Use current interpreter to run the docker-compose module installed in the same venv
-        sys.executable, '-m', 'compose',
+        'docker', 'compose',
         # Force us to look at the current directory, not relative to the compose
         # filename (ie .kubetools/compose-name.yml).
         '--project-directory', '.',
