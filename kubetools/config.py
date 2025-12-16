@@ -7,7 +7,7 @@ from os import getcwd, path
 
 import yaml
 
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 from . import __version__
 from .exceptions import KubeConfigError
