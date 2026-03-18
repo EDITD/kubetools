@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 'ktd=kubetools.dev.__main__:main',
             ),
         },
-        python_requires='>=3.6',
+        python_requires='>=3.8',
         install_requires=(
             'click>=7,<8',
             'docker>=3,<5',
@@ -58,6 +58,7 @@ if __name__ == '__main__':
             # To support CronJob api versions 'batch/v1beta1' & 'batch/v1'
             'kubernetes>=21.7.0,<25.0.0',
             'tabulate<1',
+            'packaging',
         ),
         extras_require={
             'dev': (
@@ -77,8 +78,6 @@ if __name__ == '__main__':
             'License :: OSI Approved :: MIT License',
             'Operating System :: POSIX',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
