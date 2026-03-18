@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+# v14.0.0
+- Support Docker compose v2
+- Drop Python 3.7 support
+
 # v13.14.2
 - Collect additional parameters provided to kubetools cronjob spec and attach to k8s cronjob spec
 
