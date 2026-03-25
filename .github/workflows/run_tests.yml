@@ -12,6 +12,9 @@ jobs:
           # Python 3.6 is not available in GitHub Actions Ubuntu 22.04
           - os: ubuntu-latest
             python-version: '3.6'
+          # Python 3.7 is not available in GitHub Actions Ubuntu 22.04
+          - os: ubuntu-latest
+            python-version: '3.7'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
