@@ -1,3 +1,3 @@
-from importlib import metadata
+from pkg_resources import get_distribution
 
-__version__ = metadata.version("kubetools")
+__version__ = get_distribution('kubetools').version

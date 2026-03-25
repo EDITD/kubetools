@@ -55,9 +55,12 @@ if __name__ == '__main__':
             'pyyaml>=3,<6',
             'requests>=2,<2.29.0',  # https://github.com/docker/docker-py/issues/3113
             'pyretry',
+            'setuptools',
             # To support CronJob api versions 'batch/v1beta1' & 'batch/v1'
             'kubernetes>=21.7.0,<25.0.0',
             'tabulate<1',
+            # compose v2 has broken container naming
+            'docker-compose<2',
         ),
         extras_require={
             'dev': (
