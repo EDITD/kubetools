@@ -6,8 +6,15 @@ jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        exclude:
+          # Python 3.6 is not available in GitHub Actions Ubuntu 22.04
+          - os: ubuntu-latest
+            python-version: '3.6'
+          # Python 3.7 is not available in GitHub Actions Ubuntu 22.04
+          - os: ubuntu-latest
+            python-version: '3.7'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
